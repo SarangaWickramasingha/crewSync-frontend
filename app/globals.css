@@ -1,3 +1,30 @@
 @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap');
 
 @import "tailwindcss";
+
+@theme {
+    /* Brand */
+    --color-primary: #1B6E3A;
+    --color-primary-dark: #14532d;
+    --color-primary-light: #dcfce7;
+
+    /* Accent */
+    --color-amber: #E8820C;
+
+    /* Text */
+    --color-slate: #1e293b;
+    --color-slate-light: #475569;
+    --color-muted: #64748b;
+
+    /* UI */
+    --color-border: #e2e8f0;
+    --color-surface: #f8fafc;
+
+    /* Optional extras */
+    --color-success: #16a34a;
+    --color-danger: #dc2626;
+    --color-warning: #f59e0b;
+
+    /* Fonts */
+    --font-syne: "Syne", sans-serif;
+}

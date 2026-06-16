@@ -11,22 +11,42 @@ export default function SignInPage() {
     const [error, setError] = useState('');
 
 
-    function handleSignIn(e) {
+    const handleSignIn = async (e) => {
         e.preventDefault();
-        setError('');
 
-        if (!email || !password) {
-            setError('Please fill in all fields.');
-            return;
+        try {
+            const res = await fetch(
+                "http://localhost/CrewSync-backend/backend/index.php/api/auth/login",
+                {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        email,
+                        password,
+                    }),
+                }
+            );
+
+            const data = await res.json();
+
+            if (res.ok) {
+                console.log("Login success:", data);
+
+                // store token if you return JWT later
+                // localStorage.setItem("token", data.token);
+
+                alert("Login successful!");
+            } else {
+                console.log("Login failed:", data);
+                alert(data.message || "Login failed");
+            }
+        } catch (error) {
+            console.error("Error:", error);
+            alert("Server error");
         }
-        if (!email.includes('@')) {
-            setError('Please enter a valid email address.');
-            return;
-        }
-
-
-        window.location.href = '/dashboard';
-    }
+    };
 
     return (
         <div className="min-h-screen flex flex-col" style={{ background: '#F7F6F2' }}>
@@ -35,11 +55,11 @@ export default function SignInPage() {
             {/* ── PAGE BODY ───────────────────────────────────────────────────── */}
             <main className="flex-1 flex items-center justify-center px-4 py-10 relative overflow-hidden">
 
-                <div className="pointer-events-none absolute -top-32 -right-32 w-[500px] h-[500px] rounded-full bg-[radial-gradient(circle,rgba(232,130,12,0.08)_0%,transparent_70%)]" />
-                <div className="pointer-events-none absolute -bottom-24 -left-24 w-[400px] h-[400px] rounded-full bg-[radial-gradient(circle,rgba(26,86,160,0.06)_0%,transparent_70%)]" />
+                <div className="pointer-events-none absolute -top-32 -right-32 w-125 h-125 rounded-full bg-[radial-gradient(circle,rgba(232,130,12,0.08)_0%,transparent_70%)]" />
+                <div className="pointer-events-none absolute -bottom-24 -left-24 w-100 h-100 rounded-full bg-[radial-gradient(circle,rgba(26,86,160,0.06)_0%,transparent_70%)]" />
 
                 {/* ── CARD ──────────────────────────────────────────────────────── */}
-                <div className="relative z-10 w-full max-w-[460px] rounded-xl overflow-hidden bg-white border border-[rgba(26,29,35,0.1)] shadow-[0_2px_16px_rgba(26,29,35,0.08)]">
+                <div className="relative z-10 w-full max-w-115 rounded-xl overflow-hidden bg-white border border-[rgba(26,29,35,0.1)] shadow-[0_2px_16px_rgba(26,29,35,0.08)]">
                     <div className="text-center px-8 py-8 relative overflow-hidden bg-[#1A1D23]">
                         {/* glow behind logo */}
                         <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,rgba(232,130,12,0.12)_0%,transparent_65%)]" />
@@ -56,7 +76,7 @@ export default function SignInPage() {
 
                         {/* Error message — only shows when error state has text */}
                         {error && (
-                            <div className="mb-4 px-3 py-2 rounded-lg text-[0.82rem] bg-[#FDECEA] text-[#C0392B] border-1 outline-solid color-[#C0392B]" >
+                            <div className="mb-4 px-3 py-2 rounded-lg text-[0.82rem] bg-[#FDECEA] text-[#C0392B] border outline-solid color-[#C0392B]" >
                                 {error}
                             </div>
                         )}
