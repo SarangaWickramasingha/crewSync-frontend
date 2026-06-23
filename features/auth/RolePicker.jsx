@@ -1,3 +1,13 @@
+'use client';
+
+const ROLE_COLORS = {
+    owner: { border: 'border-green-500', bg: 'bg-green-50', titleText: 'text-green-800', check: 'bg-green-500' },
+    provider: { border: 'border-blue-500', bg: 'bg-blue-50', titleText: 'text-blue-800', check: 'bg-blue-500' },
+    supplier: { border: 'border-orange-500', bg: 'bg-orange-50', titleText: 'text-orange-800', check: 'bg-orange-500' },
+};
+
+
+
 const ROLES = [
     {
         id: 'owner',
@@ -35,8 +45,8 @@ export default function RolePicker({ selected, onSelect }) {
                         className={`relative flex flex-col items-start gap-2 rounded-xl border-2 p-4 text-left
               transition-all duration-200 focus:outline-none
               ${active
-                                ? 'border-primary bg-primary-light shadow-sm'
-                                : 'border-border bg-white hover:border-primary/40 hover:bg-surface'
+                                ? `${ROLE_COLORS[role.id].border} ${ROLE_COLORS[role.id].bg} shadow-sm`
+                                : 'border-border bg-white hover:border-slate-300 hover:bg-surface'
                             }`}
                     >
                         {role.badge && (
@@ -45,16 +55,16 @@ export default function RolePicker({ selected, onSelect }) {
                                 {role.badge}
                             </span>
                         )}
-                        <span className="text-2xl">{role.icon}</span>
+                        <span className="text-4xl">{role.icon}</span>
                         <div>
-                            <p className={`text-sm font-bold font-syne ${active ? 'text-primary-dark' : 'text-slate'}`}>
+                            <p className={`text-sm font-bold font-syne ${active ? ROLE_COLORS[role.id].titleText : 'text-slate'}`}>
                                 {role.title}
                             </p>
                             <p className="mt-0.5 text-xs text-muted leading-relaxed">{role.description}</p>
                         </div>
                         {active && (
-                            <span className="absolute bottom-3 right-3 flex h-5 w-5 items-center justify-center
-                rounded-full bg-primary text-white text-[10px]">✓</span>
+                            <span className={`absolute bottom-3 right-3 flex h-5 w-5 items-center justify-center
+    rounded-full text-white text-[10px] ${ROLE_COLORS[role.id].check}`}>✓</span>
                         )}
                     </button>
                 );

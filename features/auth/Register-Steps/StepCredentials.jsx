@@ -1,7 +1,13 @@
 'use client';
 import PasswordInput from '@/components/ui/PasswordInput';
+import { Home, Wrench, Package } from 'lucide-react';
 
-const ROLE_ICONS = { owner: '🏠', provider: '🔧', supplier: '🧱' };
+
+const ROLE_ICONS = {
+    owner: <Home className="w-8 h-8 text-green-600" />,
+    provider: <Wrench className="w-8 h-8 text-blue-600" />,
+    supplier: <Package className="w-8 h-8 text-orange-500" />,
+};
 const ROLE_LABELS = { owner: 'Property Owner', provider: 'Service Provider', supplier: 'Supplier' };
 
 export default function StepCredentials({ role, data, onChange }) {
@@ -11,7 +17,7 @@ export default function StepCredentials({ role, data, onChange }) {
         <div className="max-w-md mx-auto">
             {/* Welcome block */}
             <div className="text-center mb-7">
-                <div className="text-4xl mb-2">{ROLE_ICONS[role]}</div>
+                <div className="flex justify-center mb-2">{ROLE_ICONS[role]}</div>
                 <h3 className="font-syne text-lg font-bold text-slate">{ROLE_LABELS[role]} Account</h3>
                 <p className="text-sm text-muted mt-1">Enter your email and create a password to get started.</p>
             </div>

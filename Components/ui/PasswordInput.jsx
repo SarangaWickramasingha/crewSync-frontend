@@ -1,5 +1,7 @@
 'use client';
 import { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
+
 
 // Strength: 0=empty, 1=weak, 2=fair, 3=good, 4=strong
 function getStrength(val) {
@@ -48,7 +50,8 @@ export default function PasswordInput({
                     tabIndex={-1}
                     aria-label={visible ? 'Hide password' : 'Show password'}
                 >
-                    {visible ? '🙈' : '👁'}
+                    {visible ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
+
                 </button>
             </div>
 

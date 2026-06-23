@@ -7,39 +7,69 @@ import StepPersonalInfo from './register-steps/StepPersonalInfo';
 import StepOwnerDetails from './register-steps/StepOwnerDetails';
 import StepProviderDetails from './register-steps/StepProviderDetails';
 import StepSupplierDetails from './register-steps/StepSupplierDetails';
+import {
+    Home, Wrench, Boxes,
+    ClipboardList, ShieldCheck, MessageCircle, BarChart2,
+    Inbox, Star, Package, MapPin,
+} from 'lucide-react';
+
+
+const ROLE_THEME = {
+    owner: { bg: 'bg-green-700', border: 'border-green-700', text: 'text-green-700', badgeBg: 'bg-green-50', badgeText: 'text-green-700', ring: 'ring-green-200' },
+    provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700', ring: 'ring-blue-200' },
+    supplier: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-700', ring: 'ring-orange-200' },
+};
 
 // ── Info panel content per role ──────────────────────────────────────────────
 const ROLE_INFO = {
     owner: {
-        badge: '🏠 Property Owner',
+        badge: { icon: <Home className="w-3.5 h-3.5" />, label: 'Property Owner' },
         tagline: 'Post projects and manage your construction from start to finish.',
+        colors: {
+            badge: 'border-green-300 bg-green-50 text-green-800',
+            icon: 'bg-green-100 text-green-700',
+        },
         features: [
-            { icon: '📋', title: 'Post Projects', desc: 'Describe your job and get matched with skilled providers.' },
-            { icon: '⭐', title: 'Verified Providers', desc: 'Hire only rated, background-checked professionals.' },
-            { icon: '💬', title: 'Direct Chat', desc: 'Communicate with contractors and suppliers in one place.' },
-            { icon: '📊', title: 'Track Progress', desc: 'Monitor timelines, payments, and milestones easily.' },
+            { icon: <ClipboardList className="w-4 h-4" />, title: 'Post Projects', desc: 'Describe your job and get matched with skilled providers.' },
+            { icon: <ShieldCheck className="w-4 h-4" />, title: 'Verified Providers', desc: 'Hire only rated, background-checked professionals.' },
+            { icon: <MessageCircle className="w-4 h-4" />, title: 'Direct Chat', desc: 'Communicate with contractors and suppliers in one place.' },
+            { icon: <BarChart2 className="w-4 h-4" />, title: 'Track Progress', desc: 'Monitor timelines, payments, and milestones easily.' },
         ],
+
     },
     provider: {
-        badge: '🔧 Service Provider',
+        badge: { icon: <Wrench className="w-3.5 h-3.5" />, label: 'Service Provider' },
         tagline: 'Connect with property owners across Sri Lanka and grow your service business.',
+        colors: {
+            badge: 'border-blue-300 bg-blue-50 text-blue-800',
+            icon: 'bg-blue-100 text-blue-700',
+        },
         features: [
-            { icon: '📥', title: 'Receive Job Requests', desc: 'Get matched with property owners who need your skills.' },
-            { icon: '⭐', title: 'Build Your Reputation', desc: 'Collect reviews and showcase your portfolio.' },
-            { icon: '💬', title: 'Chat Directly', desc: 'Communicate and close deals without middlemen.' },
-            { icon: '📊', title: 'Track Your Jobs', desc: 'Manage ongoing work and earnings in one dashboard.' },
+            { icon: <Inbox className="w-4 h-4" />, title: 'Receive Job Requests', desc: 'Get matched with property owners who need your skills.' },
+            { icon: <Star className="w-4 h-4" />, title: 'Build Your Reputation', desc: 'Collect reviews and showcase your portfolio.' },
+            { icon: <MessageCircle className="w-4 h-4" />, title: 'Chat Directly', desc: 'Communicate and close deals without middlemen.' },
+            { icon: <BarChart2 className="w-4 h-4" />, title: 'Track Your Jobs', desc: 'Manage ongoing work and earnings in one dashboard.' },
         ],
     },
     supplier: {
-        badge: '🧱 Supplier',
+        badge: { icon: <Boxes className="w-3.5 h-3.5" />, label: 'Supplier' },
         tagline: 'Reach thousands of active construction projects across Sri Lanka.',
+        colors: {
+            badge: 'border-orange-300 bg-orange-50 text-orange-800',
+            icon: 'bg-orange-100 text-orange-700',
+        },
         features: [
-            { icon: '📦', title: 'List Your Materials', desc: 'Showcase sand, cement, timber, and more to buyers.' },
-            { icon: '📍', title: 'Local Discovery', desc: 'Property owners nearby will find you first.' },
-            { icon: '💬', title: 'Direct Inquiries', desc: 'Buyers contact you directly — no commission fees.' },
-            { icon: '📊', title: 'Manage Orders', desc: 'Track inquiries and deliveries from one dashboard.' },
+            { icon: <Package className="w-4 h-4" />, title: 'List Your Materials', desc: 'Showcase sand, cement, timber, and more to buyers.' },
+            { icon: <MapPin className="w-4 h-4" />, title: 'Local Discovery', desc: 'Property owners nearby will find you first.' },
+            { icon: <MessageCircle className="w-4 h-4" />, title: 'Direct Inquiries', desc: 'Buyers contact you directly — no commission fees.' },
+            { icon: <BarChart2 className="w-4 h-4" />, title: 'Manage Orders', desc: 'Track inquiries and deliveries from one dashboard.' },
         ],
     },
+};
+const ROLE_PRIMARY = {
+    owner: { bg: 'bg-green-600', border: 'border-green-600', text: 'text-green-600', bgLight: 'bg-green-50', ring: 'ring-green-600/10' },
+    provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', bgLight: 'bg-blue-50', ring: 'ring-blue-600/10' },
+    supplier: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-500', bgLight: 'bg-orange-50', ring: 'ring-orange-500/10' },
 };
 
 // ── Step config per role ─────────────────────────────────────────────────────
@@ -83,6 +113,8 @@ function validate(step, role, creds, info, details) {
 
 // ── Main component ───────────────────────────────────────────────────────────
 export default function RegisterForm() {
+
+
     const router = useRouter();
     const [role, setRole] = useState('owner');
     const [step, setStep] = useState(0); // 0 = role picker + credentials, 1 = details
@@ -105,6 +137,8 @@ export default function RegisterForm() {
     const [error, setError] = useState('');
 
     const info_panel = ROLE_INFO[role];
+
+    const theme = ROLE_THEME[role];
 
     const handleNext = () => {
         const err = validate(step, role, creds, info, details);
@@ -130,16 +164,17 @@ export default function RegisterForm() {
                     Crew<span className="text-slate">Sync</span>
                 </div>
                 <p className="text-xs text-muted leading-relaxed mb-4">{info_panel.tagline}</p>
-                <span className="inline-flex items-center gap-1.5 rounded-full border border-primary/25
-          bg-primary-light text-primary-dark text-xs font-semibold px-3 py-1 mb-4">
-                    {info_panel.badge}
+                <span className={`inline-flex items-center gap-1.5 rounded-full border text-xs font-semibold px-3 py-1 mb-4
+  ${info_panel.colors.badge}`}>
+                    {info_panel.badge.icon}
+                    {info_panel.badge.label}
                 </span>
                 <div className="flex flex-col gap-2.5 mb-5">
                     {info_panel.features.map(f => (
                         <div key={f.title} className="flex items-start gap-2.5 bg-white border border-border
               rounded-xl p-3">
-                            <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center
-                justify-center text-base flex-shrink-0 mt-0.5">
+                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 mt-0.5
+  ${info_panel.colors.icon}`}>
                                 {f.icon}
                             </div>
                             <div>
@@ -164,19 +199,20 @@ export default function RegisterForm() {
                         <div key={i} className="flex items-center">
                             <div className="flex items-center gap-2">
                                 <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-                  border-2 transition-all
-                  ${i < step ? 'bg-primary border-primary text-white'
-                                        : i === step ? 'bg-primary border-primary text-white'
+  border-2 transition-all
+  ${i < step ? `${theme.bg} ${theme.border} text-white`
+                                        : i === step ? `${theme.bg} ${theme.border} text-white`
                                             : 'bg-white border-border text-muted'}`}>
                                     {i < step ? '✓' : i + 1}
                                 </div>
-                                <span className={`text-xs font-medium ${i === step ? 'text-primary font-semibold' : 'text-muted'}`}>
+                                <span className={`text-xs font-medium ${i === step ? `${theme.text} font-semibold` : 'text-muted'}`}>
                                     {label}
                                 </span>
                             </div>
                             {i < STEP_LABELS.length - 1 && (
-                                <div className={`h-0.5 w-10 mx-2 rounded-full transition-all ${i < step ? 'bg-primary' : 'bg-border'}`} />
-                            )}
+                                <div className={`h-0.5 w-10 mx-2 rounded-full transition-all ${i < step ? theme.bg : 'bg-border'}`} />
+                            )
+                            }
                         </div>
                     ))}
                 </div>
@@ -191,7 +227,7 @@ export default function RegisterForm() {
                             {step === 0 ? 'Choose your role and set up your credentials.' : 'Tell us a bit about yourself.'}
                         </p>
                     </div>
-                    <span className="bg-primary-light text-primary text-[11px] font-bold px-2.5 py-1 rounded-full">
+                    <span className={`${theme.badgeBg} ${theme.badgeText} text-[11px] font-bold px-2.5 py-1 rounded-full`}>
                         Step {step + 1} of 2
                     </span>
                 </div>
@@ -256,13 +292,13 @@ export default function RegisterForm() {
                     <button
                         type="button"
                         onClick={handleNext}
-                        className="px-6 py-2.5 bg-primary text-white rounded-lg text-sm font-semibold
-              hover:bg-primary-dark hover:-translate-y-px transition-all shadow-sm"
+                        className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold
+  hover:-translate-y-px transition-all shadow-sm ${theme.bg}`}
                     >
                         {step === 0 ? 'Continue →' : 'Create Account →'}
                     </button>
                 </div>
             </div>
-        </div>
+        </div >
     );
 }

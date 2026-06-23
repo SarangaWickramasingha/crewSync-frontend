@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
+import { Eye, EyeOff } from 'lucide-react';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -89,7 +90,7 @@ export default function LoginPage() {
                                     className="absolute right-3 top-1/2 -translate-y-1/2 text-base cursor-pointer select-none text-[#8A8FA8]"
                                     aria-label="Toggle password visibility"
                                 >
-                                    {showPassword ? '🙈' : '👁'}
+                                    {showPassword ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                                 </button>
                             </div>
                         </div>
