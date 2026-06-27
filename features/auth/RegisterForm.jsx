@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import RolePicker from './RolePicker';
 import StepCredentials from './register-steps/StepCredentials';
@@ -75,6 +75,12 @@ export default function RegisterForm() {
     });
 
     const [error, setError] = useState('');
+    const [mounted, setMounted] = useState(false);
+
+    useEffect(() => {
+        const t = setTimeout(() => setMounted(true), 50);
+        return () => clearTimeout(t);
+    }, []);
     const theme = ROLE_THEME[role];
     const tagline = ROLE_TAGLINE[role];
 
@@ -82,19 +88,37 @@ export default function RegisterForm() {
         const err = validate(step, role, creds, info, details);
         if (err) { setError(err); return; }
         setError('');
-        if (step === 0) { setStep(1); window.scrollTo(0, 0); return; }
+        if (step === 0) {
+            setMounted(false); // fade out
+            setTimeout(() => {
+                setStep(1);
+                window.scrollTo(0, 0);
+                setMounted(true); // fade in
+            }, 300);
+            return;
+        }
         router.push('/dashboard');
     };
 
     const handleBack = () => {
         setError('');
-        setStep(0);
-        window.scrollTo(0, 0);
+        setMounted(false); // fade out
+        setTimeout(() => {
+            setStep(0);
+            window.scrollTo(0, 0);
+            setMounted(true); // fade in
+        }, 300);
     };
 
     return (
-        <div className="flex w-full max-w-[1100px] items-stretch">
-
+        <div
+            className="flex w-full max-w-[1100px] items-stretch"
+            style={{
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? 'translateY(0)' : 'translateY(24px)',
+                transition: 'opacity 0.7s ease, transform 0.7s ease',
+            }}
+        >
             {/* ── Left: Image Panel ── */}
             <aside className="hidden lg:flex lg:w-[420px] flex-shrink-0 relative overflow-hidden rounded-l-2xl flex-col">
                 {/* Image */}
@@ -162,12 +186,18 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Form body */}
-                <div className="p-6 flex-1 overflow-y-auto">
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-3.5 py-2.5 text-sm mb-4">
-                            {error}
-                        </div>
-                    )}
+                <div
+                    className="p-6 flex-1 overflow-y-auto"
+                    style={{
+                        opacity: mounted ? 1 : 0,
+                        transform: mounted ? 'translateY(0)' : 'translateY(16px)',
+                        transition: 'opacity 0.4s ease, transform 0.4s ease',
+                    }}
+                >                    {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-3.5 py-2.5 text-sm mb-4">
+                        {error}
+                    </div>
+                )}
 
                     {step === 0 && (
                         <>
