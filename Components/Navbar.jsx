@@ -4,185 +4,137 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 
 /**
- * CrewSync — Navbar (extracted from Home.html)
+ * CrewSync — Navbar (Tailwind CSS)
  *
- * Render this once in your root layout (e.g. app/layout.jsx) so it
- * appears above every page, instead of repeating it per-page:
+ * Props:
+ *   variant   "default" | "auth" | "register"
+ *             "default"  → logo · Home tab · Log In · Get Started       (home page)
+ *             "auth"     → logo · "New to CrewSync? Get Started"         (login page)
+ *             "register" → logo · "Already have an account?" · Sign In   (register page)
  *
- *   import Navbar from "@/components/Navbar";
- *   export default function RootLayout({ children }) {
- *     return (
- *       <html lang="en">
- *         <body>
- *           <Navbar />
- *           {children}
- *         </body>
- *       </html>
- *     );
- *   }
+ *   activeTab  Highlights the matching tab. Defaults to "Home". (default variant only)
  *
- * - "Log In" routes to /sign-in — update if your route differs.
- * - "Get Started" routes to /get-started.
- * - "Home" tab routes to / — pass `activeTab` if you want to highlight
- *   a different tab on other pages (optional, see prop below).
- * - Add the Syne + DM Sans Google Fonts link in your root layout:
- *   <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+ * Usage:
+ *   <Navbar />                    ← home / main pages
+ *   <Navbar variant="auth" />     ← login page
+ *   <Navbar variant="register" /> ← register page
  */
-export default function Navbar({ activeTab = "Home" }) {
+export default function Navbar({ variant = "default", activeTab = "Home" }) {
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
 
+  /* ── Shared: Logo ── */
+  const Logo = () => (
+    <div
+      onClick={() => router.push("/")}
+      className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+    >
+      Crew<span className="text-white">Sync</span>
+    </div>
+  );
+
+  /* ── AUTH variant (login page) ── */
+  if (variant === "auth") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="flex items-center text-[0.85rem] text-white/60">
+          New to CrewSync?&nbsp;
+          <button
+            onClick={() => router.push("/get-started")}
+            className="cursor-pointer border-none bg-transparent p-0 text-[0.85rem] font-semibold text-[#e8820c] transition-opacity hover:opacity-80"
+          >
+            Get Started
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
+  /* ── REGISTER variant (register page) ── */
+  if (variant === "register") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="flex items-center gap-2.5">
+          <span className="text-[0.82rem] text-white/55">Already have an account?</span>
+          <button
+            onClick={() => router.push("/login")}
+            className="rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10"
+          >
+            Log In
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
+  /* ── DEFAULT variant (home + other main pages) ── */
+  const tabs = [
+    { label: "Home", href: "/" },
+  ];
+
   return (
-    <nav className="cs-nav">
-      <div className="nav-logo" onClick={() => router.push("/")} style={{ cursor: "pointer" }}>
-        Crew<span>Sync</span>
+    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+      <Logo />
+
+      <div className="hidden items-center gap-1 sm:flex">
+        {tabs.map(({ label, href }) => {
+          const isActive = activeTab === label;
+          return (
+            <button
+              key={label}
+              onClick={() => router.push(href)}
+              className={`rounded-md px-3 py-1.5 text-[0.8rem] font-medium transition-all
+                ${isActive
+                  ? "bg-white/10 text-[#e8820c]"
+                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
 
-      <div className={`nav-tabs ${navOpen ? "open" : ""}`}>
+      <div className="flex items-center gap-2">
         <button
-          className={`nav-tab ${activeTab === "Home" ? "active" : ""}`}
-          onClick={() => {
-            router.push("/");
-            setNavOpen(false);
-          }}
+          onClick={() => router.push("/login")}
+          className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
         >
-          Home
-        </button>
-      </div>
-
-      <div className="nav-right">
-        <button className="btn-sm btn-outline" onClick={() => router.push("/sign-in")}>
           Log In
         </button>
-        <button className="btn-sm btn-amber" onClick={() => router.push("/get-started")}>
+        <button
+          onClick={() => router.push("/get-started")}
+          className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+        >
           Get Started
         </button>
-        <button className="mobile-nav-toggle" onClick={() => setNavOpen((v) => !v)}>
+        <button
+          onClick={() => setNavOpen((v) => !v)}
+          className="border-none bg-transparent text-[1.3rem] text-white sm:hidden"
+        >
           ☰
         </button>
       </div>
 
-      <style jsx>{`
-        .cs-nav {
-          --amber: #e8820c;
-          --amber-dark: #b85a00;
-          --slate: #1a1d23;
-          --slate-mid: #2e3340;
-
-          font-family: "DM Sans", sans-serif;
-          background: var(--slate);
-          padding: 0 1.5rem;
-          display: flex;
-          align-items: center;
-          justify-content: space-between;
-          height: 60px;
-          position: sticky;
-          top: 0;
-          z-index: 100;
-        }
-        .nav-logo {
-          color: var(--amber);
-          font-family: "Syne", sans-serif;
-          font-size: 1.4rem;
-          font-weight: 800;
-          letter-spacing: -0.5px;
-        }
-        .nav-logo span {
-          color: #fff;
-        }
-        .nav-tabs {
-          display: flex;
-          gap: 4px;
-        }
-        .nav-tab {
-          background: none;
-          border: none;
-          color: rgba(255, 255, 255, 0.55);
-          font-family: "DM Sans", sans-serif;
-          font-size: 0.8rem;
-          font-weight: 500;
-          padding: 6px 12px;
-          border-radius: 6px;
-          cursor: pointer;
-          transition: all 0.2s;
-        }
-        .nav-tab.active,
-        .nav-tab:hover {
-          background: rgba(255, 255, 255, 0.1);
-          color: #fff;
-        }
-        .nav-tab.active {
-          color: var(--amber);
-        }
-        .nav-right {
-          display: flex;
-          gap: 8px;
-          align-items: center;
-        }
-        .btn-sm {
-          padding: 6px 14px;
-          border-radius: 6px;
-          font-family: "DM Sans", sans-serif;
-          font-size: 0.8rem;
-          font-weight: 500;
-          cursor: pointer;
-          border: none;
-          transition: all 0.2s;
-        }
-        .btn-outline {
-          background: transparent;
-          border: 1px solid rgba(255, 255, 255, 0.3);
-          color: #fff;
-        }
-        .btn-outline:hover {
-          background: rgba(255, 255, 255, 0.1);
-        }
-        .btn-amber {
-          background: var(--amber);
-          color: #fff;
-        }
-        .btn-amber:hover {
-          background: var(--amber-dark);
-        }
-
-        /* MOBILE NAV */
-        .mobile-nav-toggle {
-          display: none;
-          background: none;
-          border: none;
-          color: #fff;
-          font-size: 1.3rem;
-          cursor: pointer;
-        }
-        @media (max-width: 640px) {
-          .mobile-nav-toggle {
-            display: block;
-          }
-          .nav-tabs {
-            display: none;
-            position: absolute;
-            top: 60px;
-            left: 0;
-            right: 0;
-            background: var(--slate-mid);
-            flex-direction: column;
-            padding: 0.5rem;
-            z-index: 200;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-          }
-          .nav-tabs.open {
-            display: flex;
-          }
-          .nav-tab {
-            width: 100%;
-            text-align: left;
-            padding: 10px 14px;
-          }
-          .nav-right .btn-outline {
-            display: none;
-          }
-        }
-      `}</style>
+      {navOpen && (
+        <div className="absolute left-0 right-0 top-[60px] z-[200] flex flex-col border-b border-white/10 bg-[#2e3340] p-2 sm:hidden">
+          {tabs.map(({ label, href }) => (
+            <button
+              key={label}
+              onClick={() => { router.push(href); setNavOpen(false); }}
+              className={`w-full rounded-md px-3.5 py-2.5 text-left text-[0.8rem] font-medium transition-all
+                ${activeTab === label
+                  ? "bg-white/10 text-[#e8820c]"
+                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
