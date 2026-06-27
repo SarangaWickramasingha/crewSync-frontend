@@ -3,27 +3,10 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
-/**
- * CrewSync — Navbar (Tailwind CSS)
- *
- * Props:
- *   variant   "default" | "auth" | "register"
- *             "default"  → logo · Home tab · Log In · Get Started       (home page)
- *             "auth"     → logo · "New to CrewSync? Get Started"         (login page)
- *             "register" → logo · "Already have an account?" · Sign In   (register page)
- *
- *   activeTab  Highlights the matching tab. Defaults to "Home". (default variant only)
- *
- * Usage:
- *   <Navbar />                    ← home / main pages
- *   <Navbar variant="auth" />     ← login page
- *   <Navbar variant="register" /> ← register page
- */
 export default function Navbar({ variant = "default", activeTab = "Home" }) {
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
 
-  /* ── Shared: Logo ── */
   const Logo = () => (
     <div
       onClick={() => router.push("/")}
@@ -33,7 +16,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     </div>
   );
 
-  /* ── AUTH variant (login page) ── */
+  /* ── AUTH variant ── */
   if (variant === "auth") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
@@ -51,7 +34,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     );
   }
 
-  /* ── REGISTER variant (register page) ── */
+  /* ── REGISTER variant ── */
   if (variant === "register") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
@@ -69,10 +52,44 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     );
   }
 
-  /* ── DEFAULT variant (home + other main pages) ── */
-  const tabs = [
-    { label: "Home", href: "/" },
-  ];
+  /* ── PROPERTY OWNER DASHBOARD variant ── */
+  if (variant === "propertyOwnerDashboard") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="hidden items-center gap-1 sm:flex">
+          <button
+            onClick={() => router.push("/")}
+            className="rounded-md px-3 py-1.5 text-[0.8rem] font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white"
+          >
+            Home
+          </button>
+          <button
+            className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
+          >
+            🏠 Property Owner
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => router.push("/login")}
+            className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
+          >
+            Log In
+          </button>
+          <button
+            onClick={() => router.push("/get-started")}
+            className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+          >
+            Get Started
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
+  /* ── DEFAULT variant ── */
+  const tabs = [{ label: "Home", href: "/" }];
 
   return (
     <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
