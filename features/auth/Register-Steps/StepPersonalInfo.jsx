@@ -73,18 +73,8 @@ export default function StepPersonalInfo({ data, onChange }) {
                 </div>
 
                 <div className="flex flex-col gap-1">
-                    <FormLabel required>NIC / Passport No.</FormLabel>
-                    <FormInput placeholder="200012345678" value={data.nic} onChange={set('nic')} />
-                </div>
-
-                <div className="flex flex-col gap-1">
                     <FormLabel required>District</FormLabel>
                     <DistrictSelect value={data.district} onChange={set('district')} />
-                </div>
-
-                <div className="flex flex-col gap-1">
-                    <FormLabel required>City / Town</FormLabel>
-                    <FormInput placeholder="e.g. Nugegoda" value={data.city} onChange={set('city')} />
                 </div>
 
             </div>

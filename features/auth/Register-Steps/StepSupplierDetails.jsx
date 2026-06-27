@@ -1,6 +1,10 @@
 'use client';
-import { SectionHeading, FormLabel, FormInput, FormSelect } from './StepPersonalInfo';
-import DistrictSelect from '@/components/ui/DistrictSelect';
+import StepPersonalInfo, {
+    SectionHeading,
+    FormLabel,
+    FormInput,
+    FormSelect,
+} from './StepPersonalInfo';
 
 const MATERIALS = [
     { value: 'Sand', emoji: '🪣' },
@@ -28,6 +32,10 @@ export default function StepSupplierDetails({ data, onChange }) {
 
     return (
         <>
+            <StepPersonalInfo
+                data={data}
+                onChange={onChange}
+            />
             {/* Business Details */}
             <div className="mb-5">
                 <SectionHeading icon="🏢">Business Details</SectionHeading>
@@ -44,10 +52,6 @@ export default function StepSupplierDetails({ data, onChange }) {
                         <p className="text-[11px] text-muted">Optional — helps build buyer trust.</p>
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                        <FormLabel required>District</FormLabel>
-                        <DistrictSelect value={data.district} onChange={set('district')} />
-                    </div>
 
                     <div className="flex flex-col gap-1">
                         <FormLabel required>City / Town</FormLabel>

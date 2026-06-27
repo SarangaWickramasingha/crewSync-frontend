@@ -9,6 +9,7 @@ module.exports = {
             fontFamily: {
                 syne: ['Syne', 'sans-serif'],
                 dmsans: ['DM Sans', 'sans-serif'],
+                climate: ['"Climate Crisis"', 'sans-serif'],
             },
             colors: {
                 amber: '#E8820C',
