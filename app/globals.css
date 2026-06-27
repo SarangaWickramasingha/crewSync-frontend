@@ -25,9 +25,22 @@
     --color-danger: #dc2626;
     --color-warning: #f59e0b;
 
+    /* Role — Owner (green) */
+    --color-owner: #16a34a;
+    --color-owner-light: #dcfce7;
+    --color-owner-dark: #15803d;
+
+    /* Role — Provider (blue) */
+    --color-provider: #2563eb;
+    --color-provider-light: #dbeafe;
+    --color-provider-dark: #1d4ed8;
+
+    /* Role — Supplier (orange) */
+    --color-supplier: #f97316;
+    --color-supplier-light: #ffedd5;
+    --color-supplier-dark: #ea580c;
+
     /* Fonts */
     --font-syne: "Syne", sans-serif;
-    --font-syne: "Syne", sans-serif;
     --font-climate: "Climate Crisis", sans-serif;
-    /* ← add this */
 }

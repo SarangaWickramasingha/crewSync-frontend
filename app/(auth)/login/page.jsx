@@ -3,6 +3,8 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+import { useAuth } from '@/context/AuthContext';
+
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);
@@ -17,16 +19,38 @@ export default function LoginPage() {
         return () => clearTimeout(t);
     }, []);
 
-    function handleSignIn(e) {
+    const handleSignIn = async (e) => {
         e.preventDefault();
         setError('');
         if (!email || !password) { setError('Please fill in all fields.'); return; }
         if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
-        window.location.href = '/dashboard';
-    }
-
+        try {
+            const res = await fetch(
+                'http://localhost/CrewSync-backend/backend/index.php/api/auth/login',
+                {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email, password })
+                }
+            );
+            const data = await res.json();
+            if (data.success) {
+                login({
+                    user_id: data.user.user_id,
+                    fname: data.user.fname,
+                    role: data.user.role
+                });
+                window.location.href = '/dashboard';
+            } else {
+                setError(data.message || 'Login failed');
+            }
+        } catch (err) {
+            console.error('Error:', err);
+            setError('Cannot connect to server. Please try again.');
+        }
+    };
     return (
-        <div className="min-h-screen flex">
+        <div className="flex h-full">
 
             {/* ── Left: Image Panel ── */}
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
@@ -52,10 +76,10 @@ export default function LoginPage() {
                     {/* Bottom tagline */}
                     <div>
                         <p className="text-white text-2xl font-bold leading-snug mb-3">
-                            Build smarter.<br />Connect faster.
+                            Build smarter<br />Connect faster
                         </p>
                         <p className="text-white/60 text-sm leading-relaxed max-w-xs">
-                            Sri Lanka's construction coordination platform-connecting property owners,
+                            Sri Lanka's construction coordination platform - connecting property owners,
                             service providers, and suppliers in one place.
                         </p>
 
@@ -77,7 +101,7 @@ export default function LoginPage() {
             </div>
 
             {/* ── Right: Form Panel ── */}
-            <div className="flex-1 flex items-center justify-center bg-[#F7F6F2] px-6 py-10">
+            <div className="flex-1 flex items-center justify-center bg-[#F7F6F2] px-6 py-4">
                 <div
                     className="w-full max-w-[420px]"
                     style={{
@@ -87,25 +111,19 @@ export default function LoginPage() {
                     }}
                 >
                     {/* Mobile-only logo */}
-                    <p className="lg:hidden font-climate text-[1.6rem] tracking-tight text-[#E8820C] mb-6 text-center">
+                    <p className="lg:hidden font-climate text-[1.6rem] tracking-tight text-[#E8820C] mb-4 text-center">
                         Crew<span className="text-[#1A1D23]">Sync</span>
                     </p>
 
                     <div className="rounded-2xl overflow-hidden bg-white border border-[rgba(26,29,35,0.1)] shadow-[0_4px_24px_rgba(26,29,35,0.10)]">
 
-                        {/* Card header */}
-                        <div className="text-center px-8 py-7 relative overflow-hidden bg-[#1A1D23]">
-                            <div className="pointer-events-none absolute -top-10 left-1/2 -translate-x-1/2 w-[300px] h-[300px] rounded-full bg-[radial-gradient(circle,rgba(232,130,12,0.15)_0%,transparent_65%)]" />
-                            <p className="font-climate text-[1.6rem] tracking-tight relative text-[#E8820C]">
-                                Crew<span className="text-white">Sync</span>
-                            </p>
-                            <p className="text-[0.85rem] relative text-white/55 mt-0.5">
-                                Sign in to your account
-                            </p>
-                        </div>
-
                         {/* Card body */}
-                        <div className="px-8 py-7">
+                        <div className="px-8 py-6">
+
+                            {/* Title */}
+                            <h2 className="font-syne text-lg font-bold text-[#1A1D23] mb-1">Sign in</h2>
+                            <p className="text-xs text-[#64748b] mb-5">Enter your credentials to continue.</p>
+
                             {error && (
                                 <div className="mb-4 px-3 py-2 rounded-lg text-[0.82rem] bg-[#FDECEA] text-[#C0392B] border border-[#C0392B]">
                                     {error}
