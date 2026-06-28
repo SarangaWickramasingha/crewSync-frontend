@@ -66,9 +66,9 @@ export default function AdminUsersPage() {
             <div className="bg-white border border-border rounded-xl overflow-x-auto">
                 <table className="w-full text-xs">
                     <thead>
-                        <tr className="border-b border-border bg-surface text-left">
+                        <tr className="border-b border-border bg-[#1A1D23] text-left">
                             {['Name', 'Role', 'District', 'Joined', 'Status', 'Actions'].map(h => (
-                                <th key={h} className="px-4 py-3 font-semibold text-slate-light uppercase tracking-wide text-[11px]">{h}</th>
+                                <th key={h} className="px-4 py-3 font-semibold text-white/70 uppercase tracking-wide text-[11px]">{h}</th>
                             ))}
                         </tr>
                     </thead>

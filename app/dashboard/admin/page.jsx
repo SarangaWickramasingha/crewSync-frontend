@@ -35,22 +35,41 @@ export default function AdminOverviewPage() {
             </div>
 
             {/* Metric cards */}
+
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-6">
                 {STATS.map((s, i) => (
-                    <div key={i} className="bg-white border border-border rounded-lg p-4">
-                        <div className="text-muted mb-2">{s.icon}</div>
-                        <div className="font-syne text-2xl font-bold text-slate">{s.val}</div>
-                        <div className="text-[11px] text-muted mt-1">{s.lbl}</div>
-                        {s.change && (
-                            <div className={`text-[11px] mt-1 ${s.up ? 'text-green-600' : 'text-red-500'}`}>
-                                {s.change}
-                            </div>
-                        )}
+                    <div key={i} className="relative flex items-center gap-4 p-4 rounded-xl overflow-hidden
+            border border-white/10 backdrop-blur-md"
+                        style={{
+                            background: 'linear-gradient(135deg, rgba(26,29,35,0.95) 0%, rgba(15,17,20,0.98) 100%)',
+                            boxShadow: '0 4px 24px rgba(0,0,0,0.3), inset 0 1px 0 rgba(255,255,255,0.06)',
+
+                        }}
+                    >
+
+
+                        {/* Large icon on left */}
+                        <div className="relative z-10 w-14 h-14 rounded-xl flex items-center justify-center flex-shrink-0"
+                            style={{ background: 'rgba(232,130,12,0.15)', border: '1px solid rgba(232,130,12,0.25)' }}
+                        >
+                            <span className="[&>svg]:w-7 [&>svg]:h-7 text-[#E8820C]">{s.icon}</span>
+                        </div>
+
+                        {/* Text on right */}
+                        <div className="relative z-10">
+                            <div className="font-syne text-2xl font-bold text-white">{s.val}</div>
+                            <div className="text-[11px] text-white/50 mt-0.5">{s.lbl}</div>
+                            {s.change && (
+                                <div className={`text-[11px] mt-1 ${s.up ? 'text-green-400' : 'text-red-400'}`}>
+                                    {s.up ? '↑' : '↓'} {s.change.replace('↑ ', '').replace('↓ ', '')}
+                                </div>
+                            )}
+                        </div>
                     </div>
                 ))}
             </div>
-
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
                 {/* User Distribution */}
                 <div className="bg-white border border-border rounded-xl p-5">
                     <h3 className="font-syne text-sm font-bold text-slate mb-4">User Distribution</h3>
