@@ -8,7 +8,7 @@ const MOCK_USER = {
     id: 1,
     name: 'Nimal Kumarasinghe',
     email: 'nimal@example.com',
-    role: 'PROPERTY_OWNER',  // change to 'SERVICE_PROVIDER' or 'MATERIAL_SUPPLIER' to test
+    role: 'ADMIN',  // change to 'SERVICE_PROVIDER' or 'MATERIAL_SUPPLIER' to test
     avatar: 'NK',
 };
 

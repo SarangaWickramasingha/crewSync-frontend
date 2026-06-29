@@ -8,6 +8,7 @@ import StepOwnerDetails from './register-steps/StepOwnerDetails';
 import StepProviderDetails from './register-steps/StepProviderDetails';
 import StepSupplierDetails from './register-steps/StepSupplierDetails';
 
+import { SKILL_NAME_TO_ID, MATERIAL_NAME_TO_ID, ROLE_MAP } from '@/constants/registerMaps';
 const ROLE_THEME = {
     owner: { bg: 'bg-green-700', border: 'border-green-700', text: 'text-green-700', badgeBg: 'bg-green-50', badgeText: 'text-green-700' },
     provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700' },
@@ -29,9 +30,9 @@ function validate(step, role, creds, info, details) {
         if (creds.password !== creds.confirmPassword) return 'Passwords do not match.';
     }
     if (step === 1) {
-        const baseRequired = ['firstName', 'lastName', 'mobile', 'nic'];
+        const baseRequired = ['firstName', 'lastName', 'mobile'];
         if (role !== 'supplier') {
-            for (const f of [...baseRequired, 'district', 'city']) {
+            for (const f of [...baseRequired, 'district']) {
                 if (!info[f]?.trim()) return 'Please fill in all required fields.';
             }
         } else {
@@ -41,14 +42,12 @@ function validate(step, role, creds, info, details) {
         }
         if (role === 'owner' && !details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
         if (role === 'provider') {
-            if (!details.primaryTrade) return 'Please select your primary trade.';
-            if (!details.workRegion) return 'Please select where you can work.';
             if (!details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
         }
         if (role === 'supplier') {
             if (!details.businessName?.trim()) return 'Please enter your business name.';
             if (!details.district) return 'Please select your district.';
-            if (!details.city?.trim()) return 'Please enter your city.';
+            /*reomve city too ashaaaaa */
             if (!details.address?.trim()) return 'Please enter your business address.';
             if (!details.materials?.length) return 'Please select at least one material you supply.';
             if (!details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
@@ -61,14 +60,16 @@ export default function RegisterForm() {
     const router = useRouter();
     const [role, setRole] = useState('owner');
     const [step, setStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+
 
     const [creds, setCreds] = useState({ email: '', password: '', confirmPassword: '' });
     const [info, setInfo] = useState({
-        firstName: '', lastName: '', mobile: '', nic: '', district: '', city: '',
+        firstName: '', lastName: '', mobile: '', district: '',
     });
     const [details, setDetails] = useState({
         address: '', agreeTerms: false,
-        primaryTrade: '', experience: '', workRegion: '', skills: [], bio: '', dailyRate: '', rateType: '',
+        /* primaryTrade: ''*/ experience: '', /*workRegion: ''*/ skills: [], bio: '', dailyRate: '', rateType: '',
         businessName: '', brn: '', delivery: '', deliveryCoverage: '',
         materials: [], hasHardwareStore: false, hwStoreName: '', hwBRN: '', hwAddress: '',
         agreeVerification: false,
@@ -84,20 +85,41 @@ export default function RegisterForm() {
     const theme = ROLE_THEME[role];
     const tagline = ROLE_TAGLINE[role];
 
-    const handleNext = () => {
+    const handleNext = async () => {
         const err = validate(step, role, creds, info, details);
         if (err) { setError(err); return; }
         setError('');
+
         if (step === 0) {
-            setMounted(false); // fade out
+            setLoading(true);
+            try {
+                const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: creds.email.trim().toLowerCase() }),
+                });
+                const data = await res.json();
+                if (data.exists) {
+                    setError('This email is already registered. Please login instead.');
+                    setLoading(false);
+                    return;
+                }
+            } catch (err) {
+                setError('Could not connect to the server. Make sure the backend is running.');
+                setLoading(false);
+                return;
+            }
+            setLoading(false);
+            setMounted(false);
             setTimeout(() => {
                 setStep(1);
                 window.scrollTo(0, 0);
-                setMounted(true); // fade in
+                setMounted(true);
             }, 300);
             return;
         }
-        router.push('/dashboard');
+        // router.push('/dashboard');
+        handleSubmit()
     };
 
     const handleBack = () => {
@@ -110,6 +132,70 @@ export default function RegisterForm() {
         }, 300);
     };
 
+    const handleSubmit = async () => {
+        setLoading(true);
+        setError('');
+
+        const payload = {
+            email: creds.email.trim().toLowerCase(),
+            password: creds.password,
+            role: ROLE_MAP[role],
+            fname: info.firstName.trim(),
+            lname: info.lastName.trim(),
+            contact_no: info.mobile.trim(),
+            // nic:        info.nic?.trim() ?? '', 
+            district: role === 'supplier' ? details.district : info.district,
+        };
+
+        if (role === 'owner') {
+            payload.address = details.address?.trim() ?? '';
+        }
+
+        if (role === 'provider') {
+            payload.bio = details.bio?.trim() ?? '';
+            payload.charge_per_day = details.dailyRate ?? null;
+            payload.willing_outside_region = details.workOutsideRegion ? 1 : 0;
+            payload.skill_ids = (details.skills || [])
+                .map(name => SKILL_NAME_TO_ID[name])
+                .filter(Boolean);
+        }
+
+        if (role === 'supplier') {
+            payload.business_name = details.businessName?.trim() ?? '';
+            payload.business_address = details.address?.trim() ?? '';
+            payload.brn = details.brn?.trim() ?? '';
+            payload.delivery = details.delivery ? 1 : 0;
+            payload.is_hardware_shop = details.hasHardwareStore ? 1 : 0;
+            payload.material_ids = (details.materials || [])
+                .map(name => MATERIAL_NAME_TO_ID[name])
+                .filter(Boolean);
+            if (details.hasHardwareStore) {
+                payload.hw_store_name = details.hwStoreName?.trim() ?? '';
+                payload.hw_br_number = details.hwBRN?.trim() ?? '';
+                payload.hw_address = details.hwAddress?.trim() ?? '';
+            }
+        }
+
+        try {
+            const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                router.push('/login?registered=1');
+            } else {
+                setError(data.message || 'Registration failed. Please try again.');
+            }
+        } catch (err) {
+            setError('Could not connect to the server. Make sure the backend is running.');
+        } finally {
+            setLoading(false);
+        }
+    };
     return (
         <div
             className="flex w-full max-w-[1100px] items-stretch"
@@ -217,8 +303,8 @@ export default function RegisterForm() {
                             {role === 'owner' && <StepOwnerDetails data={details} onChange={setDetails} />}
                             {role === 'provider' && <StepProviderDetails data={details} onChange={setDetails} />}
                             {role === 'supplier' && <StepSupplierDetails data={{ ...info, ...details }} onChange={(merged) => {
-                                const { firstName, lastName, mobile, nic, ...rest } = merged;
-                                setInfo(prev => ({ ...prev, firstName, lastName, mobile, nic }));
+                                const { firstName, lastName, mobile, ...rest } = merged;
+                                setInfo(prev => ({ ...prev, firstName, lastName, mobile }));
                                 setDetails(prev => ({ ...prev, ...rest }));
                             }} />}
                         </>
@@ -240,12 +326,13 @@ export default function RegisterForm() {
                             <p className="text-xs text-muted max-w-xs">Your data is protected and never sold.</p>
                         )}
                     </div>
+
                     <button
                         type="button"
                         onClick={handleNext}
                         className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold hover:-translate-y-px transition-all shadow-sm ${theme.bg}`}
-                    >
-                        {step === 0 ? 'Continue →' : 'Create Account →'}
+                    >{ }
+                        {loading ? 'Checking…' : step === 0 ? 'Continue →' : 'Create Account →'}
                     </button>
                 </div>
             </div>

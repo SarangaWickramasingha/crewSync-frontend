@@ -7,15 +7,15 @@ import StepPersonalInfo, {
 } from './StepPersonalInfo';
 
 const MATERIALS = [
-    { value: 'Sand', emoji: '🪣' },
-    { value: 'Cement', emoji: '🏗️' },
-    { value: 'Gravel / Metal', emoji: '⛰️' },
-    { value: 'Stone / Rubble', emoji: '🪨' },
-    { value: 'Cement Blocks', emoji: '🧱' },
-    { value: 'Timber', emoji: '🪵' },
-    { value: 'Bricks', emoji: '🧱' },
-    { value: 'Glass', emoji: '🪞' },
-    { value: 'Other', emoji: '➕' },
+    { value: 'Sand' },
+    { value: 'Cement' },
+    { value: 'Gravel / Metal' },
+    { value: 'Stone / Rubble' },
+    { value: 'Cement Blocks' },
+    { value: 'Timber' },
+    { value: 'Bricks' },
+    { value: 'Glass' },
+    { value: 'Other' },
 ];
 
 export default function StepSupplierDetails({ data, onChange }) {
@@ -63,25 +63,21 @@ export default function StepSupplierDetails({ data, onChange }) {
                         <FormInput placeholder="e.g. No. 45, Peradeniya Road, Kandy" value={data.address} onChange={set('address')} />
                     </div>
 
-                    <div className="flex flex-col gap-1">
-                        <FormLabel>Delivery Available?</FormLabel>
-                        <FormSelect value={data.delivery} onChange={set('delivery')}>
-                            <option value="">Select option</option>
-                            <option>Yes – we deliver</option>
-                            <option>No – pickup only</option>
-                            <option>Yes – bulk orders only</option>
-                        </FormSelect>
-                    </div>
 
-                    <div className="flex flex-col gap-1">
-                        <FormLabel>Delivery Coverage</FormLabel>
-                        <FormSelect value={data.deliveryCoverage} onChange={set('deliveryCoverage')}>
-                            <option value="">Select coverage area</option>
-                            <option value="within">Within my region only</option>
-                            <option value="outside">Outside my region (island-wide)</option>
-                            <option value="both">Both within and outside my region</option>
-                        </FormSelect>
-                        <p className="text-[11px] text-muted">Leave blank if pickup only.</p>
+                    <div className="flex flex-col gap-1 sm:col-span-2">
+                        <label className={`flex items-start gap-3 p-3 rounded-xl border-2 cursor-pointer transition-all
+                            ${data.delivery ? 'border-primary bg-primary-light' : 'border-border bg-white hover:border-primary/40'}`}>
+                            <input
+                                type="checkbox"
+                                checked={data.delivery || false}
+                                onChange={set('delivery')}
+                                className="mt-0.5 w-4 h-4 accent-primary flex-shrink-0"
+                            />
+                            <div>
+                                <p className="text-sm font-semibold text-slate">We offer delivery</p>
+                                <p className="text-xs text-muted mt-0.5">Enable this if you deliver materials to project sites.</p>
+                            </div>
+                        </label>
                     </div>
 
                 </div>
