@@ -5,23 +5,21 @@ import StatusPill from '@/Components/ui/StatusPill';
 import { useRouter } from 'next/navigation';
 
 
-// ── Sample data (replace with API calls when backend is ready) ──
-// TODO: fetch from GET /api/admin/providers
-const SAMPLE_PROVIDERS = [
-    { provider_id: 1, user_id: 2, bio: 'Experienced mason', experience_yr: 10, charge_per_day: 3500, avg_rating: 4.9, is_available: true, willing_outside_region: false, status: 'Verified' },
-    { provider_id: 2, user_id: 5, bio: 'Certified electrician', experience_yr: 7, charge_per_day: 4000, avg_rating: 4.7, is_available: true, willing_outside_region: true, status: 'Verified' },
-    { provider_id: 3, user_id: 6, bio: 'Skilled plumber', experience_yr: 3, charge_per_day: 2800, avg_rating: 3.9, is_available: false, willing_outside_region: false, status: 'Under Review' },
+// TODO: fetch from GET /api/admin/material-suppliers
+const SAMPLE_SUPPLIERS = [
+    { supplier_id: 1, user_id: 3, business_name: 'Malshan Hardware Pvt Ltd', business_address: 'No. 45, Peradeniya Road, Kandy', is_hardware_shop: true, avg_rating: 4.5, status: 'Active' },
+    { supplier_id: 2, user_id: 7, business_name: 'Perera Timber', business_address: 'No. 12, Colombo 10', is_hardware_shop: false, avg_rating: 4.2, status: 'Active' },
 ];
 
-export default function AdminProvidersPage() {
+export default function AdminMaterialSuppliersPage() {
     const router = useRouter();
     const [search, setSearch] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
 
-    const filtered = SAMPLE_PROVIDERS.filter(o => {
+    const filtered = SAMPLE_SUPPLIERS.filter(s => {
         const q = search.toLowerCase();
-        const matchSearch = !q || o.name.toLowerCase().includes(q) || o.skill.toLowerCase().includes(q);
-        const matchDistrict = !districtFilter || o.district === districtFilter;
+        const matchSearch = !q || s.name.toLowerCase().includes(q) || s.district.toLowerCase().includes(q) || s.materials.toLowerCase().includes(q);
+        const matchDistrict = !districtFilter || s.district === districtFilter;
         return matchSearch && matchDistrict;
     });
 
@@ -29,8 +27,8 @@ export default function AdminProvidersPage() {
         <div>
             <div className="flex items-center justify-between mb-5 flex-wrap gap-3">
                 <div>
-                    <h2 className="font-syne text-xl font-bold text-slate">Service Providers</h2>
-                    <p className="text-xs text-muted mt-0.5">Monitor and verify professionals</p>
+                    <h2 className="font-syne text-xl font-bold text-slate">Material Suppliers</h2>
+                    <p className="text-xs text-muted mt-0.5">All registered material suppliers</p>
                 </div>
             </div>
 
@@ -75,42 +73,39 @@ export default function AdminProvidersPage() {
                 </select>
             </div>
 
-
+            {/* Table */}
             <div className="bg-white border border-border rounded-xl overflow-x-auto">
                 <table className="w-full text-xs">
                     <thead>
                         <tr className="border-b border-border bg-[#1A1D23] text-left">
-                            {['Provider ID', 'User ID', 'Bio', 'Experience', 'Charge/Day', 'Avg Rating', 'Available', 'Outside Region', 'Actions'].map(h => (
+                            {['Supplier ID', 'User ID', 'Business Name', 'Address', 'Hardware Shop', 'Avg Rating', 'Actions'].map(h => (
                                 <th key={h} className="px-4 py-3 font-semibold text-white/70 uppercase tracking-wide text-[11px]">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {SAMPLE_PROVIDERS.map((p, i) => (
+                        {filtered.length === 0 ? (
+                            <tr><td colSpan={7} className="px-4 py-5 text-muted">No suppliers found.</td></tr>
+                        ) : filtered.map((s, i) => (
                             <tr key={i} className="hover:bg-surface transition-all">
-                                <td className="px-4 py-3 text-muted">{p.provider_id}</td>
-                                <td className="px-4 py-3 text-muted">{p.user_id}</td>
-                                <td className="px-4 py-3 text-muted max-w-[120px] truncate">{p.bio}</td>
-                                <td className="px-4 py-3 text-muted">{p.experience_yr} yrs</td>
-                                <td className="px-4 py-3 text-muted">LKR {p.charge_per_day}</td>
-                                <td className="px-4 py-3 text-amber-500 font-semibold">⭐ {p.avg_rating}</td>
-                                <td className="px-4 py-3 text-muted">{p.is_available ? 'Yes' : 'No'}</td>
-                                <td className="px-4 py-3 text-muted">{p.willing_outside_region ? 'Yes' : 'No'}</td>
+                                <td className="px-4 py-3 text-muted">{s.supplier_id}</td>
+                                <td className="px-4 py-3 text-muted">{s.user_id}</td>
+                                <td className="px-4 py-3 font-medium text-slate">{s.business_name}</td>
+                                <td className="px-4 py-3 text-muted max-w-[150px] truncate">{s.business_address}</td>
+                                <td className="px-4 py-3 text-muted">{s.is_hardware_shop ? 'Yes' : 'No'}</td>
+                                <td className="px-4 py-3 text-amber-500 font-semibold">⭐ {s.avg_rating}</td>
                                 <td className="px-4 py-3 flex gap-1.5">
-                                    {/* TODO: wire to API */}
                                     <button
                                         onClick={() => router.push(`/dashboard/admin/users/${i + 1}`)}
                                         className="px-2.5 py-1 border border-border rounded text-[11px] text-slate hover:bg-surface transition-all">
                                         View
-                                    </button>                                    {p.status !== 'Suspended' && (
-                                        <button className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all">Suspend</button>
-                                    )}
+                                    </button>                                    <button className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all">Suspend</button>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-        </div >
+        </div>
     );
 }

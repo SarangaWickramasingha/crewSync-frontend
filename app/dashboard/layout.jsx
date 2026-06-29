@@ -5,9 +5,11 @@ import Link from 'next/link';
 import {
     LayoutDashboard, Users, Wrench, Star, MessageSquare,
     CalendarDays, MessageCircle, FileText, Search, Package,
-    ShoppingCart, UserCircle, Bell, Briefcase, Menu, X,
+    ShoppingCart, UserCircle, Bell, Briefcase, Menu, X, Home
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+
+
 
 // ── Sidebar nav per role ──────────────────────────────────────────
 const NAV = {
@@ -34,11 +36,13 @@ const NAV = {
         { href: '/dashboard/profile', icon: <UserCircle className="w-4 h-4" />, label: 'Profile' },
     ],
     ADMIN: [
-        { href: '/dashboard/admin', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
-        { href: '/dashboard/admin/users', icon: <Users className="w-4 h-4" />, label: 'Users' },
-        { href: '/dashboard/admin/providers', icon: <Wrench className="w-4 h-4" />, label: 'Providers' },
-        { href: '/dashboard/admin/reviews', icon: <Star className="w-4 h-4" />, label: 'Reviews' },
-        { href: '/dashboard/admin/feedback', icon: <MessageSquare className="w-4 h-4" />, label: 'Feedback' },
+        { href: '/dashboard/admin', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4 text-orange-500" /> },
+        { href: '/dashboard/admin/users', label: 'Users', icon: <Users className="w-4 h-4 text-blue-500" /> },
+        { href: '/dashboard/admin/propertyOwner', label: 'Property Owners', icon: <Home className="w-4 h-4 text-indigo-500" /> },
+        { href: '/dashboard/admin/materialSupplier', label: 'Material Suppliers', icon: <Package className="w-4 h-4 text-emerald-500" /> },
+        { href: '/dashboard/admin/providers', label: 'Providers', icon: <Wrench className="w-4 h-4 text-green-500" /> },
+        { href: '/dashboard/admin/reviews', label: 'Reviews', icon: <Star className="w-4 h-4 text-yellow-500" /> },
+        { href: '/dashboard/admin/feedback', label: 'Feedback', icon: <MessageSquare className="w-4 h-4 text-purple-500" /> },
     ],
 };
 
@@ -95,8 +99,8 @@ export default function DashboardLayout({ children }) {
                             href={item.href}
                             onClick={() => setSidebarOpen(false)}
                             className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-                                ${pathname === item.href
-                                    ? 'bg-amber/10 text-amber font-semibold'
+    ${pathname === item.href
+                                    ? 'bg-surface font-semibold text-slate shadow-sm border border-border'
                                     : 'text-slate-light hover:bg-surface hover:text-slate'
                                 }`}
                         >
