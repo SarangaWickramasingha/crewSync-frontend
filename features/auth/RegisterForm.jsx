@@ -2,42 +2,42 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import RolePicker from './RolePicker';
-import StepCredentials from './register-steps/StepCredentials';
-import StepPersonalInfo from './register-steps/StepPersonalInfo';
-import StepOwnerDetails from './register-steps/StepOwnerDetails';
-import StepProviderDetails from './register-steps/StepProviderDetails';
-import StepSupplierDetails from './register-steps/StepSupplierDetails';
+import StepCredentials from './Register-Steps/StepCredentials';
+import StepPersonalInfo from './Register-Steps/StepPersonalInfo';
+import StepOwnerDetails from './Register-Steps/StepOwnerDetails';
+import StepProviderDetails from './Register-Steps/StepProviderDetails';
+import StepSupplierDetails from './Register-Steps/StepSupplierDetails';
 
 // ── Info panel content per role ──────────────────────────────────────────────
 const ROLE_INFO = {
     owner: {
-        badge: '🏠 Property Owner',
+        badge: 'Property Owner',
         tagline: 'Post projects and manage your construction from start to finish.',
         features: [
-            { icon: '📋', title: 'Post Projects', desc: 'Describe your job and get matched with skilled providers.' },
-            { icon: '⭐', title: 'Verified Providers', desc: 'Hire only rated, background-checked professionals.' },
-            { icon: '💬', title: 'Direct Chat', desc: 'Communicate with contractors and suppliers in one place.' },
-            { icon: '📊', title: 'Track Progress', desc: 'Monitor timelines, payments, and milestones easily.' },
+            { title: 'Post Projects', desc: 'Describe your job and get matched with skilled providers.' },
+            { title: 'Verified Providers', desc: 'Hire only rated, background-checked professionals.' },
+            { title: 'Direct Chat', desc: 'Communicate with contractors and suppliers in one place.' },
+            { title: 'Track Progress', desc: 'Monitor timelines, payments, and milestones easily.' },
         ],
     },
     provider: {
-        badge: '🔧 Service Provider',
+        badge: 'Service Provider',
         tagline: 'Connect with property owners across Sri Lanka and grow your service business.',
         features: [
-            { icon: '📥', title: 'Receive Job Requests', desc: 'Get matched with property owners who need your skills.' },
-            { icon: '⭐', title: 'Build Your Reputation', desc: 'Collect reviews and showcase your portfolio.' },
-            { icon: '💬', title: 'Chat Directly', desc: 'Communicate and close deals without middlemen.' },
-            { icon: '📊', title: 'Track Your Jobs', desc: 'Manage ongoing work and earnings in one dashboard.' },
+            { title: 'Receive Job Requests', desc: 'Get matched with property owners who need your skills.' },
+            { title: 'Build Your Reputation', desc: 'Collect reviews and showcase your portfolio.' },
+            { title: 'Chat Directly', desc: 'Communicate and close deals without middlemen.' },
+            { title: 'Track Your Jobs', desc: 'Manage ongoing work and earnings in one dashboard.' },
         ],
     },
     supplier: {
-        badge: '🧱 Supplier',
+        badge: 'Supplier',
         tagline: 'Reach thousands of active construction projects across Sri Lanka.',
         features: [
-            { icon: '📦', title: 'List Your Materials', desc: 'Showcase sand, cement, timber, and more to buyers.' },
-            { icon: '📍', title: 'Local Discovery', desc: 'Property owners nearby will find you first.' },
-            { icon: '💬', title: 'Direct Inquiries', desc: 'Buyers contact you directly — no commission fees.' },
-            { icon: '📊', title: 'Manage Orders', desc: 'Track inquiries and deliveries from one dashboard.' },
+            { title: 'List Your Materials', desc: 'Showcase sand, cement, timber, and more to buyers.' },
+            { title: 'Local Discovery', desc: 'Property owners nearby will find you first.' },
+            { title: 'Direct Inquiries', desc: 'Buyers contact you directly — no commission fees.' },
+            { title: 'Manage Orders', desc: 'Track inquiries and deliveries from one dashboard.' },
         ],
     },
 };
@@ -139,8 +139,10 @@ export default function RegisterForm() {
                         <div key={f.title} className="flex items-start gap-2.5 bg-white border border-border
               rounded-xl p-3">
                             <div className="w-8 h-8 rounded-lg bg-primary-light text-primary flex items-center
-                justify-center text-base flex-shrink-0 mt-0.5">
-                                {f.icon}
+                justify-center flex-shrink-0 mt-0.5">
+                                <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                                </svg>
                             </div>
                             <div>
                                 <p className="text-xs font-semibold text-slate">{f.title}</p>

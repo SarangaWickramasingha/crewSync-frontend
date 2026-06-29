@@ -24,7 +24,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
         <div className="flex items-center text-[0.85rem] text-white/60">
           New to CrewSync?&nbsp;
           <button
-            onClick={() => router.push("/get-started")}
+            onClick={() => router.push("/register")}
             className="cursor-pointer border-none bg-transparent p-0 text-[0.85rem] font-semibold text-[#e8820c] transition-opacity hover:opacity-80"
           >
             Get Started
@@ -67,7 +67,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
           <button
             className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
           >
-            🏠 Property Owner
+            Property Owner Dashboard
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -78,7 +78,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
             Log In
           </button>
           <button
-            onClick={() => router.push("/get-started")}
+            onClick={() => router.push("/register")}
             className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
           >
             Get Started
@@ -88,8 +88,23 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     );
   }
 
+  /* ── PROJECT FORM variant ── */
+  if (variant === "projectForm") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] border-b border-white/[0.06]">
+        <Logo />
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-[6px] text-white/50 text-[0.82rem] hover:text-white transition cursor-pointer bg-transparent border-none font-['DM_Sans']"
+        >
+          ← Back
+        </button>
+      </nav>
+    );
+  }
+
   /* ── DEFAULT variant ── */
-  const tabs = [{ label: "Home", href: "/" }];
+  const tabs = [{ label: "Home", href: "/home" }];
 
   return (
     <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
@@ -122,7 +137,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
           Log In
         </button>
         <button
-          onClick={() => router.push("/get-started")}
+          onClick={() => router.push("/register")}
           className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
         >
           Get Started

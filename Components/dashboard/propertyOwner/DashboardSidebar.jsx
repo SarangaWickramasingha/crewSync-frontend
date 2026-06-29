@@ -3,32 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-
-const NAV_SECTIONS = [
-  {
-    label: 'Project',
-    items: [
-      { icon: '📊', text: 'Overview', href: '/dashboard/propertyowner' },
-      { icon: '📅', text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: 5 },
-      { icon: '💬', text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
-      { icon: '📄', text: 'Reports', href: '/dashboard/propertyowner/reports' },
-    ],
-  },
-  {
-    label: 'Find & Hire',
-    items: [
-      { icon: '🔧', text: 'Find Services', href: '/dashboard/propertyowner/services' },
-      { icon: '📦', text: 'Materials', href: '/dashboard/propertyowner/materials' },
-    ],
-  },
-  {
-    label: 'Account',
-    items: [
-      { icon: '⭐', text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
-      { icon: '🔔', text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: 2 },
-    ],
-  },
-];
+import { useTasks } from '@/Components/dashboard/TasksContext';
 
 export default function DashboardSidebar({
   userName = 'Nimal Kumarasinghe',
@@ -37,6 +12,36 @@ export default function DashboardSidebar({
 }) {
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
+  const { tasks, notifications } = useTasks();
+
+  const pendingCount = tasks.filter((t) => !t.completed).length;
+  const unreadCount = notifications.filter((n) => !n.read).length;
+
+  const navSections = [
+    {
+      label: 'Project',
+      items: [
+        { icon: '/icons/propertyowner/overview.png', text: 'Overview', href: '/dashboard/propertyowner' },
+        { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: pendingCount > 0 ? pendingCount : null },
+        { icon: '/icons/propertyowner/forum.png', text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
+        { icon: '/icons/propertyowner/reports.png', text: 'Reports', href: '/dashboard/propertyowner/reports' },
+      ],
+    },
+    {
+      label: 'Find & Hire',
+      items: [
+        { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
+        { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
+      ],
+    },
+    {
+      label: 'Account',
+      items: [
+        { icon: '/icons/propertyowner/reviews.png', text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
+        { icon: '/icons/propertyowner/notifications.png', text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: unreadCount > 0 ? unreadCount : null },
+      ],
+    },
+  ];
 
   return (
     <>
@@ -75,7 +80,7 @@ export default function DashboardSidebar({
           </div>
         </div>
 
-        {NAV_SECTIONS.map((section) => (
+        {navSections.map((section) => (
           <div key={section.label} className="mb-6">
             <div className="text-[0.68rem] font-semibold uppercase tracking-wide text-[#8A8FA8] mb-2 pl-2">
               {section.label}
@@ -93,9 +98,11 @@ export default function DashboardSidebar({
                       : 'text-[#4A5068] hover:bg-[#F7F6F2] hover:text-[#1A1D23]'
                   }`}
                 >
-                  <span className="w-[18px] text-center text-base">{item.icon}</span>
+                  <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0">
+                    <img src={item.icon} alt={item.text} className="h-full w-full object-contain" />
+                  </span>
                   <span>{item.text}</span>
-                  {item.badge && (
+                  {item.badge !== null && item.badge !== undefined && (
                     <span className="ml-auto bg-[#E8820C] text-white text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">
                       {item.badge}
                     </span>

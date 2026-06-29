@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import StatusPill from './StatusPill';
 
 export default function ProjectForum({
@@ -14,6 +14,31 @@ export default function ProjectForum({
 }) {
   const [posts, setPosts] = useState(initialPosts);
   const [input, setInput] = useState('');
+  const [isLoaded, setIsLoaded] = useState(false);
+
+  // Load posts from localStorage on mount or title change
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem(`forum_posts_${title}`);
+      if (saved) {
+        try {
+          setPosts(JSON.parse(saved));
+        } catch (e) {
+          setPosts(initialPosts);
+        }
+      } else {
+        setPosts(initialPosts);
+      }
+      setIsLoaded(true);
+    }
+  }, [title, initialPosts]);
+
+  // Save posts to localStorage
+  useEffect(() => {
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem(`forum_posts_${title}`, JSON.stringify(posts));
+    }
+  }, [posts, title, isLoaded]);
 
   function postComment() {
     const text = input.trim();

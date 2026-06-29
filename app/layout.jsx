@@ -1,5 +1,5 @@
 import './globals.css';
-import Footer from '../components/layout/Footer';
+import ConditionalFooter from '../Components/layout/ConditionalFooter';
 
 export const metadata = {
     title: 'CrewSync',
@@ -14,7 +14,7 @@ export default function RootLayout({ children }) {
             </head>
             <body>
                 {children}
-                <Footer />
+                <ConditionalFooter />
             </body>
         </html>
     );

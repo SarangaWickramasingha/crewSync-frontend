@@ -1,6 +1,8 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useTasks } from './TasksContext';
+import EditTaskModal from './EditTaskModal';
 
 const COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
 
@@ -34,133 +36,206 @@ function cycleStatus(cur) {
   const i = order.indexOf(cur == null ? 0 : cur);
   return order[(i + 1) % order.length];
 }
-
-const INIT_TASKS = [
-  { id: 1, name: 'Site Preparation', color: '#1B6E3A', days: {} },
-  { id: 2, name: 'Foundation Work', color: '#E8820C', days: {} },
-  { id: 3, name: 'Structural Walls', color: '#1A56A0', days: {} },
-  { id: 4, name: 'Roofing', color: '#C0392B', days: {} },
-  { id: 5, name: 'Plumbing & Electrical', color: '#6B3FA0', days: {} },
-];
+function fmtCompact(n) {
+  if (n >= 1000000 || n <= -1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
+  if (n >= 1000 || n <= -1000) return (n / 1000).toFixed(0) + 'K';
+  return n.toLocaleString();
+}
 
 function AddTaskModal({ onSave, onClose }) {
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLORS[0]);
-
   return (
-    <div className="tcg-modal-bg">
-      <div className="tcg-modal">
-        <h3>Add Construction Task</h3>
-        <div className="tcg-modal-lbl">Task name</div>
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)]">
+      <div className="flex w-[300px] flex-col gap-2.5 rounded-[14px] border border-[rgba(26,29,35,0.1)] bg-white p-[22px] shadow-[0_8px_32px_rgba(26,29,35,0.15)]">
+        <h3 className="m-0 font-syne text-sm font-bold text-[#1A1D23]">Add Task</h3>
+
+        <div className="text-[11px] font-medium text-[#8A8FA8]">Task name</div>
         <input
-          placeholder="e.g. Roofing Phase 2"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          placeholder="e.g. Roofing Task 2"
           value={name}
           autoFocus
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => {
-            if (e.key === 'Enter' && name.trim()) onSave(name.trim(), color);
-          }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) onSave(name.trim(), color); }}
         />
-        <div className="tcg-modal-lbl">Colour</div>
-        <div className="tcg-color-row">
+
+        <div className="text-[11px] font-medium text-[#8A8FA8]">Colour</div>
+        <div className="flex flex-wrap gap-1.5">
           {COLORS.map((c) => (
             <div
               key={c}
-              className={`tcg-cp${color === c ? ' sel' : ''}`}
+              className={`h-[22px] w-[22px] cursor-pointer rounded-full border-2 ${
+                color === c ? 'border-[#1A1D23]' : 'border-transparent'
+              }`}
               style={{ background: c }}
               onClick={() => setColor(c)}
             />
           ))}
         </div>
-        <div className="tcg-modal-actions">
-          <button className="tcg-btn-cancel" onClick={onClose}>Cancel</button>
-          <button className="tcg-btn-save" onClick={() => name.trim() && onSave(name.trim(), color)}>
+
+        <div className="mt-1 flex justify-end gap-2">
+          <button
+            className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-3 py-[5px] font-sans text-xs text-[#8A8FA8]"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="rounded-md border-none bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white"
+            onClick={() => name.trim() && onSave(name.trim(), color)}
+          >
             Add Task
           </button>
         </div>
       </div>
-
-      <style jsx>{`
-        .tcg-modal-bg { position:fixed; inset:0; background:rgba(26,29,35,0.4); display:flex; align-items:center; justify-content:center; z-index:9999; }
-        .tcg-modal { background:#fff; border:1px solid rgba(26,29,35,0.1); border-radius:14px; padding:22px; width:300px; display:flex; flex-direction:column; gap:10px; box-shadow:0 8px 32px rgba(26,29,35,0.15); }
-        .tcg-modal h3 { font-size:14px; font-weight:700; font-family:'Syne',sans-serif; color:#1A1D23; margin:0; }
-        .tcg-modal input { width:100%; font-size:13px; padding:7px 10px; border-radius:6px; border:1px solid rgba(26,29,35,0.1); color:#1A1D23; background:#fff; font-family:'DM Sans',sans-serif; outline:none; }
-        .tcg-modal input:focus { border-color:#E8820C; }
-        .tcg-modal-lbl { font-size:11px; color:#8A8FA8; font-weight:500; }
-        .tcg-modal-actions { display:flex; gap:8px; justify-content:flex-end; margin-top:4px; }
-        .tcg-btn-cancel { background:none; border:1px solid rgba(26,29,35,0.1); border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; color:#8A8FA8; font-family:'DM Sans',sans-serif; }
-        .tcg-btn-save { background:#E8820C; border:none; border-radius:6px; padding:5px 12px; font-size:12px; color:#fff; cursor:pointer; font-weight:600; font-family:'DM Sans',sans-serif; }
-        .tcg-color-row { display:flex; gap:6px; flex-wrap:wrap; }
-        .tcg-cp { width:22px; height:22px; border-radius:50%; cursor:pointer; border:2px solid transparent; }
-        .tcg-cp.sel { border-color:#1A1D23; }
-      `}</style>
     </div>
   );
 }
 
 export default function TaskCalendarGrid() {
+  const {
+    tasks, addTask, deleteTask, updateTask, toggleTaskCompleted,
+    estimatedBudget, totalCost, remainingBudget,
+    projectCompleted, finishProject, unlockProject,
+  } = useTasks();
+
   const today = useMemo(() => new Date(), []);
   const [baseDate, setBaseDate] = useState(() => new Date());
-  const [tasks, setTasks] = useState(INIT_TASKS);
-  const [nextId, setNextId] = useState(20);
   const [showAdd, setShowAdd] = useState(false);
+  const [editingTask, setEditingTask] = useState(null);
 
   const days = useMemo(() => getWeekDays(baseDate), [baseDate]);
   const weekLabel = `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
 
-  function prevWeek() {
-    const d = new Date(baseDate);
-    d.setDate(d.getDate() - 7);
-    setBaseDate(d);
-  }
-  function nextWeek() {
-    const d = new Date(baseDate);
-    d.setDate(d.getDate() + 7);
-    setBaseDate(d);
-  }
-  function goToday() {
-    setBaseDate(new Date());
-  }
+  function prevWeek() { const d = new Date(baseDate); d.setDate(d.getDate() - 7); setBaseDate(d); }
+  function nextWeek() { const d = new Date(baseDate); d.setDate(d.getDate() + 7); setBaseDate(d); }
+  function goToday() { setBaseDate(new Date()); }
+
   function toggleCell(taskId, day) {
+    if (projectCompleted) return;
     const k = dayKey(day);
-    setTasks((ts) =>
-      ts.map((t) => (t.id !== taskId ? t : { ...t, days: { ...t.days, [k]: cycleStatus(t.days[k] ?? 0) } }))
-    );
-  }
-  function addTask(name, color) {
-    setTasks((ts) => [...ts, { id: nextId, name, color, days: {} }]);
-    setNextId((n) => n + 1);
-    setShowAdd(false);
-  }
-  function deleteTask(id) {
-    setTasks((ts) => ts.filter((t) => t.id !== id));
+    const task = tasks.find((t) => t.id === taskId);
+    updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
   }
 
   return (
     <>
-      {showAdd && <AddTaskModal onSave={addTask} onClose={() => setShowAdd(false)} />}
+      {showAdd && (
+        <AddTaskModal onSave={(name, color) => { addTask(name, color); setShowAdd(false); }} onClose={() => setShowAdd(false)} />
+      )}
+      {editingTask && (
+        <EditTaskModal
+          task={editingTask}
+          onClose={() => setEditingTask(null)}
+          onSave={(updates) => { updateTask(editingTask.id, updates); setEditingTask(null); }}
+        />
+      )}
 
-      <div className="tcg-wrap">
-        <div className="tcg-toolbar">
-          <span className="tcg-title">{weekLabel}</span>
-          <div style={{ display: 'flex', gap: 6 }}>
-            <button className="tcg-nav-btn" onClick={prevWeek}>‹ Prev</button>
-            <button className="tcg-nav-btn" onClick={goToday}>Today</button>
-            <button className="tcg-nav-btn" onClick={nextWeek}>Next ›</button>
+      {/* BUDGET BAR */}
+      <div className="mb-3.5 flex flex-wrap items-center gap-6 rounded-xl border border-[rgba(26,29,35,0.1)] bg-white px-[18px] py-3.5">
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Estimated Budget</span>
+          <span className="font-syne text-base font-bold text-[#1A1D23]">LKR {fmtCompact(estimatedBudget)}</span>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Total Cost</span>
+          <span className="font-syne text-base font-bold text-[#B85A00]">LKR {fmtCompact(totalCost)}</span>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Remaining</span>
+          <span
+            className="font-syne text-base font-bold"
+            style={{ color: remainingBudget >= 0 ? '#1B6E3A' : '#C0392B' }}
+          >
+            LKR {fmtCompact(remainingBudget)}
+          </span>
+        </div>
+        <div className="ml-auto">
+          {projectCompleted ? (
+            <button
+              className="rounded-lg border border-[rgba(26,29,35,0.2)] bg-white px-4 py-2 font-sans text-[13px] font-semibold text-[#1A1D23] hover:bg-[#F7F6F2] flex items-center gap-1.5"
+              onClick={unlockProject}
+            >
+              <svg className="w-4 h-4 text-[#1A1D23]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+              </svg>
+              Unlock Project
+            </button>
+          ) : (
+            <button
+              className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
+              onClick={finishProject}
+            >
+              ✓ Finish Project
+            </button>
+          )}
+        </div>
+      </div>
+
+      {projectCompleted && (
+        <div className="mb-3.5 rounded-lg border border-[rgba(232,130,12,0.3)] bg-[#FFF3E0] px-4 py-2.5 text-[13px] text-[#B85A00] flex items-center gap-2">
+          <svg className="w-4 h-4 text-[#B85A00] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+          </svg>
+          <span>Project marked as completed — editing is locked. Click &quot;Unlock Project&quot; to make changes.</span>
+        </div>
+      )}
+
+      {/* CALENDAR */}
+      <div className="overflow-hidden rounded-xl border border-[rgba(26,29,35,0.1)] bg-white">
+        {/* TOOLBAR */}
+        <div className="flex flex-wrap items-center gap-2.5 border-b border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-3.5 py-2.5">
+          <span className="mr-auto text-sm font-semibold text-[#1A1D23]">{weekLabel}</span>
+          <div className="flex gap-1.5">
+            <button
+              className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-2.5 py-1 font-sans text-xs text-[#4A5068] hover:bg-[#EEECEA]"
+              onClick={prevWeek}
+            >
+              ‹ Prev
+            </button>
+            <button
+              className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-2.5 py-1 font-sans text-xs text-[#4A5068] hover:bg-[#EEECEA]"
+              onClick={goToday}
+            >
+              Today
+            </button>
+            <button
+              className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-2.5 py-1 font-sans text-xs text-[#4A5068] hover:bg-[#EEECEA]"
+              onClick={nextWeek}
+            >
+              Next ›
+            </button>
           </div>
-          <button className="tcg-add-btn" onClick={() => setShowAdd(true)}>+ Add Task</button>
+          <button
+            className="rounded-md bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => setShowAdd(true)}
+            disabled={projectCompleted}
+          >
+            + Add Task
+          </button>
         </div>
 
-        <div className="tcg-scroll">
-          <table className="tcg-table">
+        {/* TABLE */}
+        <div className="overflow-x-auto">
+          <table className="min-w-[680px] w-full border-collapse">
             <thead>
               <tr>
-                <th>Task / Phase</th>
+                <th className="sticky left-0 top-0 z-[3] min-w-[230px] border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-2.5 py-[7px] text-left font-sans text-[11px] font-semibold text-[#8A8FA8]">
+                  Task
+                </th>
                 {days.map((d, i) => {
                   const isT = isSameDay(d, today);
                   return (
-                    <th key={i} className={isT ? 'tcg-today-col' : ''}>
-                      <span className={isT ? 'tcg-today-hdr' : ''}>{DOW[d.getDay()]} {d.getDate()}</span>
+                    <th
+                      key={i}
+                      className={`sticky top-0 z-[2] whitespace-nowrap border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-2.5 py-[7px] text-center font-sans text-[11px] font-semibold text-[#8A8FA8] last:border-r-0 ${
+                        isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
+                      }`}
+                    >
+                      <span className={isT ? '!font-bold !text-[#B85A00]' : ''}>
+                        {DOW[d.getDay()]} {d.getDate()}
+                      </span>
                     </th>
                   );
                 })}
@@ -168,17 +243,74 @@ export default function TaskCalendarGrid() {
             </thead>
             <tbody>
               {tasks.length === 0 && (
-                <tr className="tcg-empty">
-                  <td colSpan={8}>No tasks yet — click &quot;+ Add Task&quot; to get started</td>
+                <tr className="border-b border-[rgba(26,29,35,0.1)]">
+                  <td colSpan={8} className="p-6 text-center text-[13px] text-[#8A8FA8]">
+                    No tasks yet — click &quot;+ Add Task&quot; to get started
+                  </td>
                 </tr>
               )}
               {tasks.map((t) => (
-                <tr key={t.id}>
-                  <td>
-                    <div className="tcg-task-cell">
-                      <div className="tcg-task-dot" style={{ background: t.color }} />
-                      <span className="tcg-task-name" title={t.name}>{t.name}</span>
-                      <button className="tcg-task-del" onClick={() => deleteTask(t.id)} title="Remove task">×</button>
+                <tr key={t.id} className="group border-b border-[rgba(26,29,35,0.1)] last:border-b-0 hover:bg-[#F7F6F2]">
+                  <td className="border-r border-[rgba(26,29,35,0.1)] p-0 align-middle">
+                    <div className="sticky left-0 z-[1] flex min-w-[230px] flex-col gap-1.5 bg-white px-3 py-2 group-hover:bg-[#F7F6F2]">
+                      <div className="flex items-center gap-2">
+                        <div className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: t.color }} />
+                        <span
+                          className={`flex-1 truncate text-[13px] font-medium text-[#1A1D23] ${
+                            t.completed ? 'text-[#8A8FA8] line-through' : ''
+                          }`}
+                          title={t.name}
+                        >
+                          {t.name}
+                        </span>
+                        {!projectCompleted && (
+                          <button
+                            className="px-0.5 text-sm leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B]"
+                            onClick={() => deleteTask(t.id)}
+                            title="Remove task"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </div>
+                      <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-[11px] font-semibold text-[#B85A00]">
+                          LKR {(t.cost || 0).toLocaleString()}
+                        </span>
+                        {t.assignedSP && (
+                          <span className="text-[11px] text-[#4A5068] flex items-center gap-1">
+                            <svg className="w-3 h-3 text-[#4A5068]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                            </svg>
+                            {t.assignedSP}
+                          </span>
+                        )}
+                        {!projectCompleted && (
+                          <button
+                            className="rounded-[5px] border border-[rgba(26,29,35,0.1)] px-1.5 py-px font-sans text-[10px] text-[#4A5068] hover:bg-[#EEECEA] inline-flex items-center gap-1"
+                            onClick={() => setEditingTask(t)}
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            Edit
+                          </button>
+                        )}
+                        {t.completed ? (
+                          <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
+                            ✓ Completed
+                          </span>
+                        ) : (
+                          !projectCompleted && (
+                            <button
+                              className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
+                              onClick={() => toggleTaskCompleted(t.id)}
+                            >
+                              Finish Task
+                            </button>
+                          )
+                        )}
+                      </div>
                     </div>
                   </td>
                   {days.map((d, i) => {
@@ -189,16 +321,21 @@ export default function TaskCalendarGrid() {
                     return (
                       <td
                         key={i}
-                        className={`tcg-day-cell${isT ? ' tcg-today-col' : ''}`}
+                        className={`h-16 border-r border-[rgba(26,29,35,0.1)] p-0 text-center last:border-r-0 ${
+                          isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
+                        } ${projectCompleted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                         onClick={() => toggleCell(t.id, d)}
                         title={`Click to cycle status: ${cfg.label}`}
                       >
-                        <div className="tcg-cell-inner">
+                        <div className="flex h-full w-full items-center justify-center">
                           {st === 0 ? (
-                            <div style={{ width: 22, height: 22, borderRadius: 4, border: '1px dashed #ccc' }} />
+                            <div className="h-[22px] w-[22px] rounded border border-dashed border-[#ccc]" />
                           ) : (
-                            <div className="tcg-cell-filled" style={{ background: cfg.bg }}>
-                              <div className="tcg-status-dot" style={{ background: cfg.dot }} />
+                            <div
+                              className="flex h-[30px] w-[30px] items-center justify-center rounded"
+                              style={{ background: cfg.bg }}
+                            >
+                              <div className="h-2 w-2 rounded-full" style={{ background: cfg.dot }} />
                             </div>
                           )}
                         </div>
@@ -211,57 +348,24 @@ export default function TaskCalendarGrid() {
           </table>
         </div>
 
-        <div className="tcg-legend">
-          <span style={{ fontSize: 11, color: '#8A8FA8' }}>Click a cell to cycle status:</span>
+        {/* LEGEND */}
+        <div className="flex flex-wrap items-center gap-3.5 border-t border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-3.5 py-2">
+          <span className="text-[11px] text-[#8A8FA8]">Click a cell to cycle status:</span>
           {[2, 1, 3].map((s) => (
-            <div key={s} className="tcg-legend-item">
-              <div className="tcg-legend-sw" style={{ background: STATUS_CFG[s].bg, border: `1px solid ${STATUS_CFG[s].dot}` }} />
+            <div key={s} className="flex items-center gap-1.5 font-sans text-[11px] text-[#8A8FA8]">
+              <div
+                className="h-2.5 w-2.5 rounded-sm"
+                style={{ background: STATUS_CFG[s].bg, border: `1px solid ${STATUS_CFG[s].dot}` }}
+              />
               {STATUS_CFG[s].label}
             </div>
           ))}
-          <div className="tcg-legend-item">
-            <div style={{ width: 10, height: 10, borderRadius: 2, border: '1px dashed #ccc' }} />
+          <div className="flex items-center gap-1.5 font-sans text-[11px] text-[#8A8FA8]">
+            <div className="h-2.5 w-2.5 rounded-sm border border-dashed border-[#ccc]" />
             Not started
           </div>
         </div>
       </div>
-
-      <style jsx>{`
-        .tcg-wrap { border:1px solid rgba(26,29,35,0.1); border-radius:12px; overflow:hidden; background:#fff; }
-        .tcg-toolbar { display:flex; align-items:center; gap:10px; padding:10px 14px; border-bottom:1px solid rgba(26,29,35,0.1); background:#F7F6F2; flex-wrap:wrap; }
-        .tcg-title { font-size:14px; font-weight:600; margin-right:auto; color:#1A1D23; }
-        .tcg-nav-btn { background:none; border:1px solid rgba(26,29,35,0.1); border-radius:6px; padding:4px 10px; font-size:12px; cursor:pointer; color:#4A5068; font-family:'DM Sans',sans-serif; }
-        .tcg-nav-btn:hover { background:#EEECEA; }
-        .tcg-add-btn { background:#E8820C; color:#fff; border:none; border-radius:6px; padding:5px 12px; font-size:12px; cursor:pointer; font-weight:600; font-family:'DM Sans',sans-serif; }
-        .tcg-add-btn:hover { background:#B85A00; }
-        .tcg-scroll { overflow-x:auto; }
-        .tcg-table { width:100%; border-collapse:collapse; min-width:600px; }
-        .tcg-table thead th { border-bottom:1px solid rgba(26,29,35,0.1); border-right:1px solid rgba(26,29,35,0.1); padding:7px 10px; font-size:11px; font-weight:600; color:#8A8FA8; text-align:center; white-space:nowrap; background:#F7F6F2; position:sticky; top:0; z-index:2; font-family:'DM Sans',sans-serif; }
-        .tcg-table thead th:first-child { text-align:left; min-width:170px; position:sticky; left:0; z-index:3; background:#F7F6F2; }
-        .tcg-table thead th:last-child { border-right:none; }
-        .tcg-table tbody tr { border-bottom:1px solid rgba(26,29,35,0.1); }
-        .tcg-table tbody tr:last-child { border-bottom:none; }
-        .tcg-table tbody tr:hover { background:#F7F6F2; }
-        .tcg-table td { border-right:1px solid rgba(26,29,35,0.1); padding:0; vertical-align:middle; height:46px; }
-        .tcg-table td:last-child { border-right:none; }
-        .tcg-task-cell { min-width:170px; padding:8px 12px; position:sticky; left:0; background:#fff; z-index:1; display:flex; align-items:center; gap:8px; }
-        .tcg-table tbody tr:hover .tcg-task-cell { background:#F7F6F2; }
-        .tcg-task-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
-        .tcg-task-name { font-size:13px; font-weight:500; color:#1A1D23; flex:1; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-        .tcg-task-del { background:none; border:none; cursor:pointer; color:#8A8FA8; font-size:14px; padding:0 2px; opacity:0; line-height:1; }
-        .tcg-table tbody tr:hover .tcg-task-del { opacity:1; }
-        .tcg-task-del:hover { color:#C0392B; }
-        .tcg-day-cell { text-align:center; cursor:pointer; height:46px; padding:0; }
-        .tcg-cell-inner { width:100%; height:100%; display:flex; align-items:center; justify-content:center; }
-        .tcg-cell-filled { border-radius:4px; width:30px; height:30px; display:flex; align-items:center; justify-content:center; }
-        .tcg-status-dot { width:8px; height:8px; border-radius:50%; }
-        .tcg-today-col { background:rgba(232,130,12,0.05); }
-        .tcg-today-hdr { color:#B85A00 !important; font-weight:700 !important; }
-        .tcg-legend { display:flex; align-items:center; gap:14px; padding:8px 14px; border-top:1px solid rgba(26,29,35,0.1); background:#F7F6F2; flex-wrap:wrap; }
-        .tcg-legend-item { display:flex; align-items:center; gap:5px; font-size:11px; color:#8A8FA8; font-family:'DM Sans',sans-serif; }
-        .tcg-legend-sw { width:10px; height:10px; border-radius:2px; }
-        .tcg-empty td { text-align:center; padding:24px; font-size:13px; color:#8A8FA8; }
-      `}</style>
     </>
   );
 }

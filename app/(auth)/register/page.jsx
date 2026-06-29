@@ -1,7 +1,7 @@
 'use client';
 
 import RegisterForm from '@/features/auth/RegisterForm';
-import Navbar from '@/components/layout/Navbar';
+import Navbar from '@/Components/layout/Navbar';
 
 export default function RegisterPage() {
     return (

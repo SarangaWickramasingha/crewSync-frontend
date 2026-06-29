@@ -1,21 +1,21 @@
 const ROLES = [
     {
         id: 'owner',
-        icon: '🏠',
+        icon: '/icons/home-page/owner.png',
         title: 'Property Owner',
         description: 'Post projects, hire service providers and suppliers for your construction needs.',
         badge: 'Most Popular',
     },
     {
         id: 'provider',
-        icon: '🔧',
+        icon: '/icons/home-page/provider.png',
         title: 'Service Provider',
         description: 'Offer your trade skills — masonry, electrical, plumbing, carpentry and more.',
         badge: null,
     },
     {
         id: 'supplier',
-        icon: '🧱',
+        icon: '/icons/home-page/supplier.png',
         title: 'Supplier',
         description: 'Supply raw materials and hardware to construction projects across Sri Lanka.',
         badge: null,
@@ -45,7 +45,9 @@ export default function RolePicker({ selected, onSelect }) {
                                 {role.badge}
                             </span>
                         )}
-                        <span className="text-2xl">{role.icon}</span>
+                        <span className="flex h-10 w-10 items-center justify-center rounded-lg bg-surface mb-1">
+                            <img src={role.icon} alt={role.title} className="h-6 w-6 object-contain" />
+                        </span>
                         <div>
                             <p className={`text-sm font-bold font-syne ${active ? 'text-primary-dark' : 'text-slate'}`}>
                                 {role.title}

@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import Navbar from '@/components/layout/Navbar';
+import Navbar from '@/Components/layout/Navbar';
 
 export default function LoginPage() {
     const [showPassword, setShowPassword] = useState(false);

@@ -1,7 +1,7 @@
 'use client';
-import PasswordInput from '@/components/ui/PasswordInput';
+import PasswordInput from '@/Components/ui/PasswordInput';
 
-const ROLE_ICONS = { owner: '🏠', provider: '🔧', supplier: '🧱' };
+const ROLE_ICONS = { owner: '/icons/home-page/owner.png', provider: '/icons/home-page/provider.png', supplier: '/icons/home-page/supplier.png' };
 const ROLE_LABELS = { owner: 'Property Owner', provider: 'Service Provider', supplier: 'Supplier' };
 
 export default function StepCredentials({ role, data, onChange }) {
@@ -11,7 +11,11 @@ export default function StepCredentials({ role, data, onChange }) {
         <div className="max-w-md mx-auto">
             {/* Welcome block */}
             <div className="text-center mb-7">
-                <div className="text-4xl mb-2">{ROLE_ICONS[role]}</div>
+                <div className="flex items-center justify-center mb-2">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-xl bg-surface border border-border">
+                        <img src={ROLE_ICONS[role]} alt={ROLE_LABELS[role]} className="h-8 w-8 object-contain" />
+                    </div>
+                </div>
                 <h3 className="font-syne text-lg font-bold text-slate">{ROLE_LABELS[role]} Account</h3>
                 <p className="text-sm text-muted mt-1">Enter your email and create a password to get started.</p>
             </div>

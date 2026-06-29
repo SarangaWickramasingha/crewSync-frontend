@@ -1,57 +1,74 @@
+'use client';
+
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import Card from '@/Components/dashboard/propertyOwner/Card';
-
-const NOTIFICATIONS = [
-  {
-    text: <><strong>Sunil Karunaratne</strong> updated roofing task progress to 55%</>,
-    time: 'Today, 10:42 AM',
-    read: false,
-  },
-  {
-    text: <><strong>Payment released</strong> — LKR 680,000 for cement order to Malshan Hardware</>,
-    time: 'Yesterday, 3:15 PM',
-    read: false,
-  },
-  {
-    text: <>Phase 2 (Structural Development) marked as <strong>Complete</strong></>,
-    time: 'May 1, 2026',
-    read: true,
-  },
-  {
-    text: <><strong>Dinesh Wickrama</strong> accepted your carpenter request for Phase 5</>,
-    time: 'April 30, 2026',
-    read: true,
-  },
-];
+import { useTasks } from '@/Components/dashboard/TasksContext';
 
 export default function PropertyOwnerNotificationsPage() {
+  const {
+    notifications,
+    markAllNotificationsRead,
+    toggleNotificationRead,
+    deleteNotification,
+  } = useTasks();
+
   return (
     <div>
       <DashHeader
         title="Notifications"
         subtitle="Stay updated on your project"
         action={
-          <button className="border border-black/10 rounded-md px-3.5 py-1.5 text-sm bg-transparent hover:bg-[#F7F6F2]">
+          <button
+            onClick={markAllNotificationsRead}
+            className="border border-black/10 rounded-md px-3.5 py-1.5 text-sm bg-transparent hover:bg-[#F7F6F2] transition-colors cursor-pointer"
+          >
             Mark all read
           </button>
         }
       />
 
       <Card className="p-0">
-        {NOTIFICATIONS.map((n, i) => (
-          <div
-            key={i}
-            className={`flex items-start gap-3 px-6 py-3 ${i !== NOTIFICATIONS.length - 1 ? 'border-b border-black/10' : ''}`}
-          >
-            <div
-              className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${n.read ? 'bg-black/10' : 'bg-[#E8820C]'}`}
-            />
-            <div>
-              <div className="text-sm">{n.text}</div>
-              <div className="text-xs text-[#8A8FA8] mt-0.5">{n.time}</div>
-            </div>
+        {notifications.length === 0 ? (
+          <div className="text-center p-8 text-sm text-[#8A8FA8]">
+            No notifications yet.
           </div>
-        ))}
+        ) : (
+          notifications.map((n, i) => (
+            <div
+              key={n.id}
+              className={`flex items-start justify-between gap-3 px-6 py-3.5 ${
+                i !== notifications.length - 1 ? 'border-b border-black/10' : ''
+              } hover:bg-[#F7F6F2]/30 transition-colors`}
+            >
+              <div
+                className="flex items-start gap-3 flex-1 cursor-pointer"
+                onClick={() => toggleNotificationRead(n.id)}
+                title="Click to toggle read status"
+              >
+                <div
+                  className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
+                    n.read ? 'bg-black/10' : 'bg-[#E8820C]'
+                  }`}
+                />
+                <div>
+                  <div
+                    className="text-sm text-[#1A1D23]"
+                    dangerouslySetInnerHTML={{ __html: n.text }}
+                  />
+                  <div className="text-xs text-[#8A8FA8] mt-0.5">{n.time}</div>
+                </div>
+              </div>
+              
+              <button
+                onClick={() => deleteNotification(n.id)}
+                className="text-[#8A8FA8] hover:text-[#C0392B] text-lg font-bold leading-none px-1 transition-colors cursor-pointer"
+                title="Dismiss notification"
+              >
+                ×
+              </button>
+            </div>
+          ))
+        )}
       </Card>
     </div>
   );

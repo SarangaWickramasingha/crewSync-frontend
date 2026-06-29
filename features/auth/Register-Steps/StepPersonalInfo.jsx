@@ -1,5 +1,5 @@
 'use client';
-import DistrictSelect from '@/components/ui/DistrictSelect';
+import DistrictSelect from '@/Components/ui/DistrictSelect';
 
 // Shared label + input primitives used by all step-2 components
 export function FormLabel({ children, required }) {
@@ -54,7 +54,11 @@ export default function StepPersonalInfo({ data, onChange }) {
 
     return (
         <div className="mb-5">
-            <SectionHeading icon="👤">Personal Information</SectionHeading>
+            <SectionHeading icon={
+                <svg className="w-3.5 h-3.5 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                </svg>
+            }>Personal Information</SectionHeading>
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                 <div className="flex flex-col gap-1">

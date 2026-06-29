@@ -1,17 +1,17 @@
 'use client';
 import { SectionHeading, FormLabel, FormInput, FormSelect } from './StepPersonalInfo';
-import DistrictSelect from '@/components/ui/DistrictSelect';
+import DistrictSelect from '@/Components/ui/DistrictSelect';
 
 const MATERIALS = [
-    { value: 'Sand', emoji: '🪣' },
-    { value: 'Cement', emoji: '🏗️' },
-    { value: 'Gravel / Metal', emoji: '⛰️' },
-    { value: 'Stone / Rubble', emoji: '🪨' },
-    { value: 'Cement Blocks', emoji: '🧱' },
-    { value: 'Timber', emoji: '🪵' },
-    { value: 'Bricks', emoji: '🧱' },
-    { value: 'Glass', emoji: '🪞' },
-    { value: 'Other', emoji: '➕' },
+    { value: 'Sand' },
+    { value: 'Cement' },
+    { value: 'Gravel / Metal' },
+    { value: 'Stone / Rubble' },
+    { value: 'Cement Blocks' },
+    { value: 'Timber' },
+    { value: 'Bricks' },
+    { value: 'Glass' },
+    { value: 'Other' },
 ];
 
 export default function StepSupplierDetails({ data, onChange }) {
@@ -30,7 +30,11 @@ export default function StepSupplierDetails({ data, onChange }) {
         <>
             {/* Business Details */}
             <div className="mb-5">
-                <SectionHeading icon="🏢">Business Details</SectionHeading>
+                <SectionHeading icon={
+                    <svg className="w-3.5 h-3.5 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4" />
+                    </svg>
+                }>Business Details</SectionHeading>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
 
                     <div className="flex flex-col gap-1 sm:col-span-2">
@@ -85,12 +89,16 @@ export default function StepSupplierDetails({ data, onChange }) {
 
             {/* Materials */}
             <div className="mb-5">
-                <SectionHeading icon="🧱">Materials &amp; Products Supplied</SectionHeading>
+                <SectionHeading icon={
+                    <svg className="w-3.5 h-3.5 text-slate" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10" />
+                    </svg>
+                }>Materials &amp; Products Supplied</SectionHeading>
                 <p className="text-[11px] font-semibold text-slate-light uppercase tracking-wide mb-2">
                     Select all raw materials you supply <span className="text-red-500">*</span>
                 </p>
                 <div className="flex flex-wrap gap-2 mb-4">
-                    {MATERIALS.map(({ value, emoji }) => {
+                    {MATERIALS.map(({ value }) => {
                         const active = (data.materials || []).includes(value);
                         return (
                             <button
@@ -103,7 +111,7 @@ export default function StepSupplierDetails({ data, onChange }) {
                                         ? 'bg-primary text-white border-primary'
                                         : 'bg-white text-slate-light border-border hover:border-primary/50'}`}
                             >
-                                {emoji} {value}
+                                {value}
                             </button>
                         );
                     })}
