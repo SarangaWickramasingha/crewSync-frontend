@@ -1,16 +1,34 @@
-@import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Climate+Crisis&family=Syne:wght@400;600;700;800&family=DM+Sans:ital,opsz,wght@0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,400&display=swap');
 @import "tailwindcss";
 
 @theme {
-  --font-family-sans: 'DM Sans', sans-serif;
-  --font-family-syne: 'Syne', sans-serif;
+  /* ── Font families ── */
+  --font-sans:    'DM Sans', sans-serif;
+  --font-climate: 'Climate Crisis', cursive;
+  --font-dmSans:  'DM Sans', sans-serif;
+  --font-syne:    'Syne', sans-serif;
 
-  --color-crew-amber:   #E8820C;
-  --color-crew-slate:   #1A1D23;
-  --color-crew-surface: #F7F6F2;
-  --color-crew-muted:   #8A8FA8;
-  --color-crew-green:   #1B6E3A;
-  --color-crew-blue:    #1A56A0;
+  /* ── Brand colours ── */
+  --color-crewAmber:      #E8820C;
+  --color-crewAmber-dark: #B85A00;
+  --color-crewAmber-light:#FFF3E0;
+  --color-crewSlate:      #1A1D23;
+  --color-crewSlate-light:#4A5068;
+  --color-crewMuted:      #8A8FA8;
+  --color-crewSurface:    #F7F6F2;
+  --color-crewSurface2:   #EEECEA;
+  --color-crewGreen:      #1B6E3A;
+  --color-crewGreen-light:#E6F4EC;
+  --color-crewBlue:       #1A56A0;
+  --color-crewBlue-light: #E8F0FB;
+
+  /* ── Animations ── */
+  --animate-fadeIn: fadeIn 0.5s ease both;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0); }
 }
 
 * {
