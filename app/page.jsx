@@ -1,13 +1,5 @@
 import { redirect } from 'next/navigation';
 
 export default function Home() {
-    redirect('/dashboard/propertyowner');
+    redirect('/home');
 }
-
-/*export default function Home() {
-    redirect('/project-form');
-}*/
-
-/*export default function Home() {
-    redirect('/register');
-}*/

@@ -17,6 +17,7 @@ export default function StartProjectPage() {
     projDistrict: '',
     projAddress: '',
     phases: [],
+    phaseBudgets: {}, // { [phaseName]: budgetValue }
     agreeTerms: false
   })
 
@@ -63,13 +64,33 @@ export default function StartProjectPage() {
   }
 
   const togglePhase = (name) => {
-    setFormData(prev => ({
-      ...prev,
-      phases: prev.phases.includes(name)
+    setFormData(prev => {
+      const isSelected = prev.phases.includes(name)
+      const newPhases = isSelected
         ? prev.phases.filter(p => p !== name)
         : [...prev.phases, name]
+
+      // Clean up the budget entry when a phase is unchecked
+      const newPhaseBudgets = { ...prev.phaseBudgets }
+      if (isSelected) {
+        delete newPhaseBudgets[name]
+      }
+
+      return { ...prev, phases: newPhases, phaseBudgets: newPhaseBudgets }
+    })
+  }
+
+  const setPhaseBudget = (name, value) => {
+    setFormData(prev => ({
+      ...prev,
+      phaseBudgets: { ...prev.phaseBudgets, [name]: value }
     }))
   }
+
+  // Sum of all per-task budgets entered so far
+  const allocatedTotal = Object.values(formData.phaseBudgets).reduce(
+    (sum, v) => sum + (Number(v) || 0), 0
+  )
 
   const validate = () => {
     if (!formData.projName.trim()) return 'Please enter a project name.'
@@ -120,7 +141,8 @@ export default function StartProjectPage() {
           district: formData.projDistrict,
           address: formData.projAddress,
           status: 'planning',
-          tasks: formData.phases
+          tasks: formData.phases,
+          task_budgets: formData.phaseBudgets
         })
       });
 
@@ -294,22 +316,52 @@ export default function StartProjectPage() {
 
                   {/* Selected Tasks */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
-                      <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Associated Project Tasks <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">— select all that apply <span className="text-[#C0392B]">*</span></span>
+                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center justify-between gap-2 flex-wrap">
+                      <span className="flex items-center gap-2">
+                        <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Associated Project Tasks <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">— select all that apply <span className="text-[#C0392B]">*</span></span>
+                      </span>
+                      {formData.phases.length > 0 && (
+                        <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">
+                          Allocated: <span className={`font-semibold ${budget && allocatedTotal > Number(budget) ? 'text-[#C0392B]' : 'text-[#1B6E3A]'}`}>LKR {fmt(allocatedTotal)}</span>
+                          {budget ? <> / LKR {fmt(budget)}</> : null}
+                        </span>
+                      )}
                     </div>
                     <div className="flex flex-col gap-2">
-                      {phasesList.map(phase => (
-                        <label key={phase.name} className={`flex items-start gap-3 border rounded-[10px] p-3 px-[14px] cursor-pointer transition-all ${formData.phases.includes(phase.name) ? 'bg-[#FFF3E0] border-[rgba(232,130,12,0.4)]' : 'bg-[#F7F6F2] border-[rgba(26,29,35,0.1)]'}`}>
-                          <span className="w-6 h-6 rounded-full bg-[#E8820C] text-white text-[0.72rem] font-bold flex items-center justify-center shrink-0 mt-0.5">{phase.order}</span>
-                          <input type="checkbox" checked={formData.phases.includes(phase.name)} onChange={() => togglePhase(phase.name)} className="w-4 h-4 accent-[#E8820C] cursor-pointer mt-0.5 shrink-0" disabled={submitting || success} />
-                          <div className="flex-1">
-                            <div className="text-[0.85rem] font-semibold text-[#1A1D23] flex items-center gap-2">
-                              {phase.name}
-                            </div>
-                            <div className="text-[0.73rem] text-[#8A8FA8] mt-0.5">{phase.desc}</div>
+                      {phasesList.map(phase => {
+                        const checked = formData.phases.includes(phase.name)
+                        return (
+                          <div key={phase.name} className={`border rounded-[10px] p-3 px-[14px] transition-all ${checked ? 'bg-[#FFF3E0] border-[rgba(232,130,12,0.4)]' : 'bg-[#F7F6F2] border-[rgba(26,29,35,0.1)]'}`}>
+                            <label className="flex items-start gap-3 cursor-pointer">
+                              <span className="w-6 h-6 rounded-full bg-[#E8820C] text-white text-[0.72rem] font-bold flex items-center justify-center shrink-0 mt-0.5">{phase.order}</span>
+                              <input type="checkbox" checked={checked} onChange={() => togglePhase(phase.name)} className="w-4 h-4 accent-[#E8820C] cursor-pointer mt-0.5 shrink-0" disabled={submitting || success} />
+                              <div className="flex-1">
+                                <div className="text-[0.85rem] font-semibold text-[#1A1D23] flex items-center gap-2">
+                                  {phase.name}
+                                </div>
+                                <div className="text-[0.73rem] text-[#8A8FA8] mt-0.5">{phase.desc}</div>
+                              </div>
+                            </label>
+
+                            {checked && (
+                              <div className="mt-2.5 pl-9">
+                                <label className="text-[0.68rem] font-semibold text-[#8A8FA8] uppercase tracking-[0.3px]">Estimated Budget for this task</label>
+                                <div className="relative mt-1 max-w-[220px]">
+                                  <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.78rem] text-[#8A8FA8] pointer-events-none">LKR</span>
+                                  <input
+                                    type="number"
+                                    placeholder="e.g. 250000"
+                                    className="p-[8px] px-[13px] pl-[48px] border border-[rgba(26,29,35,0.15)] rounded-[7px] font-[DM_Sans] text-[0.82rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
+                                    value={formData.phaseBudgets[phase.name] ?? ''}
+                                    onChange={e => setPhaseBudget(phase.name, e.target.value)}
+                                    disabled={submitting || success}
+                                  />
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </label>
-                      ))}
+                        )
+                      })}
                     </div>
                   </div>
 
@@ -373,6 +425,11 @@ export default function StartProjectPage() {
                           disabled={submitting || success}
                         />
                       </div>
+                      {budget && allocatedTotal > Number(budget) && (
+                        <div className="text-[0.74rem] text-[#C0392B] mt-1 flex items-center gap-1">
+                          ⚠ Task budgets total LKR {fmt(allocatedTotal)}, which exceeds your overall estimated budget.
+                        </div>
+                      )}
                     </div>
                   </div>
 
@@ -417,9 +474,14 @@ export default function StartProjectPage() {
                     <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Selected Tasks ({formData.phases.length})
                     </div>
-                    <div className="flex flex-wrap gap-2">
+                    <div className="flex flex-col gap-2">
                       {formData.phases.map(p => (
-                        <span key={p} className="bg-[#E6F4EC] text-[#1B6E3A] rounded-[20px] py-1 px-3 text-[0.78rem] font-semibold inline-flex items-center gap-1">✓ {p}</span>
+                        <div key={p} className="bg-[#E6F4EC] text-[#1B6E3A] rounded-[10px] py-2 px-3 text-[0.82rem] font-semibold flex items-center justify-between">
+                          <span>✓ {p}</span>
+                          <span className="text-[#1A1D23]">
+                            {formData.phaseBudgets[p] ? `LKR ${fmt(formData.phaseBudgets[p])}` : 'No budget set'}
+                          </span>
+                        </div>
                       ))}
                     </div>
                   </div>

@@ -45,6 +45,13 @@ function fmtCompact(n) {
 function AddTaskModal({ onSave, onClose }) {
   const [name, setName] = useState('');
   const [color, setColor] = useState(COLORS[0]);
+  const [budget, setBudget] = useState('');
+
+  function submit() {
+    if (!name.trim()) return;
+    onSave(name.trim(), color, Number(budget) || 0);
+  }
+
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)]">
       <div className="flex w-[300px] flex-col gap-2.5 rounded-[14px] border border-[rgba(26,29,35,0.1)] bg-white p-[22px] shadow-[0_8px_32px_rgba(26,29,35,0.15)]">
@@ -57,7 +64,16 @@ function AddTaskModal({ onSave, onClose }) {
           value={name}
           autoFocus
           onChange={(e) => setName(e.target.value)}
-          onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) onSave(name.trim(), color); }}
+          onKeyDown={(e) => { if (e.key === 'Enter' && name.trim()) submit(); }}
+        />
+
+        <div className="text-[11px] font-medium text-[#8A8FA8]">Estimated Budget (LKR)</div>
+        <input
+          type="number"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          placeholder="e.g. 250000"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
         />
 
         <div className="text-[11px] font-medium text-[#8A8FA8]">Colour</div>
@@ -83,7 +99,7 @@ function AddTaskModal({ onSave, onClose }) {
           </button>
           <button
             className="rounded-md border-none bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white"
-            onClick={() => name.trim() && onSave(name.trim(), color)}
+            onClick={submit}
           >
             Add Task
           </button>
@@ -96,7 +112,7 @@ function AddTaskModal({ onSave, onClose }) {
 export default function TaskCalendarGrid() {
   const {
     tasks, addTask, deleteTask, updateTask, toggleTaskCompleted,
-    estimatedBudget, totalCost, remainingBudget,
+    estimatedBudget, totalCost, remainingBudget, totalAllocatedBudget,
     projectCompleted, finishProject, unlockProject,
   } = useTasks();
 
@@ -114,15 +130,19 @@ export default function TaskCalendarGrid() {
 
   function toggleCell(taskId, day) {
     if (projectCompleted) return;
-    const k = dayKey(day);
     const task = tasks.find((t) => t.id === taskId);
+    if (task?.completed) return;
+    const k = dayKey(day);
     updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
   }
 
   return (
     <>
       {showAdd && (
-        <AddTaskModal onSave={(name, color) => { addTask(name, color); setShowAdd(false); }} onClose={() => setShowAdd(false)} />
+        <AddTaskModal
+          onSave={(name, color, budget) => { addTask(name, color, budget); setShowAdd(false); }}
+          onClose={() => setShowAdd(false)}
+        />
       )}
       {editingTask && (
         <EditTaskModal
@@ -137,6 +157,10 @@ export default function TaskCalendarGrid() {
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Estimated Budget</span>
           <span className="font-syne text-base font-bold text-[#1A1D23]">LKR {fmtCompact(estimatedBudget)}</span>
+        </div>
+        <div className="flex flex-col gap-0.5">
+          <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Allocated to Tasks</span>
+          <span className="font-syne text-base font-bold text-[#1A56A0]">LKR {fmtCompact(totalAllocatedBudget)}</span>
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Total Cost</span>
@@ -165,7 +189,11 @@ export default function TaskCalendarGrid() {
           ) : (
             <button
               className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
-              onClick={finishProject}
+              onClick={async () => {
+                if (window.confirm("Are you sure you want to finish this project? This will lock all edits.")) {
+                  await finishProject();
+                }
+              }}
             >
               ✓ Finish Project
             </button>
@@ -263,7 +291,7 @@ export default function TaskCalendarGrid() {
                         >
                           {t.name}
                         </span>
-                        {!projectCompleted && (
+                        {!projectCompleted && !t.completed && (
                           <button
                             className="px-0.5 text-sm leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B]"
                             onClick={() => deleteTask(t.id)}
@@ -274,8 +302,13 @@ export default function TaskCalendarGrid() {
                         )}
                       </div>
                       <div className="flex flex-wrap items-center gap-2">
+                        {t.budget > 0 && (
+                          <span className="text-[11px] font-semibold text-[#1A56A0]">
+                            Budget: LKR {(t.budget || 0).toLocaleString()}
+                          </span>
+                        )}
                         <span className="text-[11px] font-semibold text-[#B85A00]">
-                          LKR {(t.cost || 0).toLocaleString()}
+                          Cost: LKR {(t.cost || 0).toLocaleString()}
                         </span>
                         {t.assignedSP && (
                           <span className="text-[11px] text-[#4A5068] flex items-center gap-1">
@@ -285,7 +318,7 @@ export default function TaskCalendarGrid() {
                             {t.assignedSP}
                           </span>
                         )}
-                        {!projectCompleted && (
+                        {!projectCompleted && !t.completed && (
                           <button
                             className="rounded-[5px] border border-[rgba(26,29,35,0.1)] px-1.5 py-px font-sans text-[10px] text-[#4A5068] hover:bg-[#EEECEA] inline-flex items-center gap-1"
                             onClick={() => setEditingTask(t)}
@@ -297,14 +330,32 @@ export default function TaskCalendarGrid() {
                           </button>
                         )}
                         {t.completed ? (
-                          <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
-                            ✓ Completed
-                          </span>
+                          <div className="flex items-center gap-1.5">
+                            <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
+                              ✓ Completed
+                            </span>
+                            {!projectCompleted && (
+                              <button
+                                className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
+                                onClick={() => {
+                                  if (window.confirm("Are you sure you want to unfreeze this task?")) {
+                                    toggleTaskCompleted(t.id);
+                                  }
+                                }}
+                              >
+                                Unfreeze
+                              </button>
+                            )}
+                          </div>
                         ) : (
                           !projectCompleted && (
                             <button
                               className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
-                              onClick={() => toggleTaskCompleted(t.id)}
+                              onClick={() => {
+                                if (window.confirm("Are you sure you want to finish this task? This will freeze the task.")) {
+                                  toggleTaskCompleted(t.id);
+                                }
+                              }}
                             >
                               Finish Task
                             </button>

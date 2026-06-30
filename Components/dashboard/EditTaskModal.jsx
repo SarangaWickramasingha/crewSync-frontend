@@ -8,12 +8,13 @@ export default function EditTaskModal({ task, onSave, onClose }) {
   const [color, setColor] = useState(task.color);
   const [cost, setCost] = useState(task.cost || 0);
   const [additionalCost, setAdditionalCost] = useState('');
+  const [budget, setBudget] = useState(task.budget ?? '');
   const [assignedSP, setAssignedSP] = useState(task.assignedSP);
 
   function handleSave() {
     if (!name.trim()) return;
     const finalCost = (Number(cost) || 0) + (Number(additionalCost) || 0);
-    onSave({ name: name.trim(), color, cost: finalCost, assignedSP });
+    onSave({ name: name.trim(), color, cost: finalCost, budget: Number(budget) || 0, assignedSP });
   }
 
   return (
@@ -27,6 +28,15 @@ export default function EditTaskModal({ task, onSave, onClose }) {
           value={name}
           onChange={(e) => setName(e.target.value)}
           autoFocus
+        />
+
+        <div className="text-[11px] font-medium text-[#8A8FA8] mt-1">Estimated Budget (LKR)</div>
+        <input
+          type="number"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          value={budget}
+          onChange={(e) => setBudget(e.target.value)}
+          placeholder="e.g. 250000"
         />
 
         <div className="flex justify-between items-center text-[11px] font-medium text-[#8A8FA8] mt-1 mb-0.5">

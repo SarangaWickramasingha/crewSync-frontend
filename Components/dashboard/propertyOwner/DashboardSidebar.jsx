@@ -98,9 +98,6 @@ export default function DashboardSidebar({
                       : 'text-[#4A5068] hover:bg-[#F7F6F2] hover:text-[#1A1D23]'
                   }`}
                 >
-                  <span className="w-[18px] h-[18px] flex items-center justify-center flex-shrink-0">
-                    <img src={item.icon} alt={item.text} className="h-full w-full object-contain" />
-                  </span>
                   <span>{item.text}</span>
                   {item.badge !== null && item.badge !== undefined && (
                     <span className="ml-auto bg-[#E8820C] text-white text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">

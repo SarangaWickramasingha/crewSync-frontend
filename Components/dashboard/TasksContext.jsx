@@ -5,11 +5,11 @@ import { createContext, useContext, useState, useMemo, useEffect } from 'react';
 const TasksContext = createContext(null);
 
 const INIT_TASKS = [
-  { id: 1, name: 'Site Preparation', color: '#1B6E3A', days: {}, cost: 0, assignedSP: null, completed: false },
-  { id: 2, name: 'Foundation Work', color: '#E8820C', days: {}, cost: 0, assignedSP: null, completed: false },
-  { id: 3, name: 'Structural Walls', color: '#1A56A0', days: {}, cost: 0, assignedSP: null, completed: false },
-  { id: 4, name: 'Roofing', color: '#C0392B', days: {}, cost: 0, assignedSP: null, completed: false },
-  { id: 5, name: 'Plumbing & Electrical', color: '#6B3FA0', days: {}, cost: 0, assignedSP: null, completed: false },
+  { id: 1, name: 'Site Preparation', color: '#1B6E3A', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
+  { id: 2, name: 'Foundation Work', color: '#E8820C', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
+  { id: 3, name: 'Structural Walls', color: '#1A56A0', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
+  { id: 4, name: 'Roofing', color: '#C0392B', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
+  { id: 5, name: 'Plumbing & Electrical', color: '#6B3FA0', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
 ];
 
 const INIT_NOTIFICATIONS = [
@@ -132,12 +132,15 @@ export function TasksProvider({ children }) {
       }
 
       // Map DB tasks to context task format
+      // NOTE: expects backend to optionally include a `budget` field per task
+      // (e.g. t.task_budget) once you wire up storing per-task budgets server-side.
       const mapped = (data.tasks || []).map((t, idx) => ({
         id: t.task_id,
         name: t.task_name,
         color: TASK_COLORS[idx % TASK_COLORS.length],
         days: {},
         cost: 0,
+        budget: Number(t.task_budget) || 0,
         assignedSP: null,
         completed: t.status === 'completed',
       }));
@@ -164,8 +167,8 @@ export function TasksProvider({ children }) {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }
 
-  function addTask(name, color) {
-    setTasks((ts) => [...ts, { id: nextId, name, color, days: {}, cost: 0, assignedSP: null, completed: false }]);
+  function addTask(name, color, budget = 0) {
+    setTasks((ts) => [...ts, { id: nextId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]);
     setNextId((n) => n + 1);
     addNotification(`New task <strong>${name}</strong> has been added to the project timeline`);
   }
@@ -185,6 +188,9 @@ export function TasksProvider({ children }) {
           // Detect changes for notifications
           if (updates.cost !== undefined && updates.cost !== t.cost) {
             addNotification(`Cost for task <strong>${t.name}</strong> updated to <strong>LKR ${updates.cost.toLocaleString()}</strong>`);
+          }
+          if (updates.budget !== undefined && updates.budget !== t.budget) {
+            addNotification(`Estimated budget for task <strong>${t.name}</strong> updated to <strong>LKR ${Number(updates.budget).toLocaleString()}</strong>`);
           }
           if (updates.assignedSP !== undefined && updates.assignedSP !== t.assignedSP) {
             if (updates.assignedSP) {
@@ -224,6 +230,7 @@ export function TasksProvider({ children }) {
   }
 
   const totalCost = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.cost) || 0), 0), [tasks]);
+  const totalAllocatedBudget = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.budget) || 0), 0), [tasks]);
   const remainingBudget = estimatedBudget - totalCost;
 
   const value = {
@@ -237,6 +244,7 @@ export function TasksProvider({ children }) {
     loadFromProject,
     estimatedBudget,
     totalCost,
+    totalAllocatedBudget,
     remainingBudget,
     projectCompleted,
     finishProject: async () => {
@@ -283,4 +291,4 @@ export function useTasks() {
   const ctx = useContext(TasksContext);
   if (!ctx) throw new Error('useTasks must be used within a TasksProvider');
   return ctx;
-}
+}
