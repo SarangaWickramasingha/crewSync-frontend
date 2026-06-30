@@ -8,6 +8,8 @@ import {
     ShoppingCart, UserCircle, Bell, Briefcase, Menu, X, Home
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import { FolderOpen } from 'lucide-react';
+
 
 
 
@@ -41,6 +43,7 @@ const NAV = {
         { href: '/dashboard/admin/propertyOwner', label: 'Property Owners', icon: <Home className="w-4 h-4 text-indigo-500" /> },
         { href: '/dashboard/admin/materialSupplier', label: 'Material Suppliers', icon: <Package className="w-4 h-4 text-emerald-500" /> },
         { href: '/dashboard/admin/providers', label: 'Providers', icon: <Wrench className="w-4 h-4 text-green-500" /> },
+        { href: '/dashboard/admin/projects', label: 'Projects', icon: <FolderOpen className="w-4 h-4 text-cyan-500" /> },
         { href: '/dashboard/admin/reviews', label: 'Reviews', icon: <Star className="w-4 h-4 text-yellow-500" /> },
         { href: '/dashboard/admin/feedback', label: 'Feedback', icon: <MessageSquare className="w-4 h-4 text-purple-500" /> },
     ],
