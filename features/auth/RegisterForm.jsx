@@ -1,5 +1,5 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import RolePicker from './RolePicker';
 import StepCredentials from './register-steps/StepCredentials';
@@ -7,72 +7,20 @@ import StepPersonalInfo from './register-steps/StepPersonalInfo';
 import StepOwnerDetails from './register-steps/StepOwnerDetails';
 import StepProviderDetails from './register-steps/StepProviderDetails';
 import StepSupplierDetails from './register-steps/StepSupplierDetails';
-import {
-    Home, Wrench, Boxes,
-    ClipboardList, ShieldCheck, MessageCircle, BarChart2,
-    Inbox, Star, Package, MapPin,
-} from 'lucide-react';
 
-
+import { SKILL_NAME_TO_ID, MATERIAL_NAME_TO_ID, ROLE_MAP } from '@/constants/registerMaps';
 const ROLE_THEME = {
-    owner: { bg: 'bg-green-700', border: 'border-green-700', text: 'text-green-700', badgeBg: 'bg-green-50', badgeText: 'text-green-700', ring: 'ring-green-200' },
-    provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700', ring: 'ring-blue-200' },
-    supplier: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-700', ring: 'ring-orange-200' },
+    owner: { bg: 'bg-green-700', border: 'border-green-700', text: 'text-green-700', badgeBg: 'bg-green-50', badgeText: 'text-green-700' },
+    provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700' },
+    supplier: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-500', badgeBg: 'bg-orange-50', badgeText: 'text-orange-700' },
 };
 
-// ── Info panel content per role ──────────────────────────────────────────────
-const ROLE_INFO = {
-    owner: {
-        badge: { icon: <Home className="w-3.5 h-3.5" />, label: 'Property Owner' },
-        tagline: 'Post projects and manage your construction from start to finish.',
-        colors: {
-            badge: 'border-green-300 bg-green-50 text-green-800',
-            icon: 'bg-green-100 text-green-700',
-        },
-        features: [
-            { icon: <ClipboardList className="w-4 h-4" />, title: 'Post Projects', desc: 'Describe your job and get matched with skilled providers.' },
-            { icon: <ShieldCheck className="w-4 h-4" />, title: 'Verified Providers', desc: 'Hire only rated, background-checked professionals.' },
-            { icon: <MessageCircle className="w-4 h-4" />, title: 'Direct Chat', desc: 'Communicate with contractors and suppliers in one place.' },
-            { icon: <BarChart2 className="w-4 h-4" />, title: 'Track Progress', desc: 'Monitor timelines, payments, and milestones easily.' },
-        ],
-
-    },
-    provider: {
-        badge: { icon: <Wrench className="w-3.5 h-3.5" />, label: 'Service Provider' },
-        tagline: 'Connect with property owners across Sri Lanka and grow your service business.',
-        colors: {
-            badge: 'border-blue-300 bg-blue-50 text-blue-800',
-            icon: 'bg-blue-100 text-blue-700',
-        },
-        features: [
-            { icon: <Inbox className="w-4 h-4" />, title: 'Receive Job Requests', desc: 'Get matched with property owners who need your skills.' },
-            { icon: <Star className="w-4 h-4" />, title: 'Build Your Reputation', desc: 'Collect reviews and showcase your portfolio.' },
-            { icon: <MessageCircle className="w-4 h-4" />, title: 'Chat Directly', desc: 'Communicate and close deals without middlemen.' },
-            { icon: <BarChart2 className="w-4 h-4" />, title: 'Track Your Jobs', desc: 'Manage ongoing work and earnings in one dashboard.' },
-        ],
-    },
-    supplier: {
-        badge: { icon: <Boxes className="w-3.5 h-3.5" />, label: 'Supplier' },
-        tagline: 'Reach thousands of active construction projects across Sri Lanka.',
-        colors: {
-            badge: 'border-orange-300 bg-orange-50 text-orange-800',
-            icon: 'bg-orange-100 text-orange-700',
-        },
-        features: [
-            { icon: <Package className="w-4 h-4" />, title: 'List Your Materials', desc: 'Showcase sand, cement, timber, and more to buyers.' },
-            { icon: <MapPin className="w-4 h-4" />, title: 'Local Discovery', desc: 'Property owners nearby will find you first.' },
-            { icon: <MessageCircle className="w-4 h-4" />, title: 'Direct Inquiries', desc: 'Buyers contact you directly — no commission fees.' },
-            { icon: <BarChart2 className="w-4 h-4" />, title: 'Manage Orders', desc: 'Track inquiries and deliveries from one dashboard.' },
-        ],
-    },
-};
-const ROLE_PRIMARY = {
-    owner: { bg: 'bg-green-600', border: 'border-green-600', text: 'text-green-600', bgLight: 'bg-green-50', ring: 'ring-green-600/10' },
-    provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', bgLight: 'bg-blue-50', ring: 'ring-blue-600/10' },
-    supplier: { bg: 'bg-orange-500', border: 'border-orange-500', text: 'text-orange-500', bgLight: 'bg-orange-50', ring: 'ring-orange-500/10' },
+const ROLE_TAGLINE = {
+    owner: { heading: 'Build your dream project.', sub: 'Connect with trusted professionals across Sri Lanka.' },
+    provider: { heading: 'Grow your trade business.', sub: 'Find clients who need your skills today.' },
+    supplier: { heading: 'Reach more buyers.', sub: 'Supply materials to active construction projects.' },
 };
 
-// ── Step config per role ─────────────────────────────────────────────────────
 const STEP_LABELS = ['Account Setup', 'Your Details'];
 
 function validate(step, role, creds, info, details) {
@@ -82,10 +30,9 @@ function validate(step, role, creds, info, details) {
         if (creds.password !== creds.confirmPassword) return 'Passwords do not match.';
     }
     if (step === 1) {
-        const baseRequired = ['firstName', 'lastName', 'mobile', 'nic'];
-        // owner and provider share the top personal section with district+city
+        const baseRequired = ['firstName', 'lastName', 'mobile'];
         if (role !== 'supplier') {
-            for (const f of [...baseRequired, 'district', 'city']) {
+            for (const f of [...baseRequired, 'district']) {
                 if (!info[f]?.trim()) return 'Please fill in all required fields.';
             }
         } else {
@@ -95,14 +42,12 @@ function validate(step, role, creds, info, details) {
         }
         if (role === 'owner' && !details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
         if (role === 'provider') {
-            if (!details.primaryTrade) return 'Please select your primary trade.';
-            if (!details.workRegion) return 'Please select where you can work.';
             if (!details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
         }
         if (role === 'supplier') {
             if (!details.businessName?.trim()) return 'Please enter your business name.';
             if (!details.district) return 'Please select your district.';
-            if (!details.city?.trim()) return 'Please enter your city.';
+            /*reomve city too ashaaaaa */
             if (!details.address?.trim()) return 'Please enter your business address.';
             if (!details.materials?.length) return 'Please select at least one material you supply.';
             if (!details.agreeTerms) return 'You must agree to the Terms of Service to continue.';
@@ -111,121 +56,215 @@ function validate(step, role, creds, info, details) {
     return null;
 }
 
-// ── Main component ───────────────────────────────────────────────────────────
 export default function RegisterForm() {
-
-
     const router = useRouter();
     const [role, setRole] = useState('owner');
-    const [step, setStep] = useState(0); // 0 = role picker + credentials, 1 = details
+    const [step, setStep] = useState(0);
+    const [loading, setLoading] = useState(false);
+
 
     const [creds, setCreds] = useState({ email: '', password: '', confirmPassword: '' });
     const [info, setInfo] = useState({
-        firstName: '', lastName: '', mobile: '', nic: '', district: '', city: '',
+        firstName: '', lastName: '', mobile: '', district: '',
     });
     const [details, setDetails] = useState({
-        // owner
         address: '', agreeTerms: false,
-        // provider
-        primaryTrade: '', experience: '', workRegion: '', skills: [], bio: '', dailyRate: '', rateType: '',
-        // supplier
+        /* primaryTrade: ''*/ experience: '', /*workRegion: ''*/ skills: [], bio: '', dailyRate: '', rateType: '',
         businessName: '', brn: '', delivery: '', deliveryCoverage: '',
         materials: [], hasHardwareStore: false, hwStoreName: '', hwBRN: '', hwAddress: '',
         agreeVerification: false,
     });
 
     const [error, setError] = useState('');
+    const [mounted, setMounted] = useState(false);
 
-    const info_panel = ROLE_INFO[role];
-
+    useEffect(() => {
+        const t = setTimeout(() => setMounted(true), 50);
+        return () => clearTimeout(t);
+    }, []);
     const theme = ROLE_THEME[role];
+    const tagline = ROLE_TAGLINE[role];
 
-    const handleNext = () => {
+    const handleNext = async () => {
         const err = validate(step, role, creds, info, details);
         if (err) { setError(err); return; }
         setError('');
-        if (step === 0) { setStep(1); window.scrollTo(0, 0); return; }
-        // Final submit — navigate to dashboard placeholder
-        router.push('/dashboard');
+
+        if (step === 0) {
+            setLoading(true);
+            try {
+                const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/check-email', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: creds.email.trim().toLowerCase() }),
+                });
+                const data = await res.json();
+                if (data.exists) {
+                    setError('This email is already registered. Please login instead.');
+                    setLoading(false);
+                    return;
+                }
+            } catch (err) {
+                setError('Could not connect to the server. Make sure the backend is running.');
+                setLoading(false);
+                return;
+            }
+            setLoading(false);
+            setMounted(false);
+            setTimeout(() => {
+                setStep(1);
+                window.scrollTo(0, 0);
+                setMounted(true);
+            }, 300);
+            return;
+        }
+        // router.push('/dashboard');
+        handleSubmit()
     };
 
     const handleBack = () => {
         setError('');
-        setStep(0);
-        window.scrollTo(0, 0);
+        setMounted(false); // fade out
+        setTimeout(() => {
+            setStep(0);
+            window.scrollTo(0, 0);
+            setMounted(true); // fade in
+        }, 300);
     };
 
-    return (
-        <div className="flex gap-8 w-full max-w-[900px] items-start">
+    const handleSubmit = async () => {
+        setLoading(true);
+        setError('');
 
-            {/* ── Info panel ── */}
-            <aside className="w-64 flex-shrink-0 sticky top-20 hidden md:block">
-                <div className="font-syne text-2xl font-extrabold text-amber tracking-tight mb-1">
-                    Crew<span className="text-slate">Sync</span>
-                </div>
-                <p className="text-xs text-muted leading-relaxed mb-4">{info_panel.tagline}</p>
-                <span className={`inline-flex items-center gap-1.5 rounded-full border text-xs font-semibold px-3 py-1 mb-4
-  ${info_panel.colors.badge}`}>
-                    {info_panel.badge.icon}
-                    {info_panel.badge.label}
-                </span>
-                <div className="flex flex-col gap-2.5 mb-5">
-                    {info_panel.features.map(f => (
-                        <div key={f.title} className="flex items-start gap-2.5 bg-white border border-border
-              rounded-xl p-3">
-                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center text-base flex-shrink-0 mt-0.5
-  ${info_panel.colors.icon}`}>
-                                {f.icon}
-                            </div>
-                            <div>
-                                <p className="text-xs font-semibold text-slate">{f.title}</p>
-                                <p className="text-[11px] text-muted leading-relaxed mt-0.5">{f.desc}</p>
-                            </div>
-                        </div>
+        const payload = {
+            email: creds.email.trim().toLowerCase(),
+            password: creds.password,
+            role: ROLE_MAP[role],
+            fname: info.firstName.trim(),
+            lname: info.lastName.trim(),
+            contact_no: info.mobile.trim(),
+            // nic:        info.nic?.trim() ?? '', 
+            district: role === 'supplier' ? details.district : info.district,
+        };
+
+        if (role === 'owner') {
+            payload.address = details.address?.trim() ?? '';
+        }
+
+        if (role === 'provider') {
+            payload.bio = details.bio?.trim() ?? '';
+            payload.charge_per_day = details.dailyRate ?? null;
+            payload.willing_outside_region = details.workOutsideRegion ? 1 : 0;
+            payload.skill_ids = (details.skills || [])
+                .map(name => SKILL_NAME_TO_ID[name])
+                .filter(Boolean);
+        }
+
+        if (role === 'supplier') {
+            payload.business_name = details.businessName?.trim() ?? '';
+            payload.business_address = details.address?.trim() ?? '';
+            payload.brn = details.brn?.trim() ?? '';
+            payload.delivery = details.delivery ? 1 : 0;
+            payload.is_hardware_shop = details.hasHardwareStore ? 1 : 0;
+            payload.material_ids = (details.materials || [])
+                .map(name => MATERIAL_NAME_TO_ID[name])
+                .filter(Boolean);
+            if (details.hasHardwareStore) {
+                payload.hw_store_name = details.hwStoreName?.trim() ?? '';
+                payload.hw_br_number = details.hwBRN?.trim() ?? '';
+                payload.hw_address = details.hwAddress?.trim() ?? '';
+            }
+        }
+
+        try {
+            const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/register', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(payload),
+            });
+
+            const data = await res.json();
+
+            if (data.success) {
+                router.push('/login?registered=1');
+            } else {
+                setError(data.message || 'Registration failed. Please try again.');
+            }
+        } catch (err) {
+            setError('Could not connect to the server. Make sure the backend is running.');
+        } finally {
+            setLoading(false);
+        }
+    };
+    return (
+        <div
+            className="flex w-full max-w-[1100px] items-stretch"
+            style={{
+                opacity: mounted ? 1 : 0,
+                transform: mounted ? 'translateY(0)' : 'translateY(24px)',
+                transition: 'opacity 0.7s ease, transform 0.7s ease',
+            }}
+        >
+            {/* ── Left: Image Panel ── */}
+            <aside className="hidden lg:flex lg:w-[420px] flex-shrink-0 relative overflow-hidden rounded-l-2xl flex-col">
+                {/* Image */}
+                <img
+                    src={`/images/register-${role}.jpg`}
+                    alt={`${role} registration`}
+                    className="absolute inset-0 w-full h-full object-cover transition-all duration-700"
+                />
+                {/* Dark overlay */}
+                <div className="absolute inset-0 bg-gradient-to-b from-[#1A1D23]/60 to-[#1A1D23]/90" />
+
+                {/* Top: dark role switcher */}
+                <div className="relative z-10 p-5 flex gap-2">
+                    {['owner', 'provider', 'supplier'].map(r => (
+                        <button
+                            key={r}
+                            onClick={() => setRole(r)}
+                            className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all
+                                ${role === r
+                                    ? 'bg-white/20 text-white border border-white/30'
+                                    : 'text-white/50 hover:text-white/80'
+                                }`}
+                        >
+                            {r === 'owner' ? 'Owner' : r === 'provider' ? 'Provider' : 'Supplier'}
+                        </button>
                     ))}
                 </div>
-                <p className="text-xs text-muted">
-                    Already have an account?{' '}
-                    <a href="/sign-in" className="text-primary font-semibold hover:underline">Sign in here</a>
-                </p>
+
+                {/* Bottom: tagline */}
+                <div className="relative z-10 mt-auto p-8">
+                    <p className="font-climate text-2xl text-[#E8820C]">
+                        Crew<span className="text-white">Sync</span>
+                    </p>
+                    <p className="text-white font-bold text-xl mt-2">{tagline.heading}</p>
+                    <p className="text-white/60 text-sm mt-1">{tagline.sub}</p>
+                </div>
             </aside>
 
-            {/* ── Form card ── */}
-            <div className="flex-1 bg-white border border-border rounded-xl shadow-sm overflow-hidden">
+            {/* ── Right: Form card ── */}
+            <div className="flex-1 bg-white border border-border rounded-r-2xl shadow-sm overflow-hidden flex flex-col">
 
-                {/* Step bar */}
-                <div className="flex items-center px-6 py-3 border-b border-border bg-surface">
-                    {STEP_LABELS.map((label, i) => (
-                        <div key={i} className="flex items-center">
-                            <div className="flex items-center gap-2">
-                                <div className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold
-  border-2 transition-all
-  ${i < step ? `${theme.bg} ${theme.border} text-white`
+                {/* Dark top bar with step indicator */}
+                <div className="bg-[#1A1D23] px-6 py-3 flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        {STEP_LABELS.map((label, i) => (
+                            <div key={i} className="flex items-center gap-2">
+                                <div className={`w-6 h-6 rounded-full flex items-center justify-center text-[11px] font-bold border-2 transition-all
+                                    ${i < step ? `${theme.bg} ${theme.border} text-white`
                                         : i === step ? `${theme.bg} ${theme.border} text-white`
-                                            : 'bg-white border-border text-muted'}`}>
+                                            : 'border-white/20 text-white/40'}`}>
                                     {i < step ? '✓' : i + 1}
                                 </div>
-                                <span className={`text-xs font-medium ${i === step ? `${theme.text} font-semibold` : 'text-muted'}`}>
+                                <span className={`text-[11px] font-medium ${i === step ? 'text-white' : 'text-white/40'}`}>
                                     {label}
                                 </span>
+                                {i < STEP_LABELS.length - 1 && (
+                                    <div className={`h-0.5 w-8 rounded-full ${i < step ? theme.bg : 'bg-white/10'}`} />
+                                )}
                             </div>
-                            {i < STEP_LABELS.length - 1 && (
-                                <div className={`h-0.5 w-10 mx-2 rounded-full transition-all ${i < step ? theme.bg : 'bg-border'}`} />
-                            )
-                            }
-                        </div>
-                    ))}
-                </div>
-
-                {/* Card header */}
-                <div className="px-6 py-4 border-b border-border flex items-center justify-between">
-                    <div>
-                        <h2 className="font-syne text-base font-bold text-slate">
-                            {step === 0 ? 'Create your account' : 'Your Details'}
-                        </h2>
-                        <p className="text-xs text-muted mt-0.5">
-                            {step === 0 ? 'Choose your role and set up your credentials.' : 'Tell us a bit about yourself.'}
-                        </p>
+                        ))}
                     </div>
                     <span className={`${theme.badgeBg} ${theme.badgeText} text-[11px] font-bold px-2.5 py-1 rounded-full`}>
                         Step {step + 1} of 2
@@ -233,18 +272,21 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Form body */}
-                <div className="p-6">
-                    {/* Error banner */}
-                    {error && (
-                        <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-3.5 py-2.5
-              text-sm mb-4">
-                            {error}
-                        </div>
-                    )}
+                <div
+                    className="p-6 flex-1 overflow-y-auto"
+                    style={{
+                        opacity: mounted ? 1 : 0,
+                        transform: mounted ? 'translateY(0)' : 'translateY(16px)',
+                        transition: 'opacity 0.4s ease, transform 0.4s ease',
+                    }}
+                >                    {error && (
+                    <div className="bg-red-50 border border-red-200 text-red-600 rounded-lg px-3.5 py-2.5 text-sm mb-4">
+                        {error}
+                    </div>
+                )}
 
                     {step === 0 && (
                         <>
-                            {/* Role picker */}
                             <div className="mb-6">
                                 <p className="text-[11px] font-semibold text-slate-light uppercase tracking-wide mb-2">
                                     I am registering as a…
@@ -257,16 +299,12 @@ export default function RegisterForm() {
 
                     {step === 1 && (
                         <>
-                            {/* Personal info shared by owner + provider; supplier has its own top section */}
-                            {role !== 'supplier' && (
-                                <StepPersonalInfo data={info} onChange={setInfo} />
-                            )}
+                            {role !== 'supplier' && <StepPersonalInfo data={info} onChange={setInfo} />}
                             {role === 'owner' && <StepOwnerDetails data={details} onChange={setDetails} />}
                             {role === 'provider' && <StepProviderDetails data={details} onChange={setDetails} />}
                             {role === 'supplier' && <StepSupplierDetails data={{ ...info, ...details }} onChange={(merged) => {
-                                // Split back into info and details buckets
-                                const { firstName, lastName, mobile, nic, ...rest } = merged;
-                                setInfo(prev => ({ ...prev, firstName, lastName, mobile, nic }));
+                                const { firstName, lastName, mobile, ...rest } = merged;
+                                setInfo(prev => ({ ...prev, firstName, lastName, mobile }));
                                 setDetails(prev => ({ ...prev, ...rest }));
                             }} />}
                         </>
@@ -274,14 +312,13 @@ export default function RegisterForm() {
                 </div>
 
                 {/* Footer */}
-                <div className="px-6 py-4 border-t border-border bg-surface flex items-center justify-between gap-3 flex-wrap">
+                <div className="px-6 py-4 border-t border-border bg-surface flex items-center justify-between gap-3">
                     <div>
                         {step > 0 ? (
                             <button
                                 type="button"
                                 onClick={handleBack}
-                                className="px-4 py-2.5 border border-border rounded-lg text-sm text-slate-light
-                  font-medium hover:bg-white transition-all"
+                                className="px-4 py-2.5 border border-border rounded-lg text-sm text-slate-light font-medium hover:bg-white transition-all"
                             >
                                 ← Back
                             </button>
@@ -289,16 +326,16 @@ export default function RegisterForm() {
                             <p className="text-xs text-muted max-w-xs">Your data is protected and never sold.</p>
                         )}
                     </div>
+
                     <button
                         type="button"
                         onClick={handleNext}
-                        className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold
-  hover:-translate-y-px transition-all shadow-sm ${theme.bg}`}
-                    >
-                        {step === 0 ? 'Continue →' : 'Create Account →'}
+                        className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold hover:-translate-y-px transition-all shadow-sm ${theme.bg}`}
+                    >{ }
+                        {loading ? 'Checking…' : step === 0 ? 'Continue →' : 'Create Account →'}
                     </button>
                 </div>
             </div>
-        </div >
+        </div>
     );
 }
