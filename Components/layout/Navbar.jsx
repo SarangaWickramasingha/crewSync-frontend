@@ -3,9 +3,12 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 
+import { useAuth } from "@/context/AuthContext";
+
 export default function Navbar({ variant = "default", activeTab = "Home" }) {
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
+  const { isGuest, logout } = useAuth();
 
   const Logo = () => (
     <div
@@ -71,18 +74,32 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
           </button>
         </div>
         <div className="flex items-center gap-2">
-          <button
-            onClick={() => router.push("/login")}
-            className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
-          >
-            Log In
-          </button>
-          <button
-            onClick={() => router.push("/register")}
-            className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
-          >
-            Get Started
-          </button>
+          {isGuest ? (
+            <>
+              <button
+                onClick={() => router.push("/login")}
+                className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
+              >
+                Log In
+              </button>
+              <button
+                onClick={() => router.push("/register")}
+                className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+              >
+                Get Started
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                logout();
+                router.push("/home");
+              }}
+              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
+            >
+              Log Out
+            </button>
+          )}
         </div>
       </nav>
     );

@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import RequestServiceModal from '@/Components/dashboard/RequestServiceModal';
+import { useAuth } from '@/context/AuthContext';
 
 const PROVIDERS = [
   { initials: 'SK', avatarBg: '#FFF3E0', avatarColor: '#B85A00', name: 'Sunil Karunaratne', role: 'Mason · Kandy District', rating: 5, reviewCount: 47, location: 'Peradeniya, Kandy', price: 'LKR 3,500 / day' },
@@ -16,6 +18,8 @@ function Stars({ rating }) {
 }
 
 export default function PropertyOwnerServicesPage() {
+  const router = useRouter();
+  const { isGuest } = useAuth();
   const [requesting, setRequesting] = useState(null);
   const [searchVal, setSearchVal] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
@@ -94,7 +98,13 @@ export default function PropertyOwnerServicesPage() {
               <div className="text-sm font-semibold text-[#B85A00] mt-2">{p.price}</div>
               <button
                 className="w-full mt-2.5 bg-[#E8820C] hover:opacity-85 text-white text-xs font-semibold py-2 rounded-md transition-colors cursor-pointer"
-                onClick={() => setRequesting(p.name)}
+                onClick={() => {
+                  if (isGuest) {
+                    router.push('/register');
+                  } else {
+                    setRequesting(p.name);
+                  }
+                }}
               >
                 Request
               </button>

@@ -4,6 +4,7 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useTasks } from '@/Components/dashboard/TasksContext';
+import { useAuth } from '@/context/AuthContext';
 
 export default function DashboardSidebar({
   userName = 'Nimal Kumarasinghe',
@@ -13,35 +14,51 @@ export default function DashboardSidebar({
   const [open, setOpen] = useState(false);
   const pathname = usePathname();
   const { tasks, notifications } = useTasks();
+  const { isGuest, user } = useAuth();
 
   const pendingCount = tasks.filter((t) => !t.completed).length;
   const unreadCount = notifications.filter((n) => !n.read).length;
 
-  const navSections = [
-    {
-      label: 'Project',
-      items: [
-        { icon: '/icons/propertyowner/overview.png', text: 'Overview', href: '/dashboard/propertyowner' },
-        { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: pendingCount > 0 ? pendingCount : null },
-        { icon: '/icons/propertyowner/forum.png', text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
-        { icon: '/icons/propertyowner/reports.png', text: 'Reports', href: '/dashboard/propertyowner/reports' },
-      ],
-    },
-    {
-      label: 'Find & Hire',
-      items: [
-        { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
-        { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
-      ],
-    },
-    {
-      label: 'Account',
-      items: [
-        { icon: '/icons/propertyowner/reviews.png', text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
-        { icon: '/icons/propertyowner/notifications.png', text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: unreadCount > 0 ? unreadCount : null },
-      ],
-    },
-  ];
+  // Compute initials and name from logged in user if available
+  const activeName = user ? `${user.fname || ''} ${user.lname || ''}`.trim() || user.name || userName : userName;
+  const activeInitials = user && user.fname ? user.fname.slice(0, 2).toUpperCase() : userInitials;
+
+  const navSections = isGuest
+    ? [
+        {
+          label: 'Explore',
+          items: [
+            { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline' },
+            { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
+            { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
+          ],
+        },
+      ]
+    : [
+        {
+          label: 'Project',
+          items: [
+            { icon: '/icons/propertyowner/overview.png', text: 'Overview', href: '/dashboard/propertyowner' },
+            { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: pendingCount > 0 ? pendingCount : null },
+            { icon: '/icons/propertyowner/forum.png', text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
+            { icon: '/icons/propertyowner/reports.png', text: 'Reports', href: '/dashboard/propertyowner/reports' },
+          ],
+        },
+        {
+          label: 'Find & Hire',
+          items: [
+            { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
+            { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
+          ],
+        },
+        {
+          label: 'Account',
+          items: [
+            { icon: '/icons/propertyowner/reviews.png', text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
+            { icon: '/icons/propertyowner/notifications.png', text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: unreadCount > 0 ? unreadCount : null },
+          ],
+        },
+      ];
 
   return (
     <>
@@ -70,15 +87,17 @@ export default function DashboardSidebar({
           ${open ? 'block' : 'hidden'}
         `}
       >
-        <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-black/10">
-          <div className="w-[38px] h-[38px] rounded-full bg-[#FFF3E0] flex items-center justify-center font-bold text-[#B85A00] text-sm">
-            {userInitials}
+        {!isGuest && (
+          <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-black/10">
+            <div className="w-[38px] h-[38px] rounded-full bg-[#FFF3E0] flex items-center justify-center font-bold text-[#B85A00] text-sm">
+              {activeInitials}
+            </div>
+            <div>
+              <div className="text-sm font-semibold">{activeName}</div>
+              <div className="text-xs text-[#8A8FA8]">{userRole}</div>
+            </div>
           </div>
-          <div>
-            <div className="text-sm font-semibold">{userName}</div>
-            <div className="text-xs text-[#8A8FA8]">{userRole}</div>
-          </div>
-        </div>
+        )}
 
         {navSections.map((section) => (
           <div key={section.label} className="mb-6">

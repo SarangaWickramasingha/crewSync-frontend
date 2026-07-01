@@ -13,7 +13,7 @@ const MOCK_USER = {
 };
 
 export function AuthProvider({ children }) {
-    const [user, setUser] = useState(MOCK_USER);
+    const [user, setUser] = useState(null);
 
     function login(userData) { setUser(userData); }
     function logout() { setUser(null); }
@@ -24,6 +24,7 @@ export function AuthProvider({ children }) {
             role: user?.role ?? null,
             login,
             logout,
+            isGuest: user === null,
             isOwner: user?.role === 'PROPERTY_OWNER',
             isProvider: user?.role === 'SERVICE_PROVIDER',
             isSupplier: user?.role === 'MATERIAL_SUPPLIER',

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RolePicker from './RolePicker';
 import StepCredentials from './register-steps/StepCredentials';
 import StepPersonalInfo from './register-steps/StepPersonalInfo';
@@ -58,7 +58,9 @@ function validate(step, role, creds, info, details) {
 
 export default function RegisterForm() {
     const router = useRouter();
-    const [role, setRole] = useState('owner');
+    const searchParams = useSearchParams();
+    const roleParam = searchParams ? searchParams.get('role') : null;
+    const [role, setRole] = useState(roleParam === 'provider' || roleParam === 'supplier' ? roleParam : 'owner');
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
 

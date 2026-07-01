@@ -61,6 +61,10 @@ export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    if (pathname.startsWith('/dashboard/propertyowner')) {
+        return <>{children}</>;
+    }
+
     const navItems = NAV[role] ?? NAV.PROPERTY_OWNER;
     const initials = user?.fname ? user.fname.slice(0, 2).toUpperCase() : 'U';
 

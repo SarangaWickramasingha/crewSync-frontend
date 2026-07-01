@@ -3,9 +3,11 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/Components/layout/Navbar";
+import { useAuth } from "@/context/AuthContext";
 
 export default function HomePage() {
   const router = useRouter();
+  const { isOwner } = useAuth();
 
   const [fbName, setFbName] = useState("");
   const [fbEmail, setFbEmail] = useState("");
@@ -133,7 +135,15 @@ export default function HomePage() {
           <div className="mb-8 text-sm text-muted">Choose your role to explore the platform</div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
             {roles.map((r) => (
-              <div key={r.title} className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-[0_2px_16px_rgba(26,29,35,0.08)]" onClick={() => router.push(r.route)}>
+              <div key={r.title} className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-[0_2px_16px_rgba(26,29,35,0.08)]" onClick={() => {
+                if (isOwner && r.title === "Service Provider") {
+                  router.push("/register?role=provider");
+                } else if (isOwner && r.title === "Material Supplier") {
+                  router.push("/register?role=supplier");
+                } else {
+                  router.push(r.route);
+                }
+              }}>
                 <div className={`absolute inset-x-0 top-0 h-[3px] ${r.accent}`} />
                 <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] ${r.iconBg}`}>
                   <img src={r.icon} alt={r.title} className="h-6 w-6 object-contain" />

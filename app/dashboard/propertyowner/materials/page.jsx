@@ -1,8 +1,10 @@
 'use client';
 
 import { useState } from 'react';
+import { useRouter } from 'next/navigation';
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import RequestMaterialModal from '@/Components/dashboard/RequestMaterialModal';
+import { useAuth } from '@/context/AuthContext';
 
 const PRODUCTS = [
   {
@@ -25,6 +27,8 @@ const STOCK_STYLES = {
 };
 
 export default function PropertyOwnerMaterialsPage() {
+  const router = useRouter();
+  const { isGuest } = useAuth();
   const [searchVal, setSearchVal] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [selectedRegion, setSelectedRegion] = useState('All Regions');
@@ -114,7 +118,13 @@ export default function PropertyOwnerMaterialsPage() {
               </span>
               <button
                 className="w-full mt-2.5 bg-[#E8820C] hover:opacity-85 text-white text-xs font-semibold py-2 rounded-md transition-colors cursor-pointer"
-                onClick={() => setRequestingProduct(p)}
+                onClick={() => {
+                  if (isGuest) {
+                    router.push('/register');
+                  } else {
+                    setRequestingProduct(p);
+                  }
+                }}
               >
                 Request
               </button>
