@@ -95,7 +95,7 @@ export default function RegisterForm() {
         if (step === 0) {
             setLoading(true);
             try {
-                const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/check-email', {
+                const res = await fetch('http://localhost/CrewSync/backend/index.php/api/auth/check-email', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: creds.email.trim().toLowerCase() }),
@@ -179,7 +179,7 @@ export default function RegisterForm() {
         }
 
         try {
-            const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/register', {
+            const res = await fetch('http://localhost/CrewSync/backend/index.php/api/auth/register', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),

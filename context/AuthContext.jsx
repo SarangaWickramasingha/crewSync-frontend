@@ -25,9 +25,10 @@ export function AuthProvider({ children }) {
             login,
             logout,
             isGuest: user === null,
-            isOwner: user?.role === 'PROPERTY_OWNER',
-            isProvider: user?.role === 'SERVICE_PROVIDER',
-            isSupplier: user?.role === 'MATERIAL_SUPPLIER',
+            isOwner: user?.role === 'property_owner',
+            isProvider: user?.role === 'service_provider',
+            isSupplier: user?.role === 'material_supplier',
+            isAdmin: user?.role === 'admin',
         }}>
             {children}
         </AuthContext.Provider>

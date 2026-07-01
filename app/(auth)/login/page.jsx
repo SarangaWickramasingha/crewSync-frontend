@@ -28,7 +28,7 @@ export default function LoginPage() {
         if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
         try {
             const res = await fetch(
-                'http://localhost/CrewSync-backend/backend/index.php/api/auth/login',
+                'http://localhost/CrewSync/backend/index.php/api/auth/login',
                 {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
@@ -40,9 +40,17 @@ export default function LoginPage() {
                 login({
                     user_id: data.user.user_id,
                     fname: data.user.fname,
+                    lname: data.user.lname,
                     role: data.user.role
                 });
-                window.location.href = '/dashboard';
+                // Redirect based on role
+                if (data.user.role === 'property_owner') {
+                    window.location.href = '/dashboard/propertyowner';
+                } else if (data.user.role === 'admin') {
+                    window.location.href = '/dashboard/admin';
+                } else {
+                    window.location.href = '/home';
+                }
             } else {
                 setError(data.message || 'Login failed');
             }

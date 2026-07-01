@@ -7,7 +7,7 @@ import { useAuth } from "@/context/AuthContext";
 
 export default function HomePage() {
   const router = useRouter();
-  const { isOwner } = useAuth();
+  const { isOwner, isGuest } = useAuth();
 
   const [fbName, setFbName] = useState("");
   const [fbEmail, setFbEmail] = useState("");
@@ -108,7 +108,7 @@ export default function HomePage() {
             CrewSync connects property owners directly with skilled tradespeople and material suppliers — with full project tracking, timelines, and transparent payments.
           </p>
           <div className="relative z-10 flex flex-wrap justify-center gap-3">
-            <button className="rounded-lg bg-amber px-7 py-3 text-[0.95rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#b85a00]" onClick={() => router.push("/project-form")}>
+            <button className="rounded-lg bg-amber px-7 py-3 text-[0.95rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#b85a00]" onClick={() => isGuest ? router.push("/register") : router.push("/project-form")}>
               Start a Project →
             </button>
           </div>
