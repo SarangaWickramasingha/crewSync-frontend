@@ -136,9 +136,9 @@ export default function HomePage() {
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
             {roles.map((r) => (
               <div key={r.title} className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-[0_2px_16px_rgba(26,29,35,0.08)]" onClick={() => {
-                if (isOwner && r.title === "Service Provider") {
+                if (r.title === "Service Provider") {
                   router.push("/register?role=provider");
-                } else if (isOwner && r.title === "Material Supplier") {
+                } else if (r.title === "Material Supplier") {
                   router.push("/register?role=supplier");
                 } else {
                   router.push(r.route);

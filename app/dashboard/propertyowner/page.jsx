@@ -1,10 +1,13 @@
 'use client';
 
+import { useEffect } from 'react';
+import { useRouter } from 'next/navigation';
 import Card from '@/Components/dashboard/propertyOwner/Card';
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import MetricCard from '@/Components/dashboard/propertyOwner/MetricCard';
 import StatusPill from '@/Components/dashboard/propertyOwner/StatusPill';
 import { useTasks } from '@/Components/dashboard/TasksContext';
+import { useAuth } from '@/context/AuthContext';
 
 function fmtCompact(n) {
   if (n >= 1000000 || n <= -1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -13,7 +16,19 @@ function fmtCompact(n) {
 }
 
 export default function PropertyOwnerOverviewPage() {
+  const router = useRouter();
+  const { isGuest } = useAuth();
   const { tasks, estimatedBudget, totalCost, remainingBudget, projectCompleted } = useTasks();
+
+  useEffect(() => {
+    if (isGuest) {
+      router.push('/dashboard/propertyowner/timeline');
+    }
+  }, [isGuest, router]);
+
+  if (isGuest) {
+    return null; // Return null while redirecting
+  }
 
   const completedCount = tasks.filter((t) => t.completed).length;
   const progressPercent = tasks.length ? Math.round((completedCount / tasks.length) * 100) : 0;

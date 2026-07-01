@@ -111,54 +111,11 @@ export function TasksProvider({ children }) {
   }
 
   async function loadFromProject(projectId) {
-    try {
-      const res = await fetch(`http://localhost/CrewSync/backend/index.php/api/projects/${projectId}`);
-      const data = await res.json();
-      if (!data.success) return;
-
-      setCurrentProjectId(projectId);
-
-      // If project is currently in 'planning' status, auto-transition it to 'ongoing'
-      if (data.project.status === 'planning') {
-        try {
-          await fetch(`http://localhost/CrewSync/backend/index.php/api/projects/${projectId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'ongoing' }),
-          });
-        } catch (statusErr) {
-          console.error('Failed to auto-transition project status to ongoing:', statusErr);
-        }
-      }
-
-      // Map DB tasks to context task format
-      // NOTE: expects backend to optionally include a `budget` field per task
-      // (e.g. t.task_budget) once you wire up storing per-task budgets server-side.
-      const mapped = (data.tasks || []).map((t, idx) => ({
-        id: t.task_id,
-        name: t.task_name,
-        color: TASK_COLORS[idx % TASK_COLORS.length],
-        days: {},
-        cost: 0,
-        budget: Number(t.task_budget) || 0,
-        assignedSP: null,
-        completed: t.status === 'completed',
-      }));
-
-      setTasks(mapped);
-      setNextId(mapped.length + 100);
-      setEstimatedBudget(Number(data.project.total_budget) || DEFAULT_BUDGET);
-      setProjectCompleted(false);
-
-      // Persist the freshly loaded project data
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('crewsync_tasks', JSON.stringify(mapped));
-        localStorage.setItem('crewsync_budget', String(data.project.total_budget));
-        localStorage.setItem('crewsync_project_completed', 'false');
-        localStorage.setItem('crewsync_project_id', String(projectId));
-      }
-    } catch (e) {
-      console.error('Failed to load project tasks:', e);
+    setCurrentProjectId(projectId);
+    setProjectCompleted(false);
+    if (typeof window !== 'undefined') {
+      localStorage.setItem('crewsync_project_completed', 'false');
+      localStorage.setItem('crewsync_project_id', String(projectId));
     }
   }
 
@@ -250,31 +207,15 @@ export function TasksProvider({ children }) {
     finishProject: async () => {
       setProjectCompleted(true);
       addNotification(`<strong>Project finished!</strong> Project marked as completed and settings locked.`);
-      if (currentProjectId) {
-        try {
-          await fetch(`http://localhost/CrewSync/backend/index.php/api/projects/${currentProjectId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'completed' }),
-          });
-        } catch (err) {
-          console.error('Failed to update project status to completed:', err);
-        }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crewsync_project_completed', 'true');
       }
     },
     unlockProject: async () => {
       setProjectCompleted(false);
       addNotification(`Project settings <strong>unlocked</strong> for further edits.`);
-      if (currentProjectId) {
-        try {
-          await fetch(`http://localhost/CrewSync/backend/index.php/api/projects/${currentProjectId}/status`, {
-            method: 'PUT',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ status: 'ongoing' }),
-          });
-        } catch (err) {
-          console.error('Failed to update project status to ongoing:', err);
-        }
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crewsync_project_completed', 'false');
       }
     },
     notifications,
