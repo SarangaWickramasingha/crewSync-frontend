@@ -1,4 +1,5 @@
 'use client';
+import { useState } from 'react';
 import Link from 'next/link';
 
 const C = {
@@ -43,6 +44,8 @@ const recentReviews = [
 ];
 
 export default function ProviderDashboard() {
+  const [available, setAvailable] = useState(true);
+
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
@@ -54,9 +57,18 @@ export default function ProviderDashboard() {
           </h2>
           <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>You have 4 new job requests this week</p>
         </div>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, padding: '6px 12px', borderRadius: '12px', background: C.greenLight, color: C.green }}>
-          ● Available for Work
-        </span>
+        <button
+          onClick={() => setAvailable(a => !a)}
+          title="Click to toggle your availability"
+          style={{
+            fontSize: '0.8rem', fontWeight: 600, padding: '6px 12px', borderRadius: '12px',
+            border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            background: available ? C.greenLight : C.surface2,
+            color: available ? C.green : C.slateLight,
+          }}
+        >
+          ● {available ? 'Available for Work' : 'Not Available for Work'}
+        </button>
       </div>
 
       {/* Metric Cards */}
