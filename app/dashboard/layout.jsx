@@ -15,7 +15,7 @@ import { FolderOpen } from 'lucide-react';
 
 // ── Sidebar nav per role ──────────────────────────────────────────
 const NAV = {
-    PROPERTY_OWNER: [
+    property_owner: [
         { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
         { href: '/dashboard/timeline', icon: <CalendarDays className="w-4 h-4" />, label: 'Timeline' },
         { href: '/dashboard/find-services', icon: <Search className="w-4 h-4" />, label: 'Find Services' },
@@ -24,20 +24,20 @@ const NAV = {
         { href: '/dashboard/reports', icon: <FileText className="w-4 h-4" />, label: 'Reports' },
         { href: '/dashboard/notifications', icon: <Bell className="w-4 h-4" />, label: 'Notifications' },
     ],
-    SERVICE_PROVIDER: [
+    service_provider: [
         { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
         { href: '/dashboard/job-requests', icon: <Briefcase className="w-4 h-4" />, label: 'Job Requests' },
         { href: '/dashboard/timeline', icon: <CalendarDays className="w-4 h-4" />, label: 'Timeline' },
         { href: '/dashboard/reviews', icon: <Star className="w-4 h-4" />, label: 'Reviews' },
         { href: '/dashboard/profile', icon: <UserCircle className="w-4 h-4" />, label: 'Profile' },
     ],
-    MATERIAL_SUPPLIER: [
+    material_supplier: [
         { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
         { href: '/dashboard/my-products', icon: <Package className="w-4 h-4" />, label: 'My Products' },
         { href: '/dashboard/orders', icon: <ShoppingCart className="w-4 h-4" />, label: 'Orders' },
         { href: '/dashboard/profile', icon: <UserCircle className="w-4 h-4" />, label: 'Profile' },
     ],
-    ADMIN: [
+    admin: [
         { href: '/dashboard/admin', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4 text-orange-500" /> },
         { href: '/dashboard/admin/users', label: 'Users', icon: <Users className="w-4 h-4 text-blue-500" /> },
         { href: '/dashboard/admin/propertyOwner', label: 'Property Owners', icon: <Home className="w-4 h-4 text-indigo-500" /> },
@@ -50,10 +50,10 @@ const NAV = {
 };
 
 const ROLE_LABEL = {
-    PROPERTY_OWNER: 'Property Owner',
-    SERVICE_PROVIDER: 'Service Provider',
-    MATERIAL_SUPPLIER: 'Supplier',
-    ADMIN: 'Administrator',
+    property_owner: 'Property Owner',
+    service_provider: 'Service Provider',
+    material_supplier: 'Supplier',
+    admin: 'Administrator',
 };
 
 export default function DashboardLayout({ children }) {
@@ -65,9 +65,8 @@ export default function DashboardLayout({ children }) {
         return <>{children}</>;
     }
 
-    const navItems = NAV[role] ?? NAV.PROPERTY_OWNER;
-    const initials = user?.fname ? user.fname.slice(0, 2).toUpperCase() : 'U';
-
+    const navItems = NAV[role] ?? NAV.property_owner;
+    const initials = user?.avatar || 'U';
     return (
         <div className="flex h-full">
 
@@ -78,7 +77,7 @@ export default function DashboardLayout({ children }) {
 
             {/* ── Sidebar ── */}
             <aside className={`
-                fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[220px] bg-white border-r border-border
+                fixed top-15 left-0 h-[calc(100vh-60px)] w-[220px] bg-white border-r border-border
                 flex flex-col p-4 z-40 transition-transform duration-200
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0 md:static md:h-auto md:z-auto

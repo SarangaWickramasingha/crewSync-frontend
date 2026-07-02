@@ -29,7 +29,7 @@ export default function HomePage() {
     let isMounted = true;
     async function loadStats() {
       try {
-        const res = await fetch("http://localhost/CrewSync/backend/index.php/api/stats/summary");
+        const res = await fetch("http://localhost/CrewSync-backend/backend/index.php/api/stats/summary");
         const data = await res.json();
         if (isMounted && data.success) {
           setStats({ workers: data.workers, projects: data.projects, suppliers: data.suppliers, avgSaved: data.avgSaved });

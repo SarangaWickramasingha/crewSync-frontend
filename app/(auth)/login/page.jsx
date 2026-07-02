@@ -28,9 +28,10 @@ export default function LoginPage() {
         if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
         try {
             const res = await fetch(
-                'http://localhost/CrewSync/backend/index.php/api/auth/login',
+                'http://localhost/CrewSync-backend/backend/index.php/api/auth/login',
                 {
                     method: 'POST',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 }

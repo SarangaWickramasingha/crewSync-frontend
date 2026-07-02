@@ -75,7 +75,7 @@ export default function PropertyOwnerOverviewPage() {
                 {progressPercent}%
               </text>
             </svg>
-            <div className="flex-1 min-w-[160px]">
+            <div className="flex-1 min-w-40">
               {tasks.length === 0 ? (
                 <p className="text-sm text-[#8A8FA8]">No tasks yet — add some in the Timeline tab.</p>
               ) : (

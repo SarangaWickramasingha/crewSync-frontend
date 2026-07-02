@@ -20,9 +20,9 @@ export default function DashboardSidebar({
   const unreadCount = notifications.filter((n) => !n.read).length;
 
   // Compute initials and name from logged in user if available
-  const activeName = user ? `${user.fname || ''} ${user.lname || ''}`.trim() || user.name || userName : userName;
-  const activeInitials = user && user.fname ? user.fname.slice(0, 2).toUpperCase() : userInitials;
-
+  const activeName = user?.name || userName;
+  const activeInitials = user?.avatar || userInitials;
+  
   const navSections = isGuest
     ? [
         {

@@ -4,25 +4,29 @@ import { useRouter } from 'next/navigation';
 import { useEffect } from 'react';
 
 export default function DashboardPage() {
-    const { role } = useAuth();
+    const { role, isGuest, loading } = useAuth();
     const router = useRouter();
 
     useEffect(() => {
-        // Redirect admin to admin overview
-        if (role === 'ADMIN') {
-            router.replace('/dashboard/admin');
-        }
-    }, [role]);
+        if (loading) return;
 
-    return (
-        <div>
-            <h2 className="font-syne text-xl font-bold text-slate mb-2">Welcome back!</h2>
-            <p className="text-xs text-muted">
-                {role === 'PROPERTY_OWNER' && 'Manage your construction projects from here.'}
-                {role === 'SERVICE_PROVIDER' && 'View your job requests and manage your work.'}
-                {role === 'MATERIAL_SUPPLIER' && 'Manage your products and incoming orders.'}
-            </p>
-            {/* TODO: add role-specific overview widgets */}
-        </div>
-    );
+        if (isGuest) {
+            router.replace('/dashboard/propertyowner/timeline');
+            return;
+        }
+
+        if (role === 'property_owner') {
+            router.replace('/dashboard/propertyowner');
+        } else if (role === 'admin') {
+            router.replace('/dashboard/admin');
+        } else if (role === 'service_provider') {
+            router.replace('/dashboard/serviceprovider');
+        } else if (role === 'material_supplier') {
+            router.replace('/dashboard/supplier');
+        } else {
+            router.replace('/login');
+        }
+    }, [role, isGuest, loading, router]);
+
+    return null;
 }

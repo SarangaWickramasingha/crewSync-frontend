@@ -11,11 +11,19 @@ export default function EditTaskModal({ task, onSave, onClose }) {
   const [budget, setBudget] = useState(task.budget ?? '');
   const [assignedSP, setAssignedSP] = useState(task.assignedSP);
 
-  function handleSave() {
+function handleSave() {
     if (!name.trim()) return;
-    const finalCost = (Number(cost) || 0) + (Number(additionalCost) || 0);
-    onSave({ name: name.trim(), color, cost: finalCost, budget: Number(budget) || 0, assignedSP });
-  }
+    const addCost = Number(additionalCost) || 0;
+    const finalCost = (Number(cost) || 0) + addCost;
+    onSave({
+        name: name.trim(),
+        color,
+        cost: finalCost,
+        addCost,
+        budget: Number(budget) || 0,
+        assignedSP
+    });
+}
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)]">

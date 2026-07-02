@@ -12,7 +12,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
 
   const Logo = () => (
     <div
-      onClick={() => router.push("/")}
+      onClick={() => router.push("/home")}
       className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
     >
       Crew<span className="text-white">Sync</span>
@@ -62,15 +62,22 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
         <Logo />
         <div className="hidden items-center gap-1 sm:flex">
           <button
-            onClick={() => router.push("/")}
+            onClick={() => router.push("/home")}
             className="rounded-md px-3 py-1.5 text-[0.8rem] font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white"
           >
             Home
           </button>
           <button
+            onClick={() => {
+              if (isGuest) {
+                router.push("/dashboard/propertyowner/timeline");
+              } else {
+                router.push("/dashboard/propertyowner");
+              }
+            }}
             className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
           >
-            Property Owner Dashboard
+            {isGuest ? "Guest Property Owner Dashboard" : "Property Owner Dashboard"}
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -121,7 +128,14 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   }
 
   /* ── DEFAULT variant ── */
-  const tabs = [{ label: "Home", href: "/home" }];
+  // Dynamically attach the accurate dashboard path into your primary tabs array
+  const tabs = [
+    { label: "Home", href: "/home" },
+    {
+      label: isGuest ? "Guest Dashboard" : "Property Owner",
+      href: isGuest ? "/dashboard/propertyowner/timeline" : "/dashboard/propertyowner",
+    },
+  ];
 
   return (
     <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
@@ -147,18 +161,32 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
       </div>
 
       <div className="flex items-center gap-2">
-        <button
-          onClick={() => router.push("/login")}
-          className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
-        >
-          Log In
-        </button>
-        <button
-          onClick={() => router.push("/register")}
-          className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
-        >
-          Get Started
-        </button>
+        {isGuest ? (
+          <>
+            <button
+              onClick={() => router.push("/login")}
+              className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => router.push("/register")}
+              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+            >
+              Get Started
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => {
+              logout();
+              router.push("/home");
+            }}
+            className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
+          >
+            Log Out
+          </button>
+        )}
         <button
           onClick={() => setNavOpen((v) => !v)}
           className="border-none bg-transparent text-[1.3rem] text-white sm:hidden"

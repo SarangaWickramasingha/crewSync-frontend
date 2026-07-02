@@ -1,47 +1,20 @@
 'use client';
 
 import { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import {
+  API_PROJECT,
+  API_PROJECTS,
+  API_PROJECT_FINISH,
+  API_TASKS,
+  API_TASK,
+  API_TASK_FINISH,
+} from '@/config/api';
 
 const TasksContext = createContext(null);
 
-const INIT_TASKS = [
-  { id: 1, name: 'Site Preparation', color: '#1B6E3A', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
-  { id: 2, name: 'Foundation Work', color: '#E8820C', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
-  { id: 3, name: 'Structural Walls', color: '#1A56A0', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
-  { id: 4, name: 'Roofing', color: '#C0392B', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
-  { id: 5, name: 'Plumbing & Electrical', color: '#6B3FA0', days: {}, cost: 0, budget: 0, assignedSP: null, completed: false },
-];
-
-const INIT_NOTIFICATIONS = [
-  {
-    id: 1,
-    text: '<strong>Sunil Karunaratne</strong> updated roofing task progress to 55%',
-    time: 'Today, 10:42 AM',
-    read: false,
-  },
-  {
-    id: 2,
-    text: '<strong>Payment released</strong> — LKR 680,000 for cement order to Malshan Hardware',
-    time: 'Yesterday, 3:15 PM',
-    read: false,
-  },
-  {
-    id: 3,
-    text: 'Task 2 (Structural Development) marked as <strong>Complete</strong>',
-    time: 'May 1, 2026',
-    read: true,
-  },
-  {
-    id: 4,
-    text: '<strong>Dinesh Wickrama</strong> accepted your carpenter request for Task 5',
-    time: 'April 30, 2026',
-    read: true,
-  },
-];
-
-// Default budget shown before a real project is loaded
+const INIT_TASKS = [];
+const INIT_NOTIFICATIONS = [];
 const DEFAULT_BUDGET = 0;
-
 const TASK_COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
 
 export function TasksProvider({ children }) {
@@ -53,7 +26,6 @@ export function TasksProvider({ children }) {
   const [estimatedBudget, setEstimatedBudget] = useState(DEFAULT_BUDGET);
   const [currentProjectId, setCurrentProjectId] = useState(null);
 
-  // Load from localStorage on mount
   useEffect(() => {
     if (typeof window !== 'undefined') {
       const savedTasks = localStorage.getItem('crewsync_tasks');
@@ -73,7 +45,6 @@ export function TasksProvider({ children }) {
     }
   }, []);
 
-  // Save to localStorage when state changes
   useEffect(() => {
     if (isLoaded && typeof window !== 'undefined') {
       localStorage.setItem('crewsync_tasks', JSON.stringify(tasks));
@@ -89,17 +60,10 @@ export function TasksProvider({ children }) {
     }
   }, [tasks, nextId, projectCompleted, notifications, estimatedBudget, currentProjectId, isLoaded]);
 
-
   function addNotification(text) {
     const now = new Date();
     const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
-    const newNotif = {
-      id: Date.now(),
-      text,
-      time,
-      read: false,
-    };
-    setNotifications((prev) => [newNotif, ...prev]);
+    setNotifications((prev) => [{ id: Date.now(), text, time, read: false }, ...prev]);
   }
 
   function markAllNotificationsRead() {
@@ -110,39 +74,91 @@ export function TasksProvider({ children }) {
     setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
   }
 
+  // ── LOAD PROJECT + TASKS FROM BACKEND ────────────────────────────────────────
   async function loadFromProject(projectId) {
-    setCurrentProjectId(projectId);
-    setProjectCompleted(false);
-    if (typeof window !== 'undefined') {
-      localStorage.setItem('crewsync_project_completed', 'false');
-      localStorage.setItem('crewsync_project_id', String(projectId));
+    try {
+      const res = await fetch(API_PROJECT(projectId), {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      setCurrentProjectId(projectId);
+
+      const mapped = (data.tasks || []).map((t, idx) => ({
+        id: t.task_id,
+        name: t.task_name,
+        color: TASK_COLORS[idx % TASK_COLORS.length],
+        days: {},
+        cost: Number(t.t_cost) || 0,
+        budget: Number(t.task_budget) || 0,
+        assignedSP: null,
+        completed: !!Number(t.is_finished),
+      }));
+
+      setTasks(mapped);
+      setNextId(mapped.length + 100);
+      setEstimatedBudget(Number(data.project.p_budget) || DEFAULT_BUDGET);
+      setProjectCompleted(!!Number(data.project.is_finished));
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crewsync_tasks', JSON.stringify(mapped));
+        localStorage.setItem('crewsync_budget', String(data.project.p_budget));
+        localStorage.setItem('crewsync_project_completed', String(!!Number(data.project.is_finished)));
+        localStorage.setItem('crewsync_project_id', String(projectId));
+      }
+    } catch (e) {
+      console.error('Failed to load project tasks:', e);
     }
   }
-
 
   function deleteNotification(id) {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
   }
 
-  function addTask(name, color, budget = 0) {
-    setTasks((ts) => [...ts, { id: nextId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]);
+  // ── ADD TASK ──────────────────────────────────────────────────────────────────
+  async function addTask(name, color, budget = 0) {
+    const tempId = nextId;
+    setTasks((ts) => [...ts, { id: tempId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]);
     setNextId((n) => n + 1);
     addNotification(`New task <strong>${name}</strong> has been added to the project timeline`);
+
+    if (!currentProjectId) return;
+
+    try {
+      const res = await fetch(API_TASKS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: currentProjectId, task_name: name, task_budget: Number(budget) || 0 }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTasks((ts) => ts.map((t) => (t.id === tempId ? { ...t, id: data.task_id } : t)));
+      }
+    } catch (err) {
+      console.error('Failed to create task on backend:', err);
+    }
   }
 
+  // ── DELETE TASK ───────────────────────────────────────────────────────────────
   function deleteTask(id) {
     const task = tasks.find((t) => t.id === id);
     setTasks((ts) => ts.filter((t) => t.id !== id));
     if (task) {
       addNotification(`Task <strong>${task.name}</strong> has been removed from the timeline`);
     }
+    fetch(API_TASK(id), {
+      method: 'DELETE',
+      credentials: 'include',
+    }).catch((err) => console.error('Failed to delete task on backend:', err));
   }
 
+  // ── UPDATE TASK ──────────────────────────────────────────────────────────────
   function updateTask(id, updates) {
     setTasks((ts) =>
       ts.map((t) => {
         if (t.id === id) {
-          // Detect changes for notifications
           if (updates.cost !== undefined && updates.cost !== t.cost) {
             addNotification(`Cost for task <strong>${t.name}</strong> updated to <strong>LKR ${updates.cost.toLocaleString()}</strong>`);
           }
@@ -161,8 +177,23 @@ export function TasksProvider({ children }) {
         return t;
       })
     );
+
+    const payload = {};
+    if (updates.name !== undefined) payload.task_name = updates.name;
+    if (updates.addCost !== undefined) payload.add_cost = updates.addCost;
+    if (updates.budget !== undefined) payload.task_budget = updates.budget;
+
+    if (Object.keys(payload).length === 0) return;
+
+    fetch(API_TASK(id), {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error('Failed to update task on backend:', err));
   }
 
+  // ── TOGGLE TASK COMPLETED ────────────────────────────────────────────────────
   function toggleTaskCompleted(id) {
     setTasks((ts) =>
       ts.map((t) => {
@@ -176,15 +207,14 @@ export function TasksProvider({ children }) {
         return t;
       })
     );
+    fetch(API_TASK_FINISH(id), {
+      method: 'PUT',
+      credentials: 'include',
+    }).catch((err) => console.error('Failed to toggle task finish:', err));
   }
 
-  function assignSP(taskId, spName) {
-    updateTask(taskId, { assignedSP: spName });
-  }
-
-  function unassignSP(taskId) {
-    updateTask(taskId, { assignedSP: null });
-  }
+  function assignSP(taskId, spName) { updateTask(taskId, { assignedSP: spName }); }
+  function unassignSP(taskId) { updateTask(taskId, { assignedSP: null }); }
 
   const totalCost = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.cost) || 0), 0), [tasks]);
   const totalAllocatedBudget = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.budget) || 0), 0), [tasks]);
@@ -207,15 +237,29 @@ export function TasksProvider({ children }) {
     finishProject: async () => {
       setProjectCompleted(true);
       addNotification(`<strong>Project finished!</strong> Project marked as completed and settings locked.`);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('crewsync_project_completed', 'true');
+      if (currentProjectId) {
+        try {
+          await fetch(API_PROJECT_FINISH(currentProjectId), {
+            method: 'PUT',
+            credentials: 'include',
+          });
+        } catch (err) {
+          console.error('Failed to finish project:', err);
+        }
       }
     },
     unlockProject: async () => {
       setProjectCompleted(false);
       addNotification(`Project settings <strong>unlocked</strong> for further edits.`);
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('crewsync_project_completed', 'false');
+      if (currentProjectId) {
+        try {
+          await fetch(API_PROJECT_FINISH(currentProjectId), {
+            method: 'PUT',
+            credentials: 'include',
+          });
+        } catch (err) {
+          console.error('Failed to unlock project:', err);
+        }
       }
     },
     notifications,
