@@ -116,12 +116,17 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   if (variant === "projectForm") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] border-b border-white/[0.06]">
-        <Logo />
+    <div
+      onClick={() => router.push("/home")}
+      className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+    >
+      Create <span className="text-white">Project</span>
+    </div>
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-[6px] text-white/50 text-[0.82rem] hover:text-white transition cursor-pointer bg-transparent border-none font-['DM_Sans']"
+          className="flex items-center gap-1.5 text-white/50 text-[1.2rem] hover:text-white transition cursor-pointer bg-transparent border-none font-['DM_Sans']"
         >
-          ← Back
+          &lt; Back
         </button>
       </nav>
     );

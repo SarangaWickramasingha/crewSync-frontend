@@ -42,7 +42,9 @@ export default function PropertyOwnerOverviewPage() {
         title="My Project: House Build – Kandy"
         subtitle="Started March 2026 · Estimated Completion August 2026"
         action={
-          <button className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
+          <button 
+          onClick={()=>router.push('/dashboard/propertyowner/project-form')}
+          className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
             + New Project
           </button>
         }
