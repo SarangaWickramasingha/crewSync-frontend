@@ -19,10 +19,9 @@ const C = {
 };
 
 const metrics = [
-  { val: '47',       label: 'Total Reviews',    change: '★ 4.9 avg', up: true },
-  { val: 'LKR 380K', label: 'This Month',       change: '↑ 12%', up: true },
-  { val: '4',        label: 'Active Projects',  change: null },
-  { val: '156',      label: 'Jobs Completed',   change: null },
+  { val: '47',  label: 'Total Reviews',    change: '★ 4.9 avg', up: true },
+  { val: '4',   label: 'Active Projects',  change: null },
+  { val: '156', label: 'Jobs Completed',   change: null },
 ];
 
 const currentWork = [

@@ -17,6 +17,7 @@ const INITIAL_REVIEWS = [
 export default function ReviewsPage() {
   const [reviews, setReviews]     = useState(INITIAL_REVIEWS);
   const [inputs, setInputs]       = useState({});
+  const [reported, setReported]   = useState({});
   const avgRating = (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1);
 
   function submitReply(id) {
@@ -26,11 +27,17 @@ export default function ReviewsPage() {
     setInputs(prev => ({ ...prev, [id]: '' }));
   }
 
+  function reportReview(id) {
+    if (reported[id]) return;
+    if (!window.confirm('Report this review to CrewSync as inappropriate or unfair?')) return;
+    setReported(prev => ({ ...prev, [id]: true }));
+  }
+
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '12px' }}>
         <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Reviews</h2>
+          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate, letterSpacing: '-0.4px' }}>Rating & Reviews</h2>
           <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>Feedback from property owners — you can reply to each review</p>
         </div>
         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radiusSm, padding: '10px 16px', textAlign: 'center' }}>
@@ -47,7 +54,13 @@ export default function ReviewsPage() {
               <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>{r.name}</div>
               <div style={{ color: C.amber, fontSize: '0.85rem' }}>{'★'.repeat(r.stars)}</div>
             </div>
-            <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: C.muted }}>{r.date}</div>
+            <div style={{ marginLeft: 'auto', textAlign: 'right' }}>
+              <div style={{ fontSize: '0.72rem', color: C.muted }}>{r.date}</div>
+              <button onClick={() => reportReview(r.id)} disabled={!!reported[r.id]}
+                style={{ marginTop: '4px', fontSize: '0.68rem', fontWeight: 600, border: 'none', background: 'none', padding: 0, color: reported[r.id] ? C.muted : '#C0392B', cursor: reported[r.id] ? 'default' : 'pointer' }}>
+                {reported[r.id] ? '✓ Reported' : '⚑ Report'}
+              </button>
+            </div>
           </div>
 
           <div style={{ fontSize: '0.84rem', color: C.slateLight, lineHeight: 1.6 }}>{r.text}</div>
