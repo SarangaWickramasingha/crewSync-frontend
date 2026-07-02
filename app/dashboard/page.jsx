@@ -1,12 +1,18 @@
 "use client";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { useAuth } from "@/context/AuthContext";
-import SupplierDashboard from "@/features/dashboard/SupplierDashboard";
 import ProviderDashboard from "@/features/dashboard/ProviderDashboard";
 
 export default function DashboardPage() {
   const { isSupplier, isProvider } = useAuth();
+  const router = useRouter();
 
-  if (isSupplier) return <SupplierDashboard />;
+  useEffect(() => {
+    if (isSupplier) router.replace("/dashboard/my-products");
+  }, [isSupplier, router]);
+
+  if (isSupplier) return null;
   if (isProvider) return <ProviderDashboard />;
 
   // Property Owner default (placeholder until OwnerDashboard is built)
