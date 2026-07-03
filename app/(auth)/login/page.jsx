@@ -4,9 +4,11 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
+import Navbar from '@/Components/layout/Navbar';
 
 
 export default function LoginPage() {
+    const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
@@ -29,6 +31,7 @@ export default function LoginPage() {
                 'http://localhost/CrewSync-backend/backend/index.php/api/auth/login',
                 {
                     method: 'POST',
+                    credentials: 'include',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email, password })
                 }
@@ -38,9 +41,17 @@ export default function LoginPage() {
                 login({
                     user_id: data.user.user_id,
                     fname: data.user.fname,
+                    lname: data.user.lname,
                     role: data.user.role
                 });
-                window.location.href = '/dashboard';
+                // Redirect based on role
+                if (data.user.role === 'property_owner') {
+                    window.location.href = '/dashboard/propertyowner';
+                } else if (data.user.role === 'admin') {
+                    window.location.href = '/dashboard/admin';
+                } else {
+                    window.location.href = '/home';
+                }
             } else {
                 setError(data.message || 'Login failed');
             }
@@ -50,7 +61,9 @@ export default function LoginPage() {
         }
     };
     return (
-        <div className="flex h-full">
+        <>
+            <Navbar variant="auth" />
+            <div className="flex h-[calc(100vh-60px)]">
 
             {/* ── Left: Image Panel ── */}
             <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden">
@@ -219,5 +232,6 @@ export default function LoginPage() {
                 </div>
             </div>
         </div>
+        </>
     );
 }

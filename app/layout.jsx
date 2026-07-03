@@ -1,8 +1,6 @@
 import './globals.css';
-import Navbar from '../components/Navbar';
-import Footer from '../components/Footer';
+import ConditionalFooter from '../Components/layout/ConditionalFooter';
 import { AuthProvider } from '@/context/AuthContext';
-
 
 export const metadata = {
     title: 'CrewSync',
@@ -11,16 +9,15 @@ export const metadata = {
 
 export default function RootLayout({ children }) {
     return (
-        <html lang="en" className="h-full">
-            <body className="h-full flex flex-col">
+        <html lang="en">
+            <head>
+                <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
+            </head>
+            <body>
                 <AuthProvider>
-                    <Navbar />
-                    <main className="flex-1 overflow-auto">
-                        {children}
-                    </main>
-                    <Footer />
+                    {children}
+                    <ConditionalFooter />
                 </AuthProvider>
-
             </body>
         </html>
     );

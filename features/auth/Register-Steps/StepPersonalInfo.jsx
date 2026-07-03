@@ -1,5 +1,5 @@
 'use client';
-import DistrictSelect from '@/components/ui/DistrictSelect';
+import DistrictSelect from '@/Components/ui/DistrictSelect';
 
 // Shared label + input primitives used by all step-2 components
 export function FormLabel({ children, required }) {

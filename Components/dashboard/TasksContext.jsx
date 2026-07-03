@@ -1,0 +1,279 @@
+'use client';
+
+import { createContext, useContext, useState, useMemo, useEffect } from 'react';
+import {
+  API_PROJECT,
+  API_PROJECTS,
+  API_PROJECT_FINISH,
+  API_TASKS,
+  API_TASK,
+  API_TASK_FINISH,
+} from '@/config/api';
+
+const TasksContext = createContext(null);
+
+const INIT_TASKS = [];
+const INIT_NOTIFICATIONS = [];
+const DEFAULT_BUDGET = 0;
+const TASK_COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
+
+export function TasksProvider({ children }) {
+  const [tasks, setTasks] = useState(INIT_TASKS);
+  const [nextId, setNextId] = useState(20);
+  const [projectCompleted, setProjectCompleted] = useState(false);
+  const [notifications, setNotifications] = useState(INIT_NOTIFICATIONS);
+  const [isLoaded, setIsLoaded] = useState(false);
+  const [estimatedBudget, setEstimatedBudget] = useState(DEFAULT_BUDGET);
+  const [currentProjectId, setCurrentProjectId] = useState(null);
+
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const savedTasks = localStorage.getItem('crewsync_tasks');
+      const savedNextId = localStorage.getItem('crewsync_next_id');
+      const savedCompleted = localStorage.getItem('crewsync_project_completed');
+      const savedNotifs = localStorage.getItem('crewsync_notifications');
+      const savedProjectId = localStorage.getItem('crewsync_project_id');
+
+      if (savedTasks) setTasks(JSON.parse(savedTasks));
+      if (savedNextId) setNextId(Number(savedNextId));
+      if (savedCompleted) setProjectCompleted(savedCompleted === 'true');
+      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
+      const savedBudget = localStorage.getItem('crewsync_budget');
+      if (savedBudget) setEstimatedBudget(Number(savedBudget));
+      if (savedProjectId) setCurrentProjectId(Number(savedProjectId));
+      setIsLoaded(true);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (isLoaded && typeof window !== 'undefined') {
+      localStorage.setItem('crewsync_tasks', JSON.stringify(tasks));
+      localStorage.setItem('crewsync_next_id', String(nextId));
+      localStorage.setItem('crewsync_project_completed', String(projectCompleted));
+      localStorage.setItem('crewsync_notifications', JSON.stringify(notifications));
+      localStorage.setItem('crewsync_budget', String(estimatedBudget));
+      if (currentProjectId) {
+        localStorage.setItem('crewsync_project_id', String(currentProjectId));
+      } else {
+        localStorage.removeItem('crewsync_project_id');
+      }
+    }
+  }, [tasks, nextId, projectCompleted, notifications, estimatedBudget, currentProjectId, isLoaded]);
+
+  function addNotification(text) {
+    const now = new Date();
+    const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+    setNotifications((prev) => [{ id: Date.now(), text, time, read: false }, ...prev]);
+  }
+
+  function markAllNotificationsRead() {
+    setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+  }
+
+  function toggleNotificationRead(id) {
+    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+  }
+
+  // ── LOAD PROJECT + TASKS FROM BACKEND ────────────────────────────────────────
+  async function loadFromProject(projectId) {
+    try {
+      const res = await fetch(API_PROJECT(projectId), {
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (!data.success) return;
+
+      setCurrentProjectId(projectId);
+
+      const mapped = (data.tasks || []).map((t, idx) => ({
+        id: t.task_id,
+        name: t.task_name,
+        color: TASK_COLORS[idx % TASK_COLORS.length],
+        days: {},
+        cost: Number(t.t_cost) || 0,
+        budget: Number(t.task_budget) || 0,
+        assignedSP: null,
+        completed: !!Number(t.is_finished),
+      }));
+
+      setTasks(mapped);
+      setNextId(mapped.length + 100);
+      setEstimatedBudget(Number(data.project.p_budget) || DEFAULT_BUDGET);
+      setProjectCompleted(!!Number(data.project.is_finished));
+
+      if (typeof window !== 'undefined') {
+        localStorage.setItem('crewsync_tasks', JSON.stringify(mapped));
+        localStorage.setItem('crewsync_budget', String(data.project.p_budget));
+        localStorage.setItem('crewsync_project_completed', String(!!Number(data.project.is_finished)));
+        localStorage.setItem('crewsync_project_id', String(projectId));
+      }
+    } catch (e) {
+      console.error('Failed to load project tasks:', e);
+    }
+  }
+
+  function deleteNotification(id) {
+    setNotifications((prev) => prev.filter((n) => n.id !== id));
+  }
+
+  // ── ADD TASK ──────────────────────────────────────────────────────────────────
+  async function addTask(name, color, budget = 0) {
+    const tempId = nextId;
+    setTasks((ts) => [...ts, { id: tempId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]);
+    setNextId((n) => n + 1);
+    addNotification(`New task <strong>${name}</strong> has been added to the project timeline`);
+
+    if (!currentProjectId) return;
+
+    try {
+      const res = await fetch(API_TASKS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ project_id: currentProjectId, task_name: name, task_budget: Number(budget) || 0 }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setTasks((ts) => ts.map((t) => (t.id === tempId ? { ...t, id: data.task_id } : t)));
+      }
+    } catch (err) {
+      console.error('Failed to create task on backend:', err);
+    }
+  }
+
+  // ── DELETE TASK ───────────────────────────────────────────────────────────────
+  function deleteTask(id) {
+    const task = tasks.find((t) => t.id === id);
+    setTasks((ts) => ts.filter((t) => t.id !== id));
+    if (task) {
+      addNotification(`Task <strong>${task.name}</strong> has been removed from the timeline`);
+    }
+    fetch(API_TASK(id), {
+      method: 'DELETE',
+      credentials: 'include',
+    }).catch((err) => console.error('Failed to delete task on backend:', err));
+  }
+
+  // ── UPDATE TASK ──────────────────────────────────────────────────────────────
+  function updateTask(id, updates) {
+    setTasks((ts) =>
+      ts.map((t) => {
+        if (t.id === id) {
+          if (updates.cost !== undefined && updates.cost !== t.cost) {
+            addNotification(`Cost for task <strong>${t.name}</strong> updated to <strong>LKR ${updates.cost.toLocaleString()}</strong>`);
+          }
+          if (updates.budget !== undefined && updates.budget !== t.budget) {
+            addNotification(`Estimated budget for task <strong>${t.name}</strong> updated to <strong>LKR ${Number(updates.budget).toLocaleString()}</strong>`);
+          }
+          if (updates.assignedSP !== undefined && updates.assignedSP !== t.assignedSP) {
+            if (updates.assignedSP) {
+              addNotification(`Request sent to <strong>${updates.assignedSP}</strong> for task <strong>${t.name}</strong>`);
+            } else if (t.assignedSP) {
+              addNotification(`Service provider unassigned from task <strong>${t.name}</strong>`);
+            }
+          }
+          return { ...t, ...updates };
+        }
+        return t;
+      })
+    );
+
+    const payload = {};
+    if (updates.name !== undefined) payload.task_name = updates.name;
+    if (updates.addCost !== undefined) payload.add_cost = updates.addCost;
+    if (updates.budget !== undefined) payload.task_budget = updates.budget;
+
+    if (Object.keys(payload).length === 0) return;
+
+    fetch(API_TASK(id), {
+      method: 'PUT',
+      credentials: 'include',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    }).catch((err) => console.error('Failed to update task on backend:', err));
+  }
+
+  // ── TOGGLE TASK COMPLETED ────────────────────────────────────────────────────
+  function toggleTaskCompleted(id) {
+    setTasks((ts) =>
+      ts.map((t) => {
+        if (t.id === id) {
+          const nextCompleted = !t.completed;
+          addNotification(
+            `Task <strong>${t.name}</strong> marked as <strong>${nextCompleted ? 'Complete' : 'In Progress'}</strong>`
+          );
+          return { ...t, completed: nextCompleted };
+        }
+        return t;
+      })
+    );
+    fetch(API_TASK_FINISH(id), {
+      method: 'PUT',
+      credentials: 'include',
+    }).catch((err) => console.error('Failed to toggle task finish:', err));
+  }
+
+  function assignSP(taskId, spName) { updateTask(taskId, { assignedSP: spName }); }
+  function unassignSP(taskId) { updateTask(taskId, { assignedSP: null }); }
+
+  const totalCost = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.cost) || 0), 0), [tasks]);
+  const totalAllocatedBudget = useMemo(() => tasks.reduce((sum, t) => sum + (Number(t.budget) || 0), 0), [tasks]);
+  const remainingBudget = estimatedBudget - totalCost;
+
+  const value = {
+    tasks,
+    addTask,
+    deleteTask,
+    updateTask,
+    toggleTaskCompleted,
+    assignSP,
+    unassignSP,
+    loadFromProject,
+    estimatedBudget,
+    totalCost,
+    totalAllocatedBudget,
+    remainingBudget,
+    projectCompleted,
+    finishProject: async () => {
+      setProjectCompleted(true);
+      addNotification(`<strong>Project finished!</strong> Project marked as completed and settings locked.`);
+      if (currentProjectId) {
+        try {
+          await fetch(API_PROJECT_FINISH(currentProjectId), {
+            method: 'PUT',
+            credentials: 'include',
+          });
+        } catch (err) {
+          console.error('Failed to finish project:', err);
+        }
+      }
+    },
+    unlockProject: async () => {
+      setProjectCompleted(false);
+      addNotification(`Project settings <strong>unlocked</strong> for further edits.`);
+      if (currentProjectId) {
+        try {
+          await fetch(API_PROJECT_FINISH(currentProjectId), {
+            method: 'PUT',
+            credentials: 'include',
+          });
+        } catch (err) {
+          console.error('Failed to unlock project:', err);
+        }
+      }
+    },
+    notifications,
+    addNotification,
+    markAllNotificationsRead,
+    toggleNotificationRead,
+    deleteNotification,
+  };
+
+  return <TasksContext.Provider value={value}>{children}</TasksContext.Provider>;
+}
+
+export function useTasks() {
+  const ctx = useContext(TasksContext);
+  if (!ctx) throw new Error('useTasks must be used within a TasksProvider');
+  return ctx;
+}

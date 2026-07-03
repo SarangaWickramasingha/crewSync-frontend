@@ -1,5 +1,5 @@
 'use client';
-import PasswordInput from '@/components/ui/PasswordInput';
+import PasswordInput from '@/Components/ui/PasswordInput';
 import { Home, Wrench, Package } from 'lucide-react';
 
 

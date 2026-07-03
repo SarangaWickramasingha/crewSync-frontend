@@ -1,14 +1,18 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import RolePicker from './RolePicker';
 import StepCredentials from './register-steps/StepCredentials';
 import StepPersonalInfo from './register-steps/StepPersonalInfo';
 import StepOwnerDetails from './register-steps/StepOwnerDetails';
 import StepProviderDetails from './register-steps/StepProviderDetails';
 import StepSupplierDetails from './register-steps/StepSupplierDetails';
-
+import { API_AUTH_REGISTER, API_AUTH_CHECK_EMAIL } from '@/config/api';
 import { SKILL_NAME_TO_ID, MATERIAL_NAME_TO_ID, ROLE_MAP } from '@/constants/registerMaps';
+import { useAuth } from '@/context/AuthContext';
+
+
+
 const ROLE_THEME = {
     owner: { bg: 'bg-green-700', border: 'border-green-700', text: 'text-green-700', badgeBg: 'bg-green-50', badgeText: 'text-green-700' },
     provider: { bg: 'bg-blue-600', border: 'border-blue-600', text: 'text-blue-600', badgeBg: 'bg-blue-50', badgeText: 'text-blue-700' },
@@ -58,7 +62,10 @@ function validate(step, role, creds, info, details) {
 
 export default function RegisterForm() {
     const router = useRouter();
-    const [role, setRole] = useState('owner');
+    const searchParams = useSearchParams();
+    const { login } = useAuth()
+    const roleParam = searchParams ? searchParams.get('role') : null;
+    const [role, setRole] = useState(roleParam === 'provider' || roleParam === 'supplier' ? roleParam : 'owner');
     const [step, setStep] = useState(0);
     const [loading, setLoading] = useState(false);
 
@@ -93,8 +100,7 @@ export default function RegisterForm() {
         if (step === 0) {
             setLoading(true);
             try {
-                const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/check-email', {
-                    method: 'POST',
+                const res = await fetch(API_AUTH_CHECK_EMAIL, {                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: creds.email.trim().toLowerCase() }),
                 });
@@ -142,8 +148,7 @@ export default function RegisterForm() {
             role: ROLE_MAP[role],
             fname: info.firstName.trim(),
             lname: info.lastName.trim(),
-            contact_no: info.mobile.trim(),
-            // nic:        info.nic?.trim() ?? '', 
+            contact_no: info.mobile.trim(), 
             district: role === 'supplier' ? details.district : info.district,
         };
 
@@ -177,7 +182,7 @@ export default function RegisterForm() {
         }
 
         try {
-            const res = await fetch('http://localhost/CrewSync-backend/backend/index.php/api/auth/register', {
+            const res = await fetch(API_AUTH_REGISTER, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify(payload),
@@ -186,7 +191,12 @@ export default function RegisterForm() {
             const data = await res.json();
 
             if (data.success) {
-                router.push('/login?registered=1');
+                login({
+                    user_id: data.user_id,
+                    name: `${payload.fname} ${payload.lname}`,
+                    role: payload.role,  // e.g. "property_owner"
+                })
+                router.push('/dashboard/propertyowner');
             } else {
                 setError(data.message || 'Registration failed. Please try again.');
             }

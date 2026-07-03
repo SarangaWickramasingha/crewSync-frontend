@@ -11,88 +11,45 @@ import {
 import { useAuth } from '@/context/AuthContext';
 
 const NAV = {
-    PROPERTY_OWNER: [
-        {
-            section: 'Main',
-            items: [
-                { href: '/dashboard', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
-                { href: '/dashboard/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
-                { href: '/dashboard/find-services', icon: Search, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Find Services' },
-                { href: '/dashboard/materials', icon: Package, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Materials' },
-                { href: '/dashboard/notifications', icon: Bell, iconBg: 'bg-pink-50', iconColor: 'text-pink-600', label: 'Notifications' },
-            ],
-        },
-        {
-            section: 'Insights',
-            items: [
-                { href: '/dashboard/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
-                { href: '/dashboard/reports', icon: BarChart3, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Reports' },
-                { href: '/dashboard/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
-            ],
-        },
+    property_owner: [
+        { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
+        { href: '/dashboard/timeline', icon: <CalendarDays className="w-4 h-4" />, label: 'Timeline' },
+        { href: '/dashboard/find-services', icon: <Search className="w-4 h-4" />, label: 'Find Services' },
+        { href: '/dashboard/materials', icon: <Package className="w-4 h-4" />, label: 'Materials' },
+        { href: '/dashboard/reviews', icon: <Star className="w-4 h-4" />, label: 'Reviews' },
+        { href: '/dashboard/reports', icon: <FileText className="w-4 h-4" />, label: 'Reports' },
+        { href: '/dashboard/notifications', icon: <Bell className="w-4 h-4" />, label: 'Notifications' },
     ],
-
-    SERVICE_PROVIDER: [
-        {
-            section: 'Dashboard',
-            items: [
-                { href: '/dashboard', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
-                { href: '/dashboard/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
-                { href: '/dashboard/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
-                { href: '/dashboard/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
-                { href: '/dashboard/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
-            ],
-        },
+    service_provider: [
+        { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
+        { href: '/dashboard/job-requests', icon: <Briefcase className="w-4 h-4" />, label: 'Job Requests' },
+        { href: '/dashboard/timeline', icon: <CalendarDays className="w-4 h-4" />, label: 'Timeline' },
+        { href: '/dashboard/reviews', icon: <Star className="w-4 h-4" />, label: 'Reviews' },
+        { href: '/dashboard/profile', icon: <UserCircle className="w-4 h-4" />, label: 'Profile' },
     ],
-
-    MATERIAL_SUPPLIER: [
-        {
-            section: 'Store',
-            items: [
-                { href: '/dashboard/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
-                { href: '/dashboard/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
-            ],
-        },
-        {
-            section: 'Account',
-            items: [
-                { href: '/dashboard/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
-            ],
-        },
+    material_supplier: [
+        { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
+        { href: '/dashboard/my-products', icon: <Package className="w-4 h-4" />, label: 'My Products' },
+        { href: '/dashboard/orders', icon: <ShoppingCart className="w-4 h-4" />, label: 'Orders' },
+        { href: '/dashboard/profile', icon: <UserCircle className="w-4 h-4" />, label: 'Profile' },
     ],
-
-    ADMIN: [
-        {
-            section: 'Overview',
-            items: [
-                { href: '/dashboard/admin', icon: LayoutDashboard, iconBg: 'bg-orange-50', iconColor: 'text-orange-500', label: 'Overview' },
-            ],
-        },
-        {
-            section: 'Users',
-            items: [
-                { href: '/dashboard/admin/users', icon: Users, iconBg: 'bg-blue-50', iconColor: 'text-blue-500', label: 'All Users' },
-                { href: '/dashboard/admin/propertyOwner', icon: Home, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-500', label: 'Property Owners' },
-                { href: '/dashboard/admin/providers', icon: Wrench, iconBg: 'bg-green-50', iconColor: 'text-green-500', label: 'Providers' },
-                { href: '/dashboard/admin/materialSupplier', icon: Package, iconBg: 'bg-emerald-50', iconColor: 'text-emerald-500', label: 'Suppliers' },
-            ],
-        },
-        {
-            section: 'Content',
-            items: [
-                { href: '/dashboard/admin/projects', icon: FolderOpen, iconBg: 'bg-cyan-50', iconColor: 'text-cyan-500', label: 'Projects' },
-                { href: '/dashboard/admin/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-500', label: 'Reviews' },
-                { href: '/dashboard/admin/feedback', icon: MessageSquare, iconBg: 'bg-purple-50', iconColor: 'text-purple-500', label: 'Feedback' },
-            ],
-        },
+    admin: [
+        { href: '/dashboard/admin', label: 'Overview', icon: <LayoutDashboard className="w-4 h-4 text-orange-500" /> },
+        { href: '/dashboard/admin/users', label: 'Users', icon: <Users className="w-4 h-4 text-blue-500" /> },
+        { href: '/dashboard/admin/propertyOwner', label: 'Property Owners', icon: <Home className="w-4 h-4 text-indigo-500" /> },
+        { href: '/dashboard/admin/materialSupplier', label: 'Material Suppliers', icon: <Package className="w-4 h-4 text-emerald-500" /> },
+        { href: '/dashboard/admin/providers', label: 'Providers', icon: <Wrench className="w-4 h-4 text-green-500" /> },
+        { href: '/dashboard/admin/projects', label: 'Projects', icon: <FolderOpen className="w-4 h-4 text-cyan-500" /> },
+        { href: '/dashboard/admin/reviews', label: 'Reviews', icon: <Star className="w-4 h-4 text-yellow-500" /> },
+        { href: '/dashboard/admin/feedback', label: 'Feedback', icon: <MessageSquare className="w-4 h-4 text-purple-500" /> },
     ],
 };
 
 const ROLE_LABEL = {
-    PROPERTY_OWNER: 'Property Owner',
-    SERVICE_PROVIDER: 'Service Provider',
-    MATERIAL_SUPPLIER: 'Supplier',
-    ADMIN: 'Administrator',
+    property_owner: 'Property Owner',
+    service_provider: 'Service Provider',
+    material_supplier: 'Supplier',
+    admin: 'Administrator',
 };
 
 const ROLE_AVATAR = {
@@ -114,11 +71,12 @@ export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
-    const sections = NAV[role] ?? NAV.PROPERTY_OWNER;
-    const initials = user?.fname
-        ? user.fname.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase()
-        : 'U';
+    if (pathname.startsWith('/dashboard/propertyowner')) {
+        return <>{children}</>;
+    }
 
+    const navItems = NAV[role] ?? NAV.property_owner;
+    const initials = user?.avatar || 'U';
     return (
         <div className="flex h-full">
 
