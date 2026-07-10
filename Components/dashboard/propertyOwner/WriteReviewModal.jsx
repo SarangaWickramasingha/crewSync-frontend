@@ -11,7 +11,7 @@ const PROVIDERS = [
 
 export default function WriteReviewModal({ onClose, onSubmit }) {
   const [provider, setProvider] = useState(PROVIDERS[0]);
-  const [rating, setRating] = useState(5);
+  const [rating, setRating] = useState(0);
   const [text, setText] = useState('');
 
   function handleSubmit(e) {

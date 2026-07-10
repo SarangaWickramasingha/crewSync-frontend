@@ -116,17 +116,17 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   if (variant === "projectForm") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] border-b border-white/[0.06]">
-    <div
-      onClick={() => router.push("/home")}
-      className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
-    >
-      Create <span className="text-white">Project</span>
-    </div>
+        <div
+          onClick={() => router.push("/home")}
+          className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+        >
+          Create <span className="text-white">Project</span>
+        </div>
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-1.5 text-white/50 text-[1.2rem] hover:text-white transition cursor-pointer bg-transparent border-none font-['DM_Sans']"
+          className="flex items-center gap-[6px] text-white/50 text-[0.82rem] font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none font-['DM_Sans']"
         >
-          &lt; Back
+          ← Back
         </button>
       </nav>
     );
@@ -136,17 +136,13 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   // Dynamically attach the accurate dashboard path into your primary tabs array
   const tabs = [
     { label: "Home", href: "/home" },
-    {
-      label: isGuest ? "Guest Dashboard" : "Property Owner",
-      href: isGuest ? "/dashboard/propertyowner/timeline" : "/dashboard/propertyowner",
-    },
   ];
 
   return (
-    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] relative">
       <Logo />
 
-      <div className="hidden items-center gap-1 sm:flex">
+      <div className="hidden items-center gap-1 sm:flex absolute left-1/2 -translate-x-1/2">
         {tabs.map(({ label, href }) => {
           const isActive = activeTab === label;
           return (
