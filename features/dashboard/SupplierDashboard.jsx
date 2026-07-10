@@ -55,9 +55,9 @@ export default function SupplierDashboard() {
       <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem', marginBottom: '1.2rem' }}>
         <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>Quick Actions</h3>
         <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
-          <a href="/dashboard/my-products" style={btnStyle(C.amber)}>+ Add Product</a>
-          <a href="/dashboard/orders" style={btnStyle('#1A56A0')}>View Orders (3 new)</a>
-          <a href="/dashboard/profile" style={btnOutlineStyle}>Edit Profile</a>
+          <a href="/dashboard/supplier/my-products" style={btnStyle(C.amber)}>+ Add Product</a>
+          <a href="/dashboard/supplier/orders" style={btnStyle('#1A56A0')}>View Orders (3 new)</a>
+          <a href="/dashboard/supplier/profile" style={btnOutlineStyle}>Edit Profile</a>
         </div>
       </div>
 

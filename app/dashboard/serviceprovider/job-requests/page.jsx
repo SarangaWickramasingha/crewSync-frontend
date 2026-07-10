@@ -10,10 +10,10 @@ const C = {
 };
 
 const INITIAL_JOBS = [
-  { id: 1, title: 'Roofing Work – 3 Bedroom House',       client: 'Nimal Kumarasinghe', location: 'Kandy',       duration: '3 weeks', start: 'Jun 1, 2026',  budget: 'LKR 180,000', status: 'New' },
-  { id: 2, title: 'Wall Plastering – Commercial Building', client: 'Chamari Perera',     location: 'Matale',      duration: '2 weeks', start: 'Jun 10, 2026', budget: 'LKR 95,000',  status: 'New' },
-  { id: 3, title: 'Foundation Work – Residential Site',    client: 'Lasith Fernando',    location: 'Kandy',       duration: '4 weeks', start: 'Jun 20, 2026', budget: 'LKR 240,000', status: 'New' },
-  { id: 4, title: 'Tiling – Bathroom & Kitchen',          client: 'Priya Senaratne',    location: 'Nuwaraeliya', duration: '1 week',  start: 'Jun 5, 2026',  budget: 'LKR 55,000',  status: 'New' },
+  { id: 1, title: 'Roofing Work – 3 Bedroom House',       client: 'Nimal Kumarasinghe', location: 'Kandy',       duration: '3 weeks', start: 'Jun 1, 2026',  status: 'New' },
+  { id: 2, title: 'Wall Plastering – Commercial Building', client: 'Chamari Perera',     location: 'Matale',      duration: '2 weeks', start: 'Jun 10, 2026', status: 'New' },
+  { id: 3, title: 'Foundation Work – Residential Site',    client: 'Lasith Fernando',    location: 'Kandy',       duration: '4 weeks', start: 'Jun 20, 2026', status: 'New' },
+  { id: 4, title: 'Tiling – Bathroom & Kitchen',          client: 'Priya Senaratne',    location: 'Nuwaraeliya', duration: '1 week',  start: 'Jun 5, 2026',  status: 'New' },
 ];
 
 function JobCard({ job, onAccept, onDecline }) {
@@ -29,13 +29,11 @@ function JobCard({ job, onAccept, onDecline }) {
         </span>
       </div>
       <div style={{ fontSize: '0.8rem', color: C.muted, marginBottom: '0.7rem' }}>
-        Duration: {job.duration} · Start: {job.start} · Budget: {job.budget}
+        Duration: {job.duration} · Start: {job.start}
       </div>
       <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
         <button onClick={onAccept} style={{ fontSize: '0.78rem', fontWeight: 600, padding: '6px 12px', borderRadius: '6px', border: '1px solid rgba(27,110,58,0.3)', background: C.greenLight, color: C.green, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>✓ Accept</button>
         <button onClick={onDecline} style={{ fontSize: '0.78rem', fontWeight: 500, padding: '6px 12px', borderRadius: '6px', border: `1px solid ${C.border}`, background: 'none', color: C.slateLight, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>✗ Decline</button>
-        <button style={{ fontSize: '0.78rem', fontWeight: 500, padding: '6px 12px', borderRadius: '6px', border: `1px solid ${C.border}`, background: 'none', color: C.slateLight, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>💬 Message</button>
-        <button style={{ fontSize: '0.78rem', fontWeight: 500, padding: '6px 12px', borderRadius: '6px', border: `1px solid ${C.border}`, background: 'none', color: C.slateLight, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>Request Advance</button>
       </div>
     </div>
   );
@@ -75,7 +73,7 @@ export default function JobRequestsPage() {
             {acceptedJobs.map(j => (
               <div key={j.id} style={{ padding: '14px', border: '1px solid rgba(27,110,58,0.2)', borderRadius: '10px', background: C.greenLight }}>
                 <div style={{ fontSize: '0.9rem', fontWeight: 700, color: C.slate }}>{j.title}</div>
-                <div style={{ fontSize: '0.75rem', color: C.slateLight, marginTop: '2px' }}>{j.client} · {j.location} · {j.budget}</div>
+                <div style={{ fontSize: '0.75rem', color: C.slateLight, marginTop: '2px' }}>{j.client} · {j.location}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 9px', borderRadius: '12px', background: C.greenLight, color: C.green, border: '1px solid rgba(27,110,58,0.2)' }}>✓ Accepted</span>
                   <button onClick={() => update(j.id, 'New')} style={{ fontSize: '0.72rem', border: `1px solid ${C.border}`, background: 'none', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', color: C.muted }}>Undo</button>
@@ -94,7 +92,7 @@ export default function JobRequestsPage() {
               <div key={j.id} style={{ padding: '12px 14px', border: `1px solid ${C.border}`, borderRadius: '10px', display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '8px' }}>
                 <div>
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.muted }}>{j.title}</div>
-                  <div style={{ fontSize: '0.75rem', color: C.muted }}>{j.client} · {j.budget}</div>
+                  <div style={{ fontSize: '0.75rem', color: C.muted }}>{j.client}</div>
                 </div>
                 <button onClick={() => update(j.id, 'New')} style={{ fontSize: '0.75rem', border: `1px solid ${C.border}`, background: 'none', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', color: C.slateLight }}>Undo</button>
               </div>

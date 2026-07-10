@@ -28,13 +28,12 @@ const NAV = {
     {
       section: 'Dashboard',
       items: [
-        { icon: '📊', label: 'Overview',      href: '/dashboard' },
-        { icon: '📋', label: 'Job Requests',  href: '/dashboard/job-requests', badge: '4' },
-        { icon: '📅', label: 'Timeline',      href: '/dashboard/timeline' },
-        { icon: '💬', label: 'Project Forum', href: '/dashboard/forum', badge: '2' },
-        { icon: '👤', label: 'My Profile',    href: '/dashboard/profile' },
-        { icon: '💰', label: 'Earnings',      href: '/dashboard/earnings' },
-        { icon: '⭐', label: 'Reviews',       href: '/dashboard/reviews' },
+        { label: 'Overview',            href: '/dashboard/serviceprovider' },
+        { label: 'Job Requests',        href: '/dashboard/serviceprovider/job-requests', badge: '4' },
+        { label: 'Timeline',            href: '/dashboard/serviceprovider/timeline' },
+        { label: 'Project Forum',       href: '/dashboard/serviceprovider/forum', badge: '2' },
+        { label: 'My Profile',          href: '/dashboard/serviceprovider/profile' },
+        { label: 'Ratings and Reviews', href: '/dashboard/serviceprovider/reviews' },
       ],
     },
   ],
@@ -43,20 +42,20 @@ const NAV = {
     {
       section: 'Store',
       items: [
-        { icon: '📊', label: 'Overview',    href: '/dashboard' },
-        { icon: '📦', label: 'My Products', href: '/dashboard/my-products' },
-        { icon: '📋', label: 'Orders',      href: '/dashboard/orders', badge: '3' },
-        { icon: '💬', label: 'Messages',    href: '/dashboard/chat' },
+        { label: 'My Products', href: '/dashboard/supplier/my-products' },
+        { label: 'Orders',      href: '/dashboard/supplier/orders', badge: '3' },
       ],
     },
     {
       section: 'Account',
       items: [
-        { icon: '👤', label: 'My Profile', href: '/dashboard/profile' },
+        { label: 'My Profile', href: '/dashboard/supplier/profile' },
       ],
     },
   ],
 };
+
+const ROOT_HREFS = ['/dashboard', '/dashboard/serviceprovider', '/dashboard/supplier'];
 
 const ROLE_META = {
   PROPERTY_OWNER:    { bg: '#FFF3E0', color: '#B85A00', dot: '#E8820C' },
@@ -102,8 +101,9 @@ export default function Sidebar({ isOpen, onClose }) {
           <div key={section} style={{ marginBottom: '1.4rem' }}>
             <div style={styles.sectionLabel}>{section}</div>
             {items.map(item => {
+              const isRoot = ROOT_HREFS.includes(item.href);
               const active = pathname === item.href ||
-                (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                (!isRoot && pathname.startsWith(item.href));
               return (
                 <Link
                   key={item.href}
@@ -114,7 +114,7 @@ export default function Sidebar({ isOpen, onClose }) {
                     ...(active ? styles.itemActive : {}),
                   }}
                 >
-                  <span style={styles.icon}>{item.icon}</span>
+                  {item.icon && <span style={styles.icon}>{item.icon}</span>}
                   <span style={{ flex: 1 }}>{item.label}</span>
                   {item.badge && <span style={styles.badge}>{item.badge}</span>}
                 </Link>

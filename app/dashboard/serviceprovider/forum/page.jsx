@@ -45,11 +45,11 @@ export default function ForumPage() {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1rem' }}>
           {posts.map(p => (
-            <div key={p.id} style={{ display: 'flex', gap: '10px', flexDirection: p.mine ? 'row-reverse' : 'row' }}>
+            <div key={p.id} style={{ display: 'flex', gap: '10px', justifyContent: 'flex-start' }}>
               <div style={{ width: '32px', height: '32px', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 700, fontSize: '0.72rem', flexShrink: 0, background: p.bg, color: p.color }}>
                 {p.initials}
               </div>
-              <div style={{ flex: 1, background: p.mine ? C.greenLight : C.surface, borderRadius: '10px', padding: '10px 12px', maxWidth: '80%' }}>
+              <div style={{ background: p.mine ? C.greenLight : C.surface, borderRadius: '10px', padding: '10px 12px', maxWidth: '70%' }}>
                 <div style={{ fontSize: '0.78rem', fontWeight: 600, marginBottom: '3px' }}>
                   {p.name} <span style={{ fontWeight: 400, color: C.muted }}>· {p.role}</span>
                 </div>

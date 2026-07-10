@@ -16,12 +16,6 @@ const C = {
   blue: '#1A56A0', blueLight: '#E8F0FB',
 };
 
-const DEMO_BTNS = [
-  { key: 'provider', label: 'Service Provider', email: 'provider@crewsync.lk', bg: C.greenLight,  color: C.green,  icon: '🔨' },
-  { key: 'supplier', label: 'Material Supplier', email: 'supplier@crewsync.lk', bg: C.orangeLight, color: C.orange, icon: '📦' },
-  { key: 'owner',    label: 'Property Owner',    email: 'owner@crewsync.lk',    bg: C.blueLight,   color: C.blue,   icon: '🏠' },
-];
-
 const ROLE_EMAILS = {
   'provider@crewsync.lk': DEMO_USERS.provider,
   'supplier@crewsync.lk': DEMO_USERS.supplier,
@@ -51,12 +45,10 @@ export default function LoginPage() {
     setError('');
     if (!email || !password) { setError('Please fill in all fields.'); return; }
     const user = ROLE_EMAILS[email.toLowerCase()];
-    if (!user) { setError('Email not found. Use a Quick Demo Login below.'); return; }
+    if (!user) { setError('Email not found. Please check your email and try again.'); return; }
     login(user);
     router.push('/dashboard');
   }
-
-  function loginAsDemo(key) { login(DEMO_USERS[key]); router.push('/dashboard'); }
 
   return (
     <div style={{ minHeight: '100vh', display: 'flex', fontFamily: "'DM Sans', sans-serif" }}>
@@ -165,31 +157,7 @@ export default function LoginPage() {
                 </button>
               </form>
 
-              {/* Demo login */}
-              <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: '1.1rem' }}>
-                <p style={{ textAlign: 'center', fontSize: '0.68rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.09em', color: C.muted, marginBottom: '10px' }}>
-                  Quick Demo Login
-                </p>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '7px' }}>
-                  {DEMO_BTNS.map(d => (
-                    <button key={d.key} onClick={() => loginAsDemo(d.key)} style={{
-                      display: 'flex', alignItems: 'center', gap: '12px', padding: '10px 14px',
-                      borderRadius: '10px', border: `1px solid ${d.bg}`, background: d.bg,
-                      cursor: 'pointer', width: '100%', textAlign: 'left',
-                    }}
-                      onMouseOver={e => e.currentTarget.style.opacity = '0.8'}
-                      onMouseOut={e => e.currentTarget.style.opacity = '1'}>
-                      <span style={{ fontSize: '1.2rem' }}>{d.icon}</span>
-                      <div>
-                        <div style={{ fontSize: '0.83rem', fontWeight: 700, color: d.color }}>{d.label}</div>
-                        <div style={{ fontSize: '0.7rem', color: C.muted, marginTop: '1px' }}>{d.email}</div>
-                      </div>
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              <p style={{ textAlign: 'center', fontSize: '0.82rem', color: C.muted, marginTop: '1.1rem' }}>
+              <p style={{ textAlign: 'center', fontSize: '0.82rem', color: C.muted, marginTop: '0.4rem' }}>
                 New here?{' '}
                 <Link href="/register" style={{ color: C.amber, fontWeight: 600, textDecoration: 'none' }}>Create an account →</Link>
               </p>

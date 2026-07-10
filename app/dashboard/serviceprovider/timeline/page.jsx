@@ -56,7 +56,7 @@ export default function TimelinePage() {
 
       <div style={{ background: C.blueLight, border: '1px solid rgba(26,86,160,0.25)', borderRadius: C.radius, padding: '1rem 1.5rem' }}>
         <div style={{ fontSize: '0.85rem', color: C.blue }}>
-          <strong>📌 Your assigned task:</strong> Phase 3 – Roofing. You are responsible for this phase. Update progress directly with the property owner through the Project Forum.
+          <strong>📌 Your assigned task:</strong> Phase 3 – Roofing. You are responsible for this phase.
         </div>
       </div>
     </div>

@@ -1,5 +1,6 @@
 'use client';
 import Link from 'next/link';
+import { useState } from 'react';
 
 const C = {
   amber: '#E8820C',
@@ -44,6 +45,8 @@ const recentReviews = [
 ];
 
 export default function ProviderDashboard() {
+  const [available, setAvailable] = useState(true);
+
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
 
@@ -55,9 +58,17 @@ export default function ProviderDashboard() {
           </h2>
           <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>You have 4 new job requests this week</p>
         </div>
-        <span style={{ fontSize: '0.8rem', fontWeight: 600, padding: '6px 12px', borderRadius: '12px', background: C.greenLight, color: C.green }}>
-          ● Available for Work
-        </span>
+        <button
+          onClick={() => setAvailable(prev => !prev)}
+          style={{
+            fontSize: '0.8rem', fontWeight: 600, padding: '6px 12px', borderRadius: '12px',
+            border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+            background: available ? C.greenLight : '#FDECEC',
+            color: available ? C.green : '#B3261E',
+          }}
+        >
+          ● {available ? 'Available for Work' : 'Not Available'}
+        </button>
       </div>
 
       {/* Metric Cards */}
@@ -80,7 +91,7 @@ export default function ProviderDashboard() {
         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700 }}>Current Work</h3>
-            <Link href="/dashboard/timeline" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/dashboard/serviceprovider/timeline" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
               View Timeline →
             </Link>
           </div>
@@ -116,7 +127,7 @@ export default function ProviderDashboard() {
             ))}
           </ul>
           <Link
-            href="/dashboard/job-requests"
+            href="/dashboard/serviceprovider/job-requests"
             style={{ display: 'block', marginTop: '1rem', textAlign: 'center', background: C.amber, color: '#fff', padding: '8px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
           >
             View Job Requests (4)
@@ -127,7 +138,7 @@ export default function ProviderDashboard() {
         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem' }}>
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
             <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700 }}>Recent Reviews</h3>
-            <Link href="/dashboard/reviews" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
+            <Link href="/dashboard/serviceprovider/reviews" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
               All Reviews →
             </Link>
           </div>
