@@ -4,16 +4,12 @@ import { usePathname } from 'next/navigation';
 import Link from 'next/link';
 import {
     LayoutDashboard, Users, Wrench, Star, MessageSquare,
-    CalendarDays, MessageCircle, FileText, Search, Package,
-    ShoppingCart, UserCircle, Bell, Briefcase, Menu, X, Home
+    CalendarDays, FileText, Search, Package, ShoppingCart,
+    UserCircle, Bell, Briefcase, Menu, X, Home,
+    FolderOpen, ShoppingBag, ClipboardList, BarChart3,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import { FolderOpen } from 'lucide-react';
 
-
-
-
-// ── Sidebar nav per role ──────────────────────────────────────────
 const NAV = {
     property_owner: [
         { href: '/dashboard', icon: <LayoutDashboard className="w-4 h-4" />, label: 'Overview' },
@@ -56,6 +52,20 @@ const ROLE_LABEL = {
     admin: 'Administrator',
 };
 
+const ROLE_AVATAR = {
+    PROPERTY_OWNER: 'bg-orange-100 text-orange-700',
+    SERVICE_PROVIDER: 'bg-green-100 text-green-700',
+    MATERIAL_SUPPLIER: 'bg-blue-100 text-blue-700',
+    ADMIN: 'bg-purple-100 text-purple-700',
+};
+
+const ROLE_DOT = {
+    PROPERTY_OWNER: 'bg-orange-500',
+    SERVICE_PROVIDER: 'bg-green-500',
+    MATERIAL_SUPPLIER: 'bg-blue-500',
+    ADMIN: 'bg-purple-500',
+};
+
 export default function DashboardLayout({ children }) {
     const { user, role, logout } = useAuth();
     const pathname = usePathname();
@@ -77,49 +87,71 @@ export default function DashboardLayout({ children }) {
 
             {/* ── Sidebar ── */}
             <aside className={`
-                fixed top-15 left-0 h-[calc(100vh-60px)] w-[220px] bg-white border-r border-border
-                flex flex-col p-4 z-40 transition-transform duration-200
+                fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[230px] bg-white border-r border-border
+                flex flex-col p-4 z-40 transition-transform duration-200 overflow-y-auto
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0 md:static md:h-auto md:z-auto
             `}>
-                {/* User identity */}
+
+                {/* User card */}
                 <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-border">
-                    <div className="w-9 h-9 rounded-full bg-amber/10 flex items-center justify-center
-                        text-amber text-xs font-bold flex-shrink-0">
+                    <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${ROLE_AVATAR[role] ?? 'bg-gray-100 text-gray-600'}`}>
                         {initials}
                     </div>
-                    <div>
-                        <p className="text-sm font-semibold text-slate truncate max-w-[130px]">
-                            {user?.fname ?? 'User'}
-                        </p>
-                        <p className="text-[11px] text-muted">{ROLE_LABEL[role] ?? 'User'}</p>
+                    <div className="min-w-0">
+                        <p className="text-sm font-semibold text-slate truncate">{user?.fname ?? 'User'}</p>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ROLE_DOT[role] ?? 'bg-gray-400'}`} />
+                            <p className="text-[11px] text-muted truncate">{ROLE_LABEL[role] ?? 'User'}</p>
+                        </div>
                     </div>
                 </div>
 
-                {/* Nav */}
-                <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-2 px-2">Menu</p>
-                <nav className="flex flex-col gap-0.5 flex-1">
-                    {navItems.map(item => (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={() => setSidebarOpen(false)}
-                            className={`flex items-center gap-2.5 px-3 py-2 rounded-lg text-sm transition-all
-    ${pathname === item.href
-                                    ? 'bg-surface font-semibold text-slate shadow-sm border border-border'
-                                    : 'text-slate-light hover:bg-surface hover:text-slate'
-                                }`}
-                        >
-                            {item.icon}
-                            {item.label}
-                        </Link>
+                {/* Nav sections */}
+                <nav className="flex flex-col gap-4 flex-1">
+                    {sections.map(({ section, items }) => (
+                        <div key={section}>
+                            <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-1.5 px-2">
+                                {section}
+                            </p>
+                            <div className="flex flex-col gap-0.5">
+                                {items.map(item => {
+                                    const Icon = item.icon;
+                                    const active = pathname === item.href ||
+                                        (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                                    return (
+                                        <Link
+                                            key={item.href}
+                                            href={item.href}
+                                            onClick={() => setSidebarOpen(false)}
+                                            className={`flex items-center gap-3 px-2 py-2 rounded-xl text-sm transition-all
+                                                ${active
+                                                    ? 'bg-orange-50 text-orange-600 font-semibold'
+                                                    : 'text-slate-light hover:bg-surface hover:text-slate'
+                                                }`}
+                                        >
+                                            {/* Icon box */}
+                                            <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.iconBg}`}>
+                                                <Icon size={16} className={item.iconColor} strokeWidth={2.2} />
+                                            </div>
+                                            <span className="flex-1">{item.label}</span>
+                                            {item.badge && (
+                                                <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                                    {item.badge}
+                                                </span>
+                                            )}
+                                        </Link>
+                                    );
+                                })}
+                            </div>
+                        </div>
                     ))}
                 </nav>
 
-                {/* Logout */}
+                {/* Sign out */}
                 <button
                     onClick={logout}
-                    className="mt-4 w-full text-left px-3 py-2 rounded-lg text-sm text-muted hover:bg-surface hover:text-red-500 transition-all"
+                    className="mt-4 w-full text-left px-3 py-2 rounded-xl text-sm text-muted hover:bg-red-50 hover:text-red-500 transition-all"
                 >
                     Sign Out
                 </button>
