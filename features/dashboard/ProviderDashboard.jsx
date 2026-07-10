@@ -1,29 +1,11 @@
 'use client';
-import Link from 'next/link';
 import { useState } from 'react';
-
-const C = {
-  amber: '#E8820C',
-  amberLight: '#FFF3E0',
-  amberDark: '#B85A00',
-  slate: '#1A1D23',
-  slateLight: '#4A5068',
-  muted: '#8A8FA8',
-  surface: '#F7F6F2',
-  surface2: '#EEECEA',
-  white: '#FFFFFF',
-  green: '#1B6E3A',
-  greenLight: '#E6F4EC',
-  border: 'rgba(26,29,35,0.1)',
-  radius: '12px',
-  radiusSm: '8px',
-};
+import Link from 'next/link';
 
 const metrics = [
-  { val: '47',       label: 'Total Reviews',    change: '★ 4.9 avg', up: true },
-  { val: 'LKR 380K', label: 'This Month',       change: '↑ 12%', up: true },
-  { val: '4',        label: 'Active Projects',  change: null },
-  { val: '156',      label: 'Jobs Completed',   change: null },
+  { val: '47', label: 'Total Reviews', change: '★ 4.9 avg', up: true },
+  { val: '4', label: 'Active Projects', change: null },
+  { val: '156', label: 'Jobs Completed', change: null },
 ];
 
 const currentWork = [
@@ -40,31 +22,31 @@ const currentWork = [
 ];
 
 const recentReviews = [
-  { name: 'Nimal K.',  stars: 5, text: '"Excellent work on the foundation. Very professional."' },
-  { name: 'Priya S.',  stars: 5, text: '"On time and great quality. Will hire again."' },
+  { name: 'Nimal K.', stars: 5, text: '"Excellent work on the foundation. Very professional."' },
+  { name: 'Priya S.', stars: 5, text: '"On time and great quality. Will hire again."' },
 ];
 
 export default function ProviderDashboard() {
   const [available, setAvailable] = useState(true);
 
   return (
-    <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
+    <div className="font-sans">
 
       {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '12px' }}>
+      <div className="flex items-center justify-between mb-7 flex-wrap gap-3">
         <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>
+          <h2 className="font-syne text-[1.3rem] font-bold text-crewSlate">
             Welcome, Sunil 👋
           </h2>
-          <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>You have 4 new job requests this week</p>
+          <p className="text-[0.82rem] text-crewMuted mt-0.5">You have 4 new job requests this week</p>
         </div>
         <button
-          onClick={() => setAvailable(prev => !prev)}
+          onClick={() => setAvailable(a => !a)}
+          title="Click to toggle your availability"
+          className="text-[0.8rem] font-semibold px-3 py-1.5 rounded-xl border-none cursor-pointer font-sans"
           style={{
-            fontSize: '0.8rem', fontWeight: 600, padding: '6px 12px', borderRadius: '12px',
-            border: 'none', cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
-            background: available ? C.greenLight : '#FDECEC',
-            color: available ? C.green : '#B3261E',
+            background: available ? '#E6F4EC' : '#FDECEC',
+            color: available ? '#1B6E3A' : '#B3261E',
           }}
         >
           ● {available ? 'Available for Work' : 'Not Available'}
@@ -72,55 +54,57 @@ export default function ProviderDashboard() {
       </div>
 
       {/* Metric Cards */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '12px', marginBottom: '1.8rem' }}>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-7">
         {metrics.map((m, i) => (
-          <div key={i} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radiusSm, padding: '1rem 1.1rem' }}>
-            <div style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.6rem', fontWeight: 700, color: C.slate }}>{m.val}</div>
-            <div style={{ fontSize: '0.73rem', color: C.muted, marginTop: '2px' }}>{m.label}</div>
+          <div key={i} className="bg-white border border-crewSlate/10 rounded-lg px-[1.1rem] py-4">
+            <div className="font-syne text-[1.6rem] font-bold text-crewSlate">{m.val}</div>
+            <div className="text-[0.73rem] text-crewMuted mt-0.5">{m.label}</div>
             {m.change && (
-              <div style={{ fontSize: '0.72rem', marginTop: '4px', color: m.up ? C.green : '#C0392B' }}>{m.change}</div>
+              <div className={`text-[0.72rem] mt-1 ${m.up ? 'text-crewGreen' : 'text-[#C0392B]'}`}>{m.change}</div>
             )}
           </div>
         ))}
       </div>
 
       {/* Two-column: Current Work + Recent Reviews */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))', gap: '16px' }}>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 
         {/* Current Work */}
-        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700 }}>Current Work</h3>
-            <Link href="/dashboard/serviceprovider/timeline" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
+        <div className="bg-white border border-crewSlate/10 rounded-xl p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="font-syne text-base font-bold">Current Work</h3>
+            <Link href="/dashboard/serviceprovider/timeline" className="text-[0.78rem] text-crewAmber-dark no-underline font-medium">
               View Timeline →
             </Link>
           </div>
-          <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
+          <ul className="list-none p-0 m-0">
             {currentWork.map((item, i) => (
-              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '12px', padding: '10px 0', borderBottom: i < currentWork.length - 1 ? `1px solid ${C.border}` : 'none' }}>
-                <div style={{
-                  width: '28px', height: '28px', borderRadius: '50%', flexShrink: 0,
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.7rem', fontWeight: 700, marginTop: '2px',
-                  background: item.dotClass === 'active' ? C.amberLight : C.surface2,
-                  color: item.dotClass === 'active' ? C.amberDark : C.muted,
-                }}>
+              <li
+                key={i}
+                className={`flex items-start gap-3 py-2.5 ${
+                  i < currentWork.length - 1 ? 'border-b border-crewSlate/10' : ''
+                }`}
+              >
+                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${
+                  item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                }`}>
                   {item.num}
                 </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ fontSize: '0.88rem', fontWeight: 600 }}>{item.name}</div>
-                  <div style={{ fontSize: '0.74rem', color: C.muted, marginTop: '2px' }}>{item.dates}</div>
+                <div className="flex-1">
+                  <div className="text-[0.88rem] font-semibold">{item.name}</div>
+                  <div className="text-[0.74rem] text-crewMuted mt-0.5">{item.dates}</div>
                   {item.progress !== null && (
-                    <div style={{ height: '5px', background: C.surface2, borderRadius: '10px', marginTop: '6px' }}>
-                      <div style={{ height: '100%', width: `${item.progress}%`, background: C.amber, borderRadius: '10px' }} />
+                    <div className="h-[5px] bg-crewSurface2 rounded-full mt-1.5">
+                      <div
+                        className="h-full bg-crewAmber rounded-full"
+                        style={{ width: `${item.progress}%` }}
+                      />
                     </div>
                   )}
                 </div>
-                <span style={{
-                  fontSize: '0.72rem', fontWeight: 600, padding: '2px 8px', borderRadius: '10px', flexShrink: 0, marginTop: '4px',
-                  background: item.dotClass === 'active' ? C.amberLight : C.surface2,
-                  color: item.dotClass === 'active' ? C.amberDark : C.muted,
-                }}>
+                <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${
+                  item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                }`}>
                   {item.status}
                 </span>
               </li>
@@ -128,33 +112,33 @@ export default function ProviderDashboard() {
           </ul>
           <Link
             href="/dashboard/serviceprovider/job-requests"
-            style={{ display: 'block', marginTop: '1rem', textAlign: 'center', background: C.amber, color: '#fff', padding: '8px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, textDecoration: 'none' }}
+            className="block mt-4 text-center bg-crewAmber text-white py-2 rounded-lg text-[0.82rem] font-semibold no-underline"
           >
             View Job Requests (4)
           </Link>
         </div>
 
         {/* Recent Reviews */}
-        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.2rem' }}>
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700 }}>Recent Reviews</h3>
-            <Link href="/dashboard/serviceprovider/reviews" style={{ fontSize: '0.78rem', color: C.amberDark, textDecoration: 'none', fontWeight: 500 }}>
+        <div className="bg-white border border-crewSlate/10 rounded-xl p-6">
+          <div className="flex justify-between items-center mb-5">
+            <h3 className="font-syne text-base font-bold">Recent Reviews</h3>
+            <Link href="/dashboard/serviceprovider/reviews" className="text-[0.78rem] text-crewAmber-dark no-underline font-medium">
               All Reviews →
             </Link>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
+          <div className="flex flex-col gap-2.5">
             {recentReviews.map((r, i) => (
               <div key={i}>
-                <div style={{ fontSize: '0.83rem', fontWeight: 600 }}>
-                  {r.name} <span style={{ color: C.amber }}>{'★'.repeat(r.stars)}</span>
+                <div className="text-[0.83rem] font-semibold">
+                  {r.name} <span className="text-crewAmber">{'★'.repeat(r.stars)}</span>
                 </div>
-                <div style={{ fontSize: '0.78rem', color: C.muted, marginTop: '2px', lineHeight: 1.5 }}>{r.text}</div>
+                <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">{r.text}</div>
               </div>
             ))}
           </div>
-          <div style={{ marginTop: '1.2rem', padding: '12px', background: C.greenLight, borderRadius: '8px', border: `1px solid rgba(27,110,58,0.2)` }}>
-            <div style={{ fontSize: '0.8rem', color: C.green, fontWeight: 600 }}>★ 4.9 Average Rating</div>
-            <div style={{ fontSize: '0.73rem', color: C.green, marginTop: '2px' }}>Based on 47 verified reviews</div>
+          <div className="mt-5 p-3 bg-crewGreen-light rounded-lg border border-crewGreen/20">
+            <div className="text-[0.8rem] text-crewGreen font-semibold">★ 4.9 Average Rating</div>
+            <div className="text-[0.73rem] text-crewGreen mt-0.5">Based on 47 verified reviews</div>
           </div>
         </div>
       </div>
