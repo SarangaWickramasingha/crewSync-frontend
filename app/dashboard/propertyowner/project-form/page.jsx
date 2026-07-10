@@ -2,6 +2,7 @@
 
 import { useState } from 'react'
 import Navbar from '@/Components/layout/Navbar'
+import { API_PROJECT_CREATE } from '@/config/api';
 
 export default function StartProjectPage() {
   const [currentPage, setCurrentPage] = useState(1)
@@ -13,7 +14,7 @@ export default function StartProjectPage() {
   const [formData, setFormData] = useState({
     projName: '',
     projStartDate: '',
-    projEndDate: '',
+    projTargetDate: '',
     projDistrict: '',
     projAddress: '',
     phases: [],
@@ -98,8 +99,8 @@ export default function StartProjectPage() {
     if (!formData.projAddress.trim()) return 'Please enter the site address.'
     if (formData.phases.length === 0) return 'Please select at least one task.'
     if (!formData.projStartDate) return 'Please enter a planned start date.'
-    if (!formData.projEndDate) return 'Please enter a target completion date.'
-    if (new Date(formData.projEndDate) <= new Date(formData.projStartDate)) return 'Target completion date must be after the start date.'
+    if (!formData.projTargetDate) return 'Please enter a target completion date.'
+    if (new Date(formData.projTargetDate) <= new Date(formData.projStartDate)) return 'Target completion date must be after the start date.'
     if (!budget || Number(budget) <= 0) return 'Please enter a valid estimated budget.'
     if (!formData.agreeTerms) return 'Please agree to the Terms of Service to continue.'
     return null
@@ -130,14 +131,15 @@ export default function StartProjectPage() {
     setSubmitting(true)
 
     try {
-      const res = await fetch("http://localhost/CrewSync/backend/index.php/api/projects/create", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
+        const res = await fetch(API_PROJECT_CREATE, {
+          method: "POST",
+          credentials:"include",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
           title: formData.projName,
           total_budget: budget,
           start_date: formData.projStartDate,
-          end_date: formData.projEndDate,
+          target_end_date: formData.projTargetDate,
           district: formData.projDistrict,
           address: formData.projAddress,
           status: 'planning',
@@ -152,15 +154,20 @@ export default function StartProjectPage() {
         setTimeout(() => {
           window.location.href = `/dashboard/propertyowner/timeline?project_id=${data.project_id}`;
         }, 2000);
-      } else {
-        setError(data.message || "Failed to create project. Please try again.");
-      }
-    } catch (err) {
+        } else if (data.active_project_id) {
+      // Has active project — offer to go back to it
+          setError(`You already have an active project. Please finish it before creating a new one.`);
+        } else {
+          setError(data.message || "Failed to create project. Please try again.");
+        }
+    
+      } catch (err) {
       console.error(err);
       setError("Could not reach the server. Please check your connection and try again.");
-    } finally {
+    
+      } finally {
       setSubmitting(false)
-    }
+      }
   }
 
   return (
@@ -169,8 +176,8 @@ export default function StartProjectPage() {
 
       {/* WRAPPER */}
       <div className="flex-1 flex items-start justify-center py-10 px-4 pb-16 relative overflow-hidden">
-        <div className="absolute -top-[100px] -right-[120px] w-[500px] h-[500px] pointer-events-none" style={{background: 'radial-gradient(circle, rgba(232,130,12,0.08) 0%, transparent 65%)'}}></div>
-        <div className="absolute -bottom-[80px] -left-[80px] w-[400px] h-[400px] pointer-events-none" style={{background: 'radial-gradient(circle, rgba(27,110,58,0.06) 0%, transparent 65%)'}}></div>
+        <div className="absolute -top-25 -right-30 w-125 h-125 pointer-events-none" style={{background: 'radial-gradient(circle, rgba(232,130,12,0.08) 0%, transparent 65%)'}}></div>
+        <div className="absolute -bottom-[80px] -left-[80px] w-100 h-[400px] pointer-events-none" style={{background: 'radial-gradient(circle, rgba(27,110,58,0.06) 0%, transparent 65%)'}}></div>
 
         <div className="flex gap-8 w-full max-w-[960px] items-start max-lg:flex-col">
 
@@ -189,8 +196,8 @@ export default function StartProjectPage() {
                 <div key={i} className="flex gap-3 items-start relative">
                   {i < 2 && (
                     <div
-                      className={`absolute left-[13px] top-7 w-0.5 z-0 h-[calc(100%+2px)] ${
-                        currentPage > i ? 'bg-[#E8820C]' : 'bg-[rgba(26,29,35,0.1)]'
+                      className={`absolute left-3.25 top-7 w-0.5 z-0 h-[calc(100%+2px)] ${
+                        currentPage > i ? 'bg-amber' : 'bg-[rgba(26,29,35,0.1)]'
                       }`}
                     ></div>
                   )}
@@ -374,7 +381,7 @@ export default function StartProjectPage() {
                       <div className="flex flex-col gap-[5px]">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Start Date <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <input
-                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
+                          className="p-2.5 px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
                           value={formData.projStartDate}
@@ -388,8 +395,8 @@ export default function StartProjectPage() {
                           className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
-                          value={formData.projEndDate}
-                          onChange={e => setFormData({...formData, projEndDate: e.target.value})}
+                          value={formData.projTargetDate}
+                          onChange={e => setFormData({...formData, projTargetDate: e.target.value})}
                           disabled={submitting || success}
                         />
                       </div>
@@ -459,7 +466,7 @@ export default function StartProjectPage() {
                       { label: 'District', value: formData.projDistrict },
                       { label: 'Site Address', value: formData.projAddress },
                       { label: 'Start Date', value: fmtDate(formData.projStartDate) },
-                      { label: 'Target Completion', value: fmtDate(formData.projEndDate) },
+                      { label: 'Target Completion', value: fmtDate(formData.projTargetDate) },
                       { label: 'Estimated Budget', value: 'LKR ' + fmt(budget), highlight: true }
                     ].map(item => (
                       <div key={item.label} className="bg-[#F7F6F2] rounded-[10px] p-3 px-[14px] border border-[rgba(26,29,35,0.1)]">

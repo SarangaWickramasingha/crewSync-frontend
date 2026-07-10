@@ -89,7 +89,7 @@ export default function DashboardSidebar({
       >
         {!isGuest && (
           <div className="flex items-center gap-2.5 mb-6 pb-4 border-b border-black/10">
-            <div className="w-[38px] h-[38px] rounded-full bg-[#FFF3E0] flex items-center justify-center font-bold text-[#B85A00] text-sm">
+            <div className="w-9.5 h-[38px] rounded-full bg-[#FFF3E0] flex items-center justify-center font-bold text-[#B85A00] text-sm">
               {activeInitials}
             </div>
             <div>

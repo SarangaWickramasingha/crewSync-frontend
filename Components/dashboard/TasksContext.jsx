@@ -27,38 +27,33 @@ export function TasksProvider({ children }) {
   const [currentProjectId, setCurrentProjectId] = useState(null);
 
   useEffect(() => {
+    // One-time cleanup of old test data cached in the browser
     if (typeof window !== 'undefined') {
-      const savedTasks = localStorage.getItem('crewsync_tasks');
-      const savedNextId = localStorage.getItem('crewsync_next_id');
-      const savedCompleted = localStorage.getItem('crewsync_project_completed');
-      const savedNotifs = localStorage.getItem('crewsync_notifications');
-      const savedProjectId = localStorage.getItem('crewsync_project_id');
-
-      if (savedTasks) setTasks(JSON.parse(savedTasks));
-      if (savedNextId) setNextId(Number(savedNextId));
-      if (savedCompleted) setProjectCompleted(savedCompleted === 'true');
-      if (savedNotifs) setNotifications(JSON.parse(savedNotifs));
-      const savedBudget = localStorage.getItem('crewsync_budget');
-      if (savedBudget) setEstimatedBudget(Number(savedBudget));
-      if (savedProjectId) setCurrentProjectId(Number(savedProjectId));
-      setIsLoaded(true);
+      ['crewsync_tasks', 'crewsync_next_id', 'crewsync_project_completed',
+        'crewsync_notifications', 'crewsync_budget', 'crewsync_project_id']
+        .forEach((k) => localStorage.removeItem(k));
     }
-  }, []);
 
-  useEffect(() => {
-    if (isLoaded && typeof window !== 'undefined') {
-      localStorage.setItem('crewsync_tasks', JSON.stringify(tasks));
-      localStorage.setItem('crewsync_next_id', String(nextId));
-      localStorage.setItem('crewsync_project_completed', String(projectCompleted));
-      localStorage.setItem('crewsync_notifications', JSON.stringify(notifications));
-      localStorage.setItem('crewsync_budget', String(estimatedBudget));
-      if (currentProjectId) {
-        localStorage.setItem('crewsync_project_id', String(currentProjectId));
-      } else {
-        localStorage.removeItem('crewsync_project_id');
+    async function init() {
+      try {
+        const res = await fetch(API_PROJECTS, { credentials: 'include' });
+        const data = await res.json();
+        if (data.success && data.projects?.length > 0) {
+          await loadFromProject(data.projects[0].project_id);
+        } else {
+          setTasks([]);
+          setEstimatedBudget(0);
+          setProjectCompleted(false);
+          setCurrentProjectId(null);
+        }
+      } catch (e) {
+        console.error('Failed to load user project:', e);
+      } finally {
+        setIsLoaded(true);
       }
     }
-  }, [tasks, nextId, projectCompleted, notifications, estimatedBudget, currentProjectId, isLoaded]);
+    init();
+  }, []);
 
   function addNotification(text) {
     const now = new Date();
@@ -101,12 +96,6 @@ export function TasksProvider({ children }) {
       setEstimatedBudget(Number(data.project.p_budget) || DEFAULT_BUDGET);
       setProjectCompleted(!!Number(data.project.is_finished));
 
-      if (typeof window !== 'undefined') {
-        localStorage.setItem('crewsync_tasks', JSON.stringify(mapped));
-        localStorage.setItem('crewsync_budget', String(data.project.p_budget));
-        localStorage.setItem('crewsync_project_completed', String(!!Number(data.project.is_finished)));
-        localStorage.setItem('crewsync_project_id', String(projectId));
-      }
     } catch (e) {
       console.error('Failed to load project tasks:', e);
     }

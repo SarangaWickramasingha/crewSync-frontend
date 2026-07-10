@@ -8,6 +8,8 @@ import MetricCard from '@/Components/dashboard/propertyOwner/MetricCard';
 import StatusPill from '@/Components/dashboard/propertyOwner/StatusPill';
 import { useTasks } from '@/Components/dashboard/TasksContext';
 import { useAuth } from '@/context/AuthContext';
+import { API_PROJECTS } from '@/config/api';
+
 
 function fmtCompact(n) {
   if (n >= 1000000 || n <= -1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
@@ -42,11 +44,29 @@ export default function PropertyOwnerOverviewPage() {
         title="My Project: House Build – Kandy"
         subtitle="Started March 2026 · Estimated Completion August 2026"
         action={
-          <button 
-          onClick={()=>router.push('/dashboard/propertyowner/project-form')}
-          className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
-            + New Project
-          </button>
+            <button 
+                onClick={async () => {
+                    try {
+                        const res = await fetch(API_PROJECTS, {
+                            credentials: 'include',
+                        });
+                        const data = await res.json();
+                        // Check if there's an active (unfinished) project
+                        const activeProject = data.projects?.find(p => !p.is_finished);
+                        if (activeProject) {
+                            // Go to that project's timeline instead
+                            router.push(`/dashboard/propertyowner/timeline?project_id=${activeProject.project_id}`);
+                        } else {
+                            router.push('/dashboard/propertyowner/project-form');
+                        }
+                    } catch (err) {
+                        // If check fails just go to form
+                        router.push('/dashboard/propertyowner/project-form');
+                    }
+                }}
+                className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
+                + New Project
+            </button>
         }
       />
 
