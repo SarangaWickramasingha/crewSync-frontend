@@ -115,6 +115,11 @@ export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    // Guest (not logged in) pages render their own navbar/sidebar
+    if (!user) {
+        return <>{children}</>;
+    }
+
     const roleKey = (role ?? '').toUpperCase();
     const sections = NAV[roleKey] ?? NAV.PROPERTY_OWNER;
 
