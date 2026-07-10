@@ -120,6 +120,11 @@ export default function DashboardLayout({ children }) {
         return <>{children}</>;
     }
 
+    // These pages have their own built-in navbar/sidebar — don't double-wrap them
+    if (pathname.startsWith('/dashboard/propertyowner')) {
+        return <>{children}</>;
+    }
+
     const roleKey = (role ?? '').toUpperCase();
     const sections = NAV[roleKey] ?? NAV.PROPERTY_OWNER;
 
