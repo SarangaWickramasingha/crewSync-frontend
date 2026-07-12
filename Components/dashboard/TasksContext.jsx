@@ -212,6 +212,7 @@ export function TasksProvider({ children }) {
   const value = {
     tasks,
     addTask,
+    currentProjectId,
     deleteTask,
     updateTask,
     toggleTaskCompleted,

@@ -60,7 +60,7 @@ export default function HomePage() {
     if (!name || !email || !msg) { alert("Please fill in your name, email, and message."); return; }
     setFbError(""); setFbSubmitting(true);
     try {
-      const res = await fetch("http://localhost/CrewSync/backend/index.php/api/feedback/submit", {
+      const res = await fetch("http://localhost/CrewSync-backend/backend/index.php/api/feedback/submit", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message_type: fbType, message: msg }),
@@ -202,7 +202,7 @@ export default function HomePage() {
               <div className="mb-4">
                 <label className="mb-1.5 block text-[0.8rem] font-semibold text-slate-light" htmlFor="fbType">Message Type</label>
                 <select id="fbType" value={fbType} onChange={(e) => setFbType(e.target.value)} className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber">
-                  {["General Inquiry","Bug Report","Suggestion / Feature Request","Account Issue","Payment Problem","Other"].map(o => <option key={o}>{o}</option>)}
+                  {["General Inquiry", "Bug Report", "Suggestion / Feature Request", "Account Issue", "Payment Problem", "Other"].map(o => <option key={o}>{o}</option>)}
                 </select>
               </div>
               <div className="mb-4">
