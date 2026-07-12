@@ -4,6 +4,9 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import Navbar from "@/Components/layout/Navbar";
 import { useAuth } from "@/context/AuthContext";
+import { API_FEEDBACK_SUBMIT, API_STATS_SUMMARY } from "@/config/api";
+
+
 
 export default function HomePage() {
   const router = useRouter();
@@ -29,7 +32,7 @@ export default function HomePage() {
     let isMounted = true;
     async function loadStats() {
       try {
-        const res = await fetch("http://localhost/CrewSync-backend/backend/index.php/api/stats/summary");
+        const res = await fetch(API_STATS_SUMMARY);
         const data = await res.json();
         if (isMounted && data.success) {
           setStats({ workers: data.workers, projects: data.projects, suppliers: data.suppliers, avgSaved: data.avgSaved });
@@ -43,6 +46,7 @@ export default function HomePage() {
     loadStats();
     return () => { isMounted = false; };
   }, []);
+
 
   function formatStat(value) {
     if (statsLoading) return "…";
@@ -60,8 +64,7 @@ export default function HomePage() {
     if (!name || !email || !msg) { alert("Please fill in your name, email, and message."); return; }
     setFbError(""); setFbSubmitting(true);
     try {
-      console.log("v2");
-      const res = await fetch("http://localhost/CrewSync-backend/backend/index.php/api/feedback/submit", {
+      const res = await fetch(API_FEEDBACK_SUBMIT, {
         method: "POST",
         credentials: "include",
         headers: { "Content-Type": "application/json" },

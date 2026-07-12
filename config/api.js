@@ -25,4 +25,8 @@ export const API_TASK_FINISH = (id) => `${API_BASE}/api/tasks/${id}/toggle-finis
 // ── COMMENTS ───────────────────────────────────────────────────────────────────
 export const API_PROJECT_COMMENTS = (projectId) => `${API_BASE}/api/projects/${projectId}/comments`;
 
+// ── FEEDBACK ──────────────────────────────────────────────────────────────────
+export const API_FEEDBACK_SUBMIT = `${API_BASE}/api/feedback/submit`;
 
+// 
+export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
