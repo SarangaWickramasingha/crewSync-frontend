@@ -126,8 +126,7 @@ export function TasksProvider({ children }) {
   // ── ADD TASK ──────────────────────────────────────────────────────────────────
   async function addTask(name, color, budget = 0) {
     const tempId = nextId;
-    setTasks((ts) => [...ts, { id: tempId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]);
-    setNextId((n) => n + 1);
+    setTasks((ts) => [...ts, { id: tempId, name, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]); setNextId((n) => n + 1);
     addNotification(`New task <strong>${name}</strong> has been added to the project timeline`);
 
     if (!currentProjectId) return;
