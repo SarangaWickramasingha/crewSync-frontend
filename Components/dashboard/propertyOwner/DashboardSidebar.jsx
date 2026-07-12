@@ -83,7 +83,7 @@ export default function DashboardSidebar({
         className={`
           bg-white border-r border-black/10 p-4 overflow-y-auto
           fixed top-[60px] left-0 bottom-0 w-60 z-[200] shadow-lg
-          md:static md:block md:w-full md:shadow-none md:top-auto md:left-auto md:bottom-auto
+          md:sticky md:top-[60px] md:h-[calc(100vh-60px)] md:block md:w-full md:shadow-none md:z-auto
           ${open ? 'block' : 'hidden'}
         `}
       >

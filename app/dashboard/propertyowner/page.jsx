@@ -57,11 +57,11 @@ export default function PropertyOwnerOverviewPage() {
                             // Go to that project's timeline instead
                             router.push(`/dashboard/propertyowner/timeline?project_id=${activeProject.project_id}`);
                         } else {
-                            router.push('/dashboard/propertyowner/project-form');
+                            router.push('/project-form');
                         }
                     } catch (err) {
                         // If check fails just go to form
-                        router.push('/dashboard/propertyowner/project-form');
+                        router.push('/project-form');
                     }
                 }}
                 className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">

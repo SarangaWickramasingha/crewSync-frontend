@@ -36,10 +36,27 @@ export function TasksProvider({ children }) {
 
     async function init() {
       try {
+        // If the URL already has a project_id parameter (e.g. from redirect),
+        // let ProjectLoader load that specific project instead of overriding it here.
+        if (typeof window !== 'undefined') {
+          const urlParams = new URLSearchParams(window.location.search);
+          if (urlParams.has('project_id')) {
+            return;
+          }
+        }
+
         const res = await fetch(API_PROJECTS, { credentials: 'include' });
         const data = await res.json();
         if (data.success && data.projects?.length > 0) {
-          await loadFromProject(data.projects[0].project_id);
+          // 1. Try to find an active (unfinished) project first
+          const activeProj = data.projects.find(p => !p.is_finished);
+          if (activeProj) {
+            await loadFromProject(activeProj.project_id);
+          } else {
+            // 2. If all projects are finished, load the newest project
+            // (assuming data.projects is sorted start_date DESC, projects[0] is the newest)
+            await loadFromProject(data.projects[0].project_id);
+          }
         } else {
           setTasks([]);
           setEstimatedBudget(0);
@@ -58,7 +75,8 @@ export function TasksProvider({ children }) {
   function addNotification(text) {
     const now = new Date();
     const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
-    setNotifications((prev) => [{ id: Date.now(), text, time, read: false }, ...prev]);
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+    setNotifications((prev) => [{ id: uniqueId, text, time, read: false }, ...prev]);
   }
 
   function markAllNotificationsRead() {
