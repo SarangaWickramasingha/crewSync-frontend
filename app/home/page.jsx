@@ -60,8 +60,10 @@ export default function HomePage() {
     if (!name || !email || !msg) { alert("Please fill in your name, email, and message."); return; }
     setFbError(""); setFbSubmitting(true);
     try {
+      console.log("v2");
       const res = await fetch("http://localhost/CrewSync-backend/backend/index.php/api/feedback/submit", {
         method: "POST",
+        credentials: "include",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ name, email, message_type: fbType, message: msg }),
       });
