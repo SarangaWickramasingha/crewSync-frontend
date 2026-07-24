@@ -8,7 +8,7 @@
   --font-dmSans:  'DM Sans', sans-serif;
   --font-syne:    'Syne', sans-serif;
 
-  /* ── Brand colours ── */
+  /* ── Brand colours (crew*) ── */
   --color-crewAmber:      #E8820C;
   --color-crewAmber-dark: #B85A00;
   --color-crewAmber-light:#FFF3E0;
@@ -21,6 +21,39 @@
   --color-crewGreen-light:#E6F4EC;
   --color-crewBlue:       #1A56A0;
   --color-crewBlue-light: #E8F0FB;
+
+  /* ── Generic brand/UI tokens ── */
+  --color-primary:       #1B6E3A;
+  --color-primary-dark:  #14532d;
+  --color-primary-light: #dcfce7;
+
+  --color-amber: #E8820C;
+
+  --color-slate:       #1e293b;
+  --color-slate-light: #475569;
+  --color-muted:       #64748b;
+
+  --color-border:  #e2e8f0;
+  --color-surface: #f8fafc;
+
+  --color-success: #16a34a;
+  --color-danger:  #dc2626;
+  --color-warning: #f59e0b;
+
+  /* ── Role — Property Owner (green) ── */
+  --color-owner:       #16a34a;
+  --color-owner-light: #dcfce7;
+  --color-owner-dark:  #15803d;
+
+  /* ── Role — Service Provider (blue) ── */
+  --color-provider:       #2563eb;
+  --color-provider-light: #dbeafe;
+  --color-provider-dark:  #1d4ed8;
+
+  /* ── Role — Supplier (orange) ── */
+  --color-supplier:       #f97316;
+  --color-supplier-light: #ffedd5;
+  --color-supplier-dark:  #ea580c;
 
   /* ── Animations ── */
   --animate-fadeIn: fadeIn 0.5s ease both;

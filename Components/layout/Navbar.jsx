@@ -1,142 +1,218 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import Link from 'next/link';
-import { useAuth } from '@/context/AuthContext';
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 
-const ROLE_LABELS = {
-  PROPERTY_OWNER:    { label: 'Property Owner',    bg: '#FFF3E0', color: '#B85A00' },
-  SERVICE_PROVIDER:  { label: 'Service Provider',  bg: '#E6F4EC', color: '#1B6E3A' },
-  MATERIAL_SUPPLIER: { label: 'Material Supplier', bg: '#E8F0FB', color: '#1A56A0' },
-};
+import { useAuth } from "@/context/AuthContext";
 
-export default function Navbar({ onMenuToggle }) {
-  const { user, role, logout } = useAuth();
-  const [open, setOpen] = useState(false);
+export default function Navbar({ variant = "default", activeTab = "Home" }) {
+  const router = useRouter();
+  const [navOpen, setNavOpen] = useState(false);
+  const { isGuest, logout } = useAuth();
 
-  const meta     = ROLE_LABELS[role] ?? {};
-  const initials = user?.name?.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase() ?? '?';
+  const Logo = () => (
+    <div
+      onClick={() => router.push("/home")}
+      className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+    >
+      Crew<span className="text-white">Sync</span>
+    </div>
+  );
 
-  return (
-    <nav style={styles.nav}>
-      {/* Hamburger */}
-      <button style={styles.hamburger} onClick={onMenuToggle}>☰</button>
-
-      {/* Logo */}
-      <Link href="/dashboard" style={styles.logo}>
-        Crew<span style={{ color: '#fff' }}>Sync</span>
-      </Link>
-
-      {/* Right */}
-      <div style={styles.right}>
-        {/* Role badge */}
-        <span style={{ ...styles.roleBadge, background: meta.bg, color: meta.color }}>
-          {meta.label}
-        </span>
-
-        {/* Avatar */}
-        <div style={{ position: 'relative' }}>
-          <button style={styles.avatar} onClick={() => setOpen(o => !o)}>
-            {initials}
+  /* ── AUTH variant ── */
+  if (variant === "auth") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="flex items-center text-[0.85rem] text-white/60">
+          New to CrewSync?&nbsp;
+          <button
+            onClick={() => router.push("/register")}
+            className="cursor-pointer border-none bg-transparent p-0 text-[0.85rem] font-semibold text-[#e8820c] transition-opacity hover:opacity-80"
+          >
+            Get Started
           </button>
+        </div>
+      </nav>
+    );
+  }
 
-          {open && (
-            <div style={styles.dropdown}>
-              <div style={styles.dropdownHeader}>
-                <div style={styles.dropdownName}>{user?.name}</div>
-                <div style={styles.dropdownEmail}>{user?.email}</div>
-              </div>
-              <hr style={{ border: 'none', borderTop: '1px solid rgba(26,29,35,0.1)' }} />
-              <Link href="/dashboard/profile" style={styles.dropdownItem} onClick={() => setOpen(false)}>
-                👤 My Profile
-              </Link>
-              <button style={{ ...styles.dropdownItem, color: '#C0392B', width: '100%', textAlign: 'left', background: 'none', border: 'none' }} onClick={logout}>
-                🚪 Sign Out
+  /* ── REGISTER variant ── */
+  if (variant === "register") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="flex items-center gap-2.5">
+          <span className="text-[0.82rem] text-white/55">Already have an account?</span>
+          <button
+            onClick={() => router.push("/login")}
+            className="rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10"
+          >
+            Log In
+          </button>
+        </div>
+      </nav>
+    );
+  }
+
+  /* ── PROPERTY OWNER DASHBOARD variant ── */
+  if (variant === "propertyOwnerDashboard") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+        <Logo />
+        <div className="hidden items-center gap-1 sm:flex">
+          <button
+            onClick={() => router.push("/home")}
+            className="rounded-md px-3 py-1.5 text-[0.8rem] font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white"
+          >
+            Home
+          </button>
+          <button
+            onClick={() => {
+              if (isGuest) {
+                router.push("/dashboard/propertyowner/timeline");
+              } else {
+                router.push("/dashboard/propertyowner");
+              }
+            }}
+            className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
+          >
+            {isGuest ? "Guest Property Owner Dashboard" : "Property Owner Dashboard"}
+          </button>
+        </div>
+        <div className="flex items-center gap-2">
+          {isGuest ? (
+            <>
+              <button
+                onClick={() => router.push("/login")}
+                className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
+              >
+                Log In
               </button>
-            </div>
+              <button
+                onClick={() => router.push("/register")}
+                className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+              >
+                Get Started
+              </button>
+            </>
+          ) : (
+            <button
+              onClick={() => {
+                logout();
+                router.push("/home");
+              }}
+              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
+            >
+              Log Out
+            </button>
           )}
         </div>
+      </nav>
+    );
+  }
+
+  /* ── PROJECT FORM variant ── */
+  if (variant === "projectForm") {
+    return (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] border-b border-white/[0.06]">
+        <div
+          onClick={() => router.push("/home")}
+          className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+        >
+          Create <span className="text-white">Project</span>
+        </div>
+        <button
+          onClick={() => window.history.back()}
+          className="flex items-center gap-[6px] text-white/50 text-[0.82rem] font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none font-['DM_Sans']"
+        >
+          ← Back
+        </button>
+      </nav>
+    );
+  }
+
+  /* ── DEFAULT variant ── */
+  // Dynamically attach the accurate dashboard path into your primary tabs array
+  const tabs = [
+    { label: "Home", href: "/home" },
+  ];
+
+  return (
+    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] relative">
+      <Logo />
+
+      <div className="hidden items-center gap-1 sm:flex absolute left-1/2 -translate-x-1/2">
+        {tabs.map(({ label, href }) => {
+          const isActive = activeTab === label;
+          return (
+            <button
+              key={label}
+              onClick={() => router.push(href)}
+              className={`rounded-md px-3 py-1.5 text-[0.8rem] font-medium transition-all
+                ${isActive
+                  ? "bg-white/10 text-[#e8820c]"
+                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {label}
+            </button>
+          );
+        })}
       </div>
+
+      <div className="flex items-center gap-2">
+        {isGuest ? (
+          <>
+            <button
+              onClick={() => router.push("/login")}
+              className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
+            >
+              Log In
+            </button>
+            <button
+              onClick={() => router.push("/register")}
+              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
+            >
+              Get Started
+            </button>
+          </>
+        ) : (
+          <button
+            onClick={() => {
+              logout();
+              router.push("/home");
+            }}
+            className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
+          >
+            Log Out
+          </button>
+        )}
+        <button
+          onClick={() => setNavOpen((v) => !v)}
+          className="border-none bg-transparent text-[1.3rem] text-white sm:hidden"
+        >
+          ☰
+        </button>
+      </div>
+
+      {navOpen && (
+        <div className="absolute left-0 right-0 top-[60px] z-[200] flex flex-col border-b border-white/10 bg-[#2e3340] p-2 sm:hidden">
+          {tabs.map(({ label, href }) => (
+            <button
+              key={label}
+              onClick={() => { router.push(href); setNavOpen(false); }}
+              className={`w-full rounded-md px-3.5 py-2.5 text-left text-[0.8rem] font-medium transition-all
+                ${activeTab === label
+                  ? "bg-white/10 text-[#e8820c]"
+                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
+                }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      )}
     </nav>
   );
 }
-
-const styles = {
-  nav: {
-    background: '#1A1D23',
-    height: '60px',
-    padding: '0 1.5rem',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    position: 'sticky',
-    top: 0,
-    zIndex: 100,
-    gap: '12px',
-  },
-  hamburger: {
-    display: 'none',
-    background: 'none',
-    border: 'none',
-    color: '#fff',
-    fontSize: '1.2rem',
-    cursor: 'pointer',
-  },
-  logo: {
-    color: '#E8820C',
-    fontFamily: "'Syne', sans-serif",
-    fontSize: '1.4rem',
-    fontWeight: 800,
-    letterSpacing: '-0.5px',
-    textDecoration: 'none',
-    flexShrink: 0,
-  },
-  right: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '10px',
-    marginLeft: 'auto',
-  },
-  roleBadge: {
-    fontSize: '0.72rem',
-    fontWeight: 600,
-    padding: '3px 10px',
-    borderRadius: '20px',
-    whiteSpace: 'nowrap',
-  },
-  avatar: {
-    width: '34px',
-    height: '34px',
-    borderRadius: '50%',
-    background: '#E8820C',
-    color: '#fff',
-    border: 'none',
-    fontFamily: "'Syne', sans-serif",
-    fontSize: '0.78rem',
-    fontWeight: 700,
-    cursor: 'pointer',
-  },
-  dropdown: {
-    position: 'absolute',
-    top: 'calc(100% + 8px)',
-    right: 0,
-    minWidth: '200px',
-    background: '#fff',
-    border: '1px solid rgba(26,29,35,0.1)',
-    borderRadius: '12px',
-    boxShadow: '0 4px 24px rgba(26,29,35,0.12)',
-    overflow: 'hidden',
-    zIndex: 200,
-  },
-  dropdownHeader: { padding: '12px 14px' },
-  dropdownName:   { fontSize: '0.88rem', fontWeight: 700 },
-  dropdownEmail:  { fontSize: '0.76rem', color: '#8A8FA8', marginTop: '1px' },
-  dropdownItem: {
-    display: 'block',
-    padding: '10px 14px',
-    fontSize: '0.85rem',
-    color: '#4A5068',
-    textDecoration: 'none',
-    cursor: 'pointer',
-  },
-};
