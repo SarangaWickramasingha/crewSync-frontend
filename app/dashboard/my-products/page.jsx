@@ -1,9 +1,0 @@
-"use client";
-import { useEffect } from "react";
-import { useRouter } from "next/navigation";
-
-export default function OldMyProductsRedirect() {
-  const router = useRouter();
-  useEffect(() => { router.replace("/dashboard/supplier/my-products"); }, [router]);
-  return null;
-}
