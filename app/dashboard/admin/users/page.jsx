@@ -1,32 +1,92 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
-import StatusPill from '@/Components/ui/StatusPill';
 import { useRouter } from 'next/navigation';
 
-// ── Sample data (replace with API calls when backend is ready) ──
-// TODO: fetch from GET /api/admin/users
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ??
+    'http://localhost/CrewSync-backend/backend/index.php';
 
-const SAMPLE_USERS = [
-    { user_id: 1, name: 'Nimal Kumarasinghe', email: 'nimal@example.com', contact_no: '0771234567', district: 'Kandy', role: 'Property Owner', created_at: 'Jan 2026', status: 'Active' },
-    { user_id: 2, name: 'Sunil Karunaratne', email: 'sunil@example.com', contact_no: '0779876543', district: 'Kandy', role: 'Service Provider', created_at: 'Feb 2026', status: 'Active' },
-    { user_id: 3, name: 'Malshan Hardware', email: 'malshan@example.com', contact_no: '0760001122', district: 'Kandy', role: 'Supplier', created_at: 'Mar 2026', status: 'Active' },
-    { user_id: 4, name: 'Chamari Perera', email: 'chamari@example.com', contact_no: '0712345678', district: 'Matale', role: 'Property Owner', created_at: 'May 2026', status: 'Pending' },
-];
-
-
+const ROLE_LABEL = {
+    property_owner: 'Property Owner',
+    service_provider: 'Service Provider',
+    material_supplier: 'Material Supplier',
+    admin: 'Admin',
+};
 
 export default function AdminUsersPage() {
     const router = useRouter();
+
+    const [users, setUsers] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
+    const [deletingId, setDeletingId] = useState(null);
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
 
-    const filtered = SAMPLE_USERS.filter(u => {
-        const q = search.toLowerCase();
-        const matchSearch = !q || u.name.toLowerCase().includes(q) || u.role.toLowerCase().includes(q) || u.district.toLowerCase().includes(q);
+    useEffect(() => {
+        const controller = new AbortController();
+        let active = true;
+
+        fetch(`${API_BASE}/api/admin/users`, {
+            credentials: 'include',
+            signal: controller.signal,
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`Request failed (${res.status})`);
+                return res.json();
+            })
+            .then(data => {
+                if (!active) return;
+                if (!data.success) throw new Error(data.message || 'Could not load users.');
+                setUsers(data.users ?? []);
+            })
+            .catch(err => {
+                if (active && err.name !== 'AbortError') setError(err.message);
+            })
+            .finally(() => { if (active) setLoading(false); });
+
+        return () => { active = false; controller.abort(); };
+    }, []);
+
+    const filtered = users.filter(u => {
+        const q = search.trim().toLowerCase();
+        const fullName = `${u.fname ?? ''} ${u.lname ?? ''}`.toLowerCase();
+        const matchSearch =
+            !q ||
+            fullName.includes(q) ||
+            u.email?.toLowerCase().includes(q) ||
+            u.role?.toLowerCase().includes(q) ||
+            u.district?.toLowerCase().includes(q);
         const matchRole = !roleFilter || u.role === roleFilter;
         return matchSearch && matchRole;
     });
+
+    const handleDelete = async (userId, name) => {
+        if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
+
+        setDeletingId(userId);
+        setError('');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
+                method: 'DELETE',
+                credentials: 'include',
+            });
+
+            if (!res.ok) throw new Error(`Request failed (${res.status})`);
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Could not delete this user.');
+
+            // Only drop the row once the server has confirmed.
+            setUsers(prev => prev.filter(u => u.user_id !== userId));
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     return (
         <div>
@@ -35,7 +95,6 @@ export default function AdminUsersPage() {
                     <h2 className="font-syne text-xl font-bold text-slate">User Management</h2>
                     <p className="text-xs text-muted mt-0.5">All registered accounts</p>
                 </div>
-                {/* TODO: wire up Add User modal */}
                 <button
                     onClick={() => router.push('/dashboard/admin/users/new')}
                     className="px-4 py-2 bg-amber text-white text-xs font-semibold rounded-lg hover:bg-amber-dark transition-all">
@@ -43,13 +102,19 @@ export default function AdminUsersPage() {
                 </button>
             </div>
 
+            {error && (
+                <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
+                    {error}
+                </div>
+            )}
+
             {/* Filters */}
             <div className="flex gap-2 mb-4 flex-wrap">
                 <div className="relative flex-1 min-w-[200px]">
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
                     <input
                         type="text"
-                        placeholder="Search by name, role, or district…"
+                        placeholder="Search by name, email, role, or district…"
                         value={search}
                         onChange={e => setSearch(e.target.value)}
                         className="w-full pl-8 pr-3 py-2.5 border border-border rounded-lg text-xs text-slate
@@ -61,13 +126,10 @@ export default function AdminUsersPage() {
                     onChange={e => setRoleFilter(e.target.value)}
                     className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
                 >
-                    <option value="">Attributes</option>
-                    <option value="Name">Name</option>
-                    <option value="User ID">User ID</option>
-                    <option value="Role">Role</option>
-                    <option value="District">District</option>
-                    <option value="Contact Number">Contact Number</option>
-                    <option value="Email">Email</option>
+                    <option value="">All Roles</option>
+                    {Object.entries(ROLE_LABEL).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
                 </select>
             </div>
 
@@ -82,38 +144,44 @@ export default function AdminUsersPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {filtered.length === 0 ? (
-                            <tr><td colSpan={6} className="px-4 py-5 text-muted">No users found.</td></tr>
-                        ) : filtered.map((u, i) => (
-                            <tr key={i} className="hover:bg-surface transition-all">
+                        {loading ? (
+                            <tr><td colSpan={8} className="px-4 py-5 text-muted">Loading users…</td></tr>
+                        ) : filtered.length === 0 ? (
+                            <tr><td colSpan={8} className="px-4 py-5 text-muted">No users found.</td></tr>
+                        ) : filtered.map(u => (
+                            <tr key={u.user_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{u.user_id}</td>
-                                <td className="px-4 py-3 font-medium text-slate">{u.name}</td>
+                                <td className="px-4 py-3 font-medium text-slate">{u.fname} {u.lname}</td>
                                 <td className="px-4 py-3 text-muted">{u.email}</td>
                                 <td className="px-4 py-3 text-muted">{u.contact_no}</td>
                                 <td className="px-4 py-3 text-muted">{u.district}</td>
-                                <td className="px-4 py-3 text-muted">{u.role}</td>
+                                <td className="px-4 py-3 text-muted">{ROLE_LABEL[u.role] ?? u.role}</td>
                                 <td className="px-4 py-3 text-muted">{u.created_at}</td>
-                                <td className="px-4 py-3 flex gap-1.5">
-                                    {/* TODO: wire Edit/Delete to API */}
-                                    <button
-                                        onClick={() => router.push(`/dashboard/admin/users/${i + 1}/edit`)}
-                                        className="px-2.5 py-1 border border-border rounded text-[11px] text-slate hover:bg-surface transition-all">
-                                        Edit
-                                    </button>
-                                    <button
-                                        onClick={() => router.push(`/dashboard/admin/users/${i + 1}`)}
-                                        className="px-2.5 py-1 border border-blue-200 rounded text-[11px] text-blue-500 hover:bg-blue-50 transition-all">
-                                        View
-                                    </button>
-                                    <button className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all">
-                                        Delete
-                                    </button>
+                                <td className="px-4 py-3">
+                                    <div className="flex gap-1.5">
+                                        <button
+                                            onClick={() => router.push(`/dashboard/admin/users/${u.user_id}/edit`)}
+                                            className="px-2.5 py-1 border border-border rounded text-[11px] text-slate hover:bg-surface transition-all">
+                                            Edit
+                                        </button>
+                                        <button
+                                            onClick={() => router.push(`/dashboard/admin/users/${u.user_id}`)}
+                                            className="px-2.5 py-1 border border-blue-200 rounded text-[11px] text-blue-500 hover:bg-blue-50 transition-all">
+                                            View
+                                        </button>
+                                        <button
+                                            onClick={() => handleDelete(u.user_id, `${u.fname} ${u.lname}`)}
+                                            disabled={deletingId === u.user_id}
+                                            className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
+                                            {deletingId === u.user_id ? 'Deleting…' : 'Delete'}
+                                        </button>
+                                    </div>
                                 </td>
                             </tr>
                         ))}
                     </tbody>
                 </table>
             </div>
-        </div >
+        </div>
     );
 }
