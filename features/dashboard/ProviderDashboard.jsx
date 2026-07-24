@@ -93,14 +93,6 @@ export default function ProviderDashboard() {
                 <div className="flex-1">
                   <div className="text-[0.88rem] font-semibold">{item.name}</div>
                   <div className="text-[0.74rem] text-crewMuted mt-0.5">{item.dates}</div>
-                  {item.progress !== null && (
-                    <div className="h-[5px] bg-crewSurface2 rounded-full mt-1.5">
-                      <div
-                        className="h-full bg-crewAmber rounded-full"
-                        style={{ width: `${item.progress}%` }}
-                      />
-                    </div>
-                  )}
                 </div>
                 <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${
                   item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'

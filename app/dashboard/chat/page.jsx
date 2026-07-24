@@ -25,14 +25,29 @@ export default function ChatPage() {
     ],
   });
   const [input, setInput] = useState('');
+  const [lightbox, setLightbox] = useState(null);
+
+  function timestamp() {
+    const now = new Date();
+    return `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
+  }
 
   function send() {
     const txt = input.trim();
     if (!txt) return;
-    const now = new Date();
-    const ts = `${now.getHours()}:${String(now.getMinutes()).padStart(2,'0')}`;
-    setMessages(prev => ({ ...prev, [active.id]: [...(prev[active.id] || []), { id: Date.now(), mine: true, text: txt, ts }] }));
+    setMessages(prev => ({ ...prev, [active.id]: [...(prev[active.id] || []), { id: Date.now(), mine: true, text: txt, ts: timestamp() }] }));
     setInput('');
+  }
+
+  function handlePhotoSelect(files) {
+    if (!files || !files.length) return;
+    Array.from(files).forEach((file, i) => {
+      const reader = new FileReader();
+      reader.onload = () => {
+        setMessages(prev => ({ ...prev, [active.id]: [...(prev[active.id] || []), { id: Date.now() + i, mine: true, image: reader.result, ts: timestamp() }] }));
+      };
+      reader.readAsDataURL(file);
+    });
   }
 
   return (
@@ -62,21 +77,47 @@ export default function ChatPage() {
         <div style={{ flex: 1, overflowY: 'auto', padding: '1rem', display: 'flex', flexDirection: 'column', gap: '8px' }}>
           {(messages[active.id] || []).map(msg => (
             <div key={msg.id} style={{ display: 'flex', justifyContent: msg.mine ? 'flex-end' : 'flex-start' }}>
-              <div style={{ maxWidth: '75%', padding: '8px 12px', borderRadius: '10px', fontSize: '0.82rem', lineHeight: 1.5,
-                background: msg.mine ? C.amber : C.surface, color: msg.mine ? '#fff' : C.slateLight }}>
-                {msg.text}
-                <div style={{ fontSize: '0.65rem', marginTop: '3px', opacity: 0.7, textAlign: 'right' }}>{msg.ts}</div>
-              </div>
+              {msg.image ? (
+                <div style={{ maxWidth: '75%', padding: '6px', borderRadius: '10px', background: msg.mine ? C.amber : C.surface }}>
+                  <img src={msg.image} alt="Sent attachment" onClick={() => setLightbox(msg.image)}
+                    style={{ display: 'block', maxWidth: '220px', maxHeight: '220px', width: '100%', borderRadius: '7px', cursor: 'pointer', objectFit: 'cover' }} />
+                  <div style={{ fontSize: '0.65rem', marginTop: '4px', opacity: 0.7, textAlign: 'right', color: msg.mine ? '#fff' : C.slateLight }}>{msg.ts}</div>
+                </div>
+              ) : (
+                <div style={{ maxWidth: '75%', padding: '8px 12px', borderRadius: '10px', fontSize: '0.82rem', lineHeight: 1.5,
+                  background: msg.mine ? C.amber : C.surface, color: msg.mine ? '#fff' : C.slateLight }}>
+                  {msg.text}
+                  <div style={{ fontSize: '0.65rem', marginTop: '3px', opacity: 0.7, textAlign: 'right' }}>{msg.ts}</div>
+                </div>
+              )}
             </div>
           ))}
         </div>
         <div style={{ padding: '12px', borderTop: `1px solid ${C.border}`, display: 'flex', gap: '8px' }}>
+          <input id="chat-photo-input" type="file" accept="image/*" multiple style={{ display: 'none' }}
+            onChange={e => { handlePhotoSelect(e.target.files); e.target.value = ''; }} />
+          <label htmlFor="chat-photo-input" title="Attach photos"
+            style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', width: '40px', flexShrink: 0, border: `1px solid ${C.border}`, borderRadius: C.radiusSm, cursor: 'pointer', color: C.slateLight, fontSize: '1.05rem' }}>
+            📷
+          </label>
           <input value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && send()}
             placeholder="Type a message…"
             style={{ flex: 1, border: `1px solid ${C.border}`, borderRadius: C.radiusSm, padding: '8px 12px', fontFamily: "'DM Sans', sans-serif", fontSize: '0.83rem', outline: 'none', color: C.slate }} />
           <button onClick={send} style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 16px', borderRadius: C.radiusSm, fontSize: '0.82rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}>Send</button>
         </div>
       </div>
+
+      {lightbox && (
+        <div onClick={() => setLightbox(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(26,29,35,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '2rem', cursor: 'zoom-out' }}>
+          <img src={lightbox} alt="Full size attachment" onClick={e => e.stopPropagation()}
+            style={{ maxWidth: '90vw', maxHeight: '90vh', borderRadius: '10px', boxShadow: '0 10px 40px rgba(0,0,0,0.5)' }} />
+          <button onClick={() => setLightbox(null)}
+            style={{ position: 'absolute', top: '20px', right: '28px', background: 'rgba(255,255,255,0.15)', border: 'none', color: '#fff', width: '38px', height: '38px', borderRadius: '50%', fontSize: '1.2rem', cursor: 'pointer' }}>
+            ×
+          </button>
+        </div>
+      )}
     </div>
   );
 }
