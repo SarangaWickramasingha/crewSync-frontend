@@ -1,7 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ??
+    'http://localhost/CrewSync-backend/backend/index.php';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -16,6 +20,9 @@ export default function AdminAddUserPage() {
     const [role, setRole] = useState('property_owner');
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+    const [saving, setSaving] = useState(false);
+
+    const redirectTimer = useRef(null);
 
     const [form, setForm] = useState({
         // common user fields
@@ -28,6 +35,9 @@ export default function AdminAddUserPage() {
         // material supplier
         business_name: '', business_address: '', is_hardware_shop: false,
     });
+
+    // Cancel the pending redirect if the user navigates away first.
+    useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
     const set = field => e => setForm(prev => ({
         ...prev,
@@ -51,21 +61,36 @@ export default function AdminAddUserPage() {
     const handleSubmit = async () => {
         setError('');
         setSuccess('');
+
         const err = validate();
         if (err) { setError(err); return; }
 
-        // TODO: replace with real API call
-        // const res = await fetch('/api/admin/users', {
-        //     method: 'POST',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify({ ...form, role }),
-        // });
-        // const data = await res.json();
-        // if (data.success) { router.push('/dashboard/admin/users'); }
-        // else { setError(data.message); }
+        // confirmPassword is a UI-only field — don't send it.
+        const { confirmPassword, ...payload } = form;
 
-        setSuccess('User created successfully! (sample)');
-        setTimeout(() => router.push('/dashboard/admin/users'), 1500);
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ ...payload, role }),
+            });
+
+            if (!res.ok) throw new Error(`Request failed (${res.status})`);
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Could not create user.');
+
+            setSuccess('User created successfully.');
+            redirectTimer.current = setTimeout(
+                () => router.push('/dashboard/admin/users'),
+                1200
+            );
+        } catch (e) {
+            setError(e.message);
+            setSaving(false);
+        }
     };
 
     return (
@@ -253,15 +278,17 @@ export default function AdminAddUserPage() {
                 <div className="flex justify-end gap-3 pt-2 border-t border-border">
                     <button
                         onClick={() => router.back()}
-                        className="px-4 py-2.5 border border-border rounded-lg text-xs text-slate-light font-medium hover:bg-surface transition-all"
+                        disabled={saving}
+                        className="px-4 py-2.5 border border-border rounded-lg text-xs text-slate-light font-medium hover:bg-surface transition-all disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
-                        className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm"
+                        disabled={saving}
+                        className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm disabled:opacity-50 disabled:hover:translate-y-0"
                     >
-                        Create User
+                        {saving ? 'Creating…' : 'Create User'}
                     </button>
                 </div>
             </div>
