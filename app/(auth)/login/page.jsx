@@ -38,6 +38,7 @@ export default function LoginPage() {
             );
             const data = await res.json();
             if (data.success) {
+                
                 login({
                     user_id: data.user.user_id,
                     name: data.user.name,
@@ -48,6 +49,10 @@ export default function LoginPage() {
                     window.location.href = '/dashboard/propertyowner';
                 } else if (data.user.role === 'admin') {
                     window.location.href = '/dashboard/admin';
+                } else if (data.user.role === 'service_provider') {
+                    window.location.href = '/dashboard/serviceprovider';
+                } else if (data.user.role === 'material_supplier') {
+                    window.location.href = '/dashboard/supplier';
                 } else {
                     window.location.href = '/home';
                 }
