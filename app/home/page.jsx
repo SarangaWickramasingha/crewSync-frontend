@@ -6,11 +6,9 @@ import Navbar from "@/Components/layout/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import { API_FEEDBACK_SUBMIT, API_STATS_SUMMARY } from "@/config/api";
 
-
-
 export default function HomePage() {
   const router = useRouter();
-  const { isOwner, isGuest } = useAuth();
+  const { isOwner, isGuest, user, loading } = useAuth();
 
   const [fbName, setFbName] = useState("");
   const [fbEmail, setFbEmail] = useState("");
@@ -47,7 +45,6 @@ export default function HomePage() {
     return () => { isMounted = false; };
   }, []);
 
-
   function formatStat(value) {
     if (statsLoading) return "…";
     const num = Number(value);
@@ -80,10 +77,19 @@ export default function HomePage() {
   }
 
   const roles = [
-    { icon: "/icons/owner.png", title: "Property Owner", desc: "Plan, manage, and track your construction project from start to finish. Hire directly, save costs.", btnLabel: "Open Dashboard", route: "/dashboard/propertyowner", accent: "bg-owner", hoverBg: "hover:bg-owner-dark", iconBg: "bg-owner-light" },
-    { icon: "/icons/provider.png", title: "Service Provider", desc: "Showcase your skills to hundreds of clients. Accept jobs on your schedule, get paid securely.", btnLabel: "View Provider Panel", route: "/service-provider", accent: "bg-provider", hoverBg: "hover:bg-provider-dark", iconBg: "bg-provider-light" },
-    { icon: "/icons/supplier.png", title: "Material Supplier", desc: "List your products, manage inventory, and reach property owners island-wide.", btnLabel: "Supplier Portal", route: "/supplier", accent: "bg-supplier", hoverBg: "hover:bg-supplier-dark", iconBg: "bg-supplier-light" },
+    { icon: "/icons/owner.png", title: "Property Owner", desc: "Plan, manage, and track your construction project from start to finish. Hire directly, save costs.", btnLabel: "Open Dashboard", route: "/dashboard/propertyowner", roleKey: "property_owner", registerRole: "owner", accent: "bg-owner", hoverBg: "hover:bg-owner-dark", iconBg: "bg-owner-light" },
+    { icon: "/icons/provider.png", title: "Service Provider", desc: "Showcase your skills to hundreds of clients. Accept jobs on your schedule, get paid securely.", btnLabel: "View Provider Panel", route: "/dashboard/serviceprovider", roleKey: "service_provider", registerRole: "provider", accent: "bg-provider", hoverBg: "hover:bg-provider-dark", iconBg: "bg-provider-light" },
+    { icon: "/icons/supplier.png", title: "Material Supplier", desc: "List your products, manage inventory, and reach property owners island-wide.", btnLabel: "Supplier Portal", route: "/dashboard/supplier", roleKey: "material_supplier", registerRole: "supplier", accent: "bg-supplier", hoverBg: "hover:bg-supplier-dark", iconBg: "bg-supplier-light" },
   ];
+
+function handleRoleClick(r) {
+  if (loading) return; // auth check still in progress, ignore the click
+  if (user && user.role === r.roleKey) {
+    router.push(r.route);
+  } else {
+    router.push(`/register?role=${r.registerRole}`);
+  }
+}
 
   const features = [
     { icon: "/icons/timeline.png", title: "Smart Project Timeline", desc: "Auto-generate construction tasks (foundation → walls → roofing → finishing). Fully customizable task schedules." },
@@ -114,7 +120,7 @@ export default function HomePage() {
           </p>
           <div className="relative z-10 flex flex-wrap justify-center gap-3">
             <button className="rounded-lg bg-amber px-7 py-3 text-[0.95rem] font-semibold text-white transition-all hover:-translate-y-0.5 hover:bg-[#b85a00]" onClick={() => isGuest ? router.push("/register") : router.push("/project-form")}>
-              Start a Project →
+              Start a Project
             </button>
           </div>
         </div>
@@ -140,15 +146,11 @@ export default function HomePage() {
           <div className="mb-8 text-sm text-muted">Choose your role to explore the platform</div>
           <div className="grid grid-cols-[repeat(auto-fit,minmax(220px,1fr))] gap-4">
             {roles.map((r) => (
-              <div key={r.title} className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-[0_2px_16px_rgba(26,29,35,0.08)]" onClick={() => {
-                if (r.title === "Service Provider") {
-                  router.push("/register?role=provider");
-                } else if (r.title === "Material Supplier") {
-                  router.push("/register?role=supplier");
-                } else {
-                  router.push(r.route);
-                }
-              }}>
+              <div
+                key={r.title}
+                className="group relative cursor-pointer overflow-hidden rounded-xl border border-border bg-white p-6 transition-all hover:-translate-y-1 hover:shadow-[0_2px_16px_rgba(26,29,35,0.08)]"
+                onClick={() => handleRoleClick(r)}
+              >
                 <div className={`absolute inset-x-0 top-0 h-[3px] ${r.accent}`} />
                 <div className={`mb-4 flex h-11 w-11 items-center justify-center rounded-[10px] ${r.iconBg}`}>
                   <img src={r.icon} alt={r.title} className="h-6 w-6 object-contain" />
