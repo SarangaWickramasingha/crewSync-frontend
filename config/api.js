@@ -30,3 +30,11 @@ export const API_FEEDBACK_SUBMIT = `${API_BASE}/api/feedback/submit`;
 
 // 
 export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
+
+
+
+// ── SERVICE PROVIDER ───────────────────────────────────────────────────────────
+export const API_PROVIDER_TOGGLE_AVAILABILITY = `${API_BASE}/api/provider/toggle-availability`;
+export const API_PROVIDER_AVAILABILITY = `${API_BASE}/api/provider/availability`;
+export const API_PROVIDER_DASHBOARD_STATS = `${API_BASE}/api/provider/dashboard-stats`;
+

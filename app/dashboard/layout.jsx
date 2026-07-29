@@ -37,11 +37,11 @@ const NAV = {
         {
             section: 'Dashboard',
             items: [
-                { href: '/dashboard', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
-                { href: '/dashboard/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
-                { href: '/dashboard/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
-                { href: '/dashboard/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
-                { href: '/dashboard/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
+                { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
+                { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
+                { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
+                { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
+                { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
             ],
         },
     ],
@@ -50,14 +50,14 @@ const NAV = {
         {
             section: 'Store',
             items: [
-                { href: '/dashboard/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
-                { href: '/dashboard/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
+                { href: '/dashboard/supplier/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
+                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
             ],
         },
         {
             section: 'Account',
             items: [
-                { href: '/dashboard/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
+                { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
             ],
         },
     ],
@@ -174,7 +174,7 @@ export default function DashboardLayout({ children }) {
                                     {items.map(item => {
                                         const Icon = item.icon;
                                         const active = pathname === item.href ||
-                                            (item.href !== '/dashboard' && pathname.startsWith(item.href));
+                                            (item.href !== '/dashboard' && item.href !== '/dashboard/serviceprovider' && item.href !== '/dashboard/supplier' && pathname.startsWith(item.href));
                                         return (
                                             <Link
                                                 key={item.href}

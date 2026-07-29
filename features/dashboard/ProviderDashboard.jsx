@@ -1,12 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { API_PROVIDER_TOGGLE_AVAILABILITY, API_PROVIDER_AVAILABILITY } from '@/config/api';
 
-const metrics = [
-  { val: '47', label: 'Total Reviews', change: '★ 4.9 avg', up: true },
-  { val: '4', label: 'Active Projects', change: null },
-  { val: '156', label: 'Jobs Completed', change: null },
-];
+
 
 const currentWork = [
   {
@@ -28,6 +25,69 @@ const recentReviews = [
 
 export default function ProviderDashboard() {
   const [available, setAvailable] = useState(true);
+  const [toggling, setToggling] = useState(false);
+  const [loadingAvailability, setLoadingAvailability] = useState(true);
+
+  const [stats, setStats] = useState({ total_reviews: 0, avg_rating: 0, active_projects: 0, jobs_completed: 0 });
+  const [statsLoading, setStatsLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadAvailability() {
+      try {
+        const res = await fetch(API_PROVIDER_AVAILABILITY, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) setAvailable(data.is_available);
+      } catch (err) {
+        console.error('Failed to load availability:', err);
+      } finally {
+        if (isMounted) setLoadingAvailability(false);
+      }
+    }
+    async function loadStats() {
+      try {
+        const res = await fetch(API_PROVIDER_DASHBOARD_STATS, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) {
+          setStats({
+            total_reviews: data.total_reviews,
+            avg_rating: data.avg_rating,
+            active_projects: data.active_projects,
+            jobs_completed: data.jobs_completed,
+          });
+        }
+      } catch (err) {
+        console.error('Failed to load dashboard stats:', err);
+      } finally {
+        if (isMounted) setStatsLoading(false);
+      }
+    }
+    loadAvailability();
+    loadStats();
+    return () => { isMounted = false; };
+  }, []);
+
+  const metrics = [
+    { val: statsLoading ? '…' : `${stats.total_reviews ?? 0}`, label: 'Total Reviews', change: statsLoading ? null : `★ ${stats.avg_rating ?? 0} avg`, up: true },
+    { val: statsLoading ? '…' : `${stats.active_projects ?? 0}`, label: 'Active Projects', change: null },
+    { val: statsLoading ? '…' : `${stats.jobs_completed ?? 0}`, label: 'Jobs Completed', change: null },
+  ];
+
+  async function handleToggleAvailability() {
+    setToggling(true);
+    try {
+      const res = await fetch(API_PROVIDER_TOGGLE_AVAILABILITY, { method: 'PUT', credentials: 'include' });
+      const data = await res.json();
+      if (data.success) setAvailable(data.is_available);
+      else alert(data.message || 'Failed to update availability.');
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setToggling(false);
+    }
+  }
+
 
   return (
     <div className="font-sans">
@@ -41,16 +101,18 @@ export default function ProviderDashboard() {
           <p className="text-[0.82rem] text-crewMuted mt-0.5">You have 4 new job requests this week</p>
         </div>
         <button
-          onClick={() => setAvailable(a => !a)}
+          onClick={handleToggleAvailability}
+          disabled={toggling || loadingAvailability}
           title="Click to toggle your availability"
-          className="text-[0.8rem] font-semibold px-3 py-1.5 rounded-xl border-none cursor-pointer font-sans"
+          className="text-[0.8rem] font-semibold px-3 py-1.5 rounded-xl border-none cursor-pointer font-sans disabled:opacity-60 disabled:cursor-wait"
           style={{
             background: available ? '#E6F4EC' : '#FDECEC',
             color: available ? '#1B6E3A' : '#B3261E',
           }}
         >
-          ● {available ? 'Available for Work' : 'Not Available'}
+          ● {loadingAvailability ? 'Loading…' : toggling ? 'Updating…' : available ? 'Available for Work' : 'Not Available'}
         </button>
+
       </div>
 
       {/* Metric Cards */}
@@ -81,22 +143,19 @@ export default function ProviderDashboard() {
             {currentWork.map((item, i) => (
               <li
                 key={i}
-                className={`flex items-start gap-3 py-2.5 ${
-                  i < currentWork.length - 1 ? 'border-b border-crewSlate/10' : ''
-                }`}
+                className={`flex items-start gap-3 py-2.5 ${i < currentWork.length - 1 ? 'border-b border-crewSlate/10' : ''
+                  }`}
               >
-                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${
-                  item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
-                }`}>
+                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                  }`}>
                   {item.num}
                 </div>
                 <div className="flex-1">
                   <div className="text-[0.88rem] font-semibold">{item.name}</div>
                   <div className="text-[0.74rem] text-crewMuted mt-0.5">{item.dates}</div>
                 </div>
-                <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${
-                  item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
-                }`}>
+                <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                  }`}>
                   {item.status}
                 </span>
               </li>
