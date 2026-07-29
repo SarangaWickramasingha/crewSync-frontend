@@ -1,62 +1,87 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { Search } from 'lucide-react';
 
-// TODO: fetch from GET /api/admin/feedback
-const SAMPLE_FEEDBACK = [
-    {
-        id: 1,
-        name: 'Nimal Kumarasinghe',
-        email: 'nimal@example.com',
-        subject: 'Suggestion: Add multi-language (Sinhala) support',
-        message: 'It would be great if the platform supported Sinhala language for wider reach.',
-        type: 'Suggestion',
-        submittedAt: 'May 8, 2026',
-        is_handled: false,
-    },
-    {
-        id: 2,
-        name: 'Supplier User',
-        email: 'supplier@example.com',
-        subject: 'Issue: Payment release button not working on mobile',
-        message: 'The payment release button disappears on mobile screen sizes.',
-        type: 'Bug Report',
-        submittedAt: 'May 10, 2026',
-        is_handled: false,
-    },
-    {
-        id: 3,
-        name: 'Chamari Perera',
-        email: 'chamari@example.com',
-        subject: 'Complaint: Provider did not show up',
-        message: 'The service provider accepted my request but never showed up.',
-        type: 'Complaint',
-        submittedAt: 'May 12, 2026',
-        is_handled: true,
-    },
-];
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ??
+    'http://localhost/CrewSync-backend/backend/index.php';
 
-const TYPE_STYLES = {
-    Suggestion: 'bg-blue-50 text-blue-700',
-    'Bug Report': 'bg-red-50 text-red-600',
-    Complaint: 'bg-amber-50 text-amber-700',
-};
+/** MySQL tinyint(1) arrives as 0/1 or "0"/"1". */
+const bool = v => v === true || v === 1 || v === '1';
+
+function formatDate(value) {
+    if (!value) return '';
+    const d = new Date(value.replace(' ', 'T'));
+    return Number.isNaN(d.getTime())
+        ? value
+        : d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
 
 export default function AdminFeedbackPage() {
+    const [feedback, setFeedback] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [searchBy, setSearchBy] = useState('subject');
-    const [feedback, setFeedback] = useState(SAMPLE_FEEDBACK);
+
+    useEffect(() => {
+        const controller = new AbortController();
+        let active = true;
+
+        fetch(`${API_BASE}/api/admin/feedback`, {
+            credentials: 'include',
+            signal: controller.signal,
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`Request failed (${res.status})`);
+                return res.json();
+            })
+            .then(data => {
+                if (!active) return;
+                if (!data.success) throw new Error(data.message || 'Could not load feedback.');
+                setFeedback(data.feedback ?? []);
+            })
+            .catch(err => {
+                if (active && err.name !== 'AbortError') setError(err.message);
+            })
+            .finally(() => { if (active) setLoading(false); });
+
+        return () => { active = false; controller.abort(); };
+    }, []);
 
     const filtered = feedback.filter(item => {
-        const q = search.toLowerCase();
+        const q = search.trim().toLowerCase();
         return !q || item[searchBy]?.toLowerCase().includes(q);
     });
 
-    // TODO: call PATCH /api/admin/feedback/:id when backend is ready
-    const toggleHandled = (id) => {
+    const toggleHandled = async (id, current) => {
+        const next = !bool(current);
+
+        // Optimistic update so the checkbox responds immediately.
         setFeedback(prev =>
-            prev.map(item => item.id === id ? { ...item, is_handled: !item.is_handled } : item)
+            prev.map(item => item.feedback_id === id ? { ...item, is_handled: next } : item)
         );
+        setError('');
+
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/feedback/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ is_handled: next }),
+            });
+
+            if (!res.ok) throw new Error(`Request failed (${res.status})`);
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Could not update this item.');
+        } catch (e) {
+            // Roll back so the UI doesn't lie about what's saved.
+            setFeedback(prev =>
+                prev.map(item => item.feedback_id === id ? { ...item, is_handled: current } : item)
+            );
+            setError(e.message);
+        }
     };
 
     return (
@@ -67,6 +92,12 @@ export default function AdminFeedbackPage() {
                     <p className="text-xs text-muted mt-0.5">User-submitted suggestions and complaints</p>
                 </div>
             </div>
+
+            {error && (
+                <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
+                    {error}
+                </div>
+            )}
 
             {/* Search + Filter */}
             <div className="flex gap-2 mb-4 flex-wrap">
@@ -87,6 +118,7 @@ export default function AdminFeedbackPage() {
                     className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
                 >
                     <option value="subject">Search By: Subject</option>
+                    <option value="message">Search By: Message</option>
                     <option value="name">Search By: Name</option>
                     <option value="email">Search By: Email</option>
                 </select>
@@ -97,32 +129,29 @@ export default function AdminFeedbackPage() {
                 <table className="w-full text-xs">
                     <thead>
                         <tr className="border-b border-border bg-[#1A1D23] text-left">
-                            {['Name', 'Email', 'Subject', 'Type', 'Submitted', 'Handled'].map(h => (
+                            {['Name', 'Email', 'Subject', 'Message', 'Submitted', 'Handled'].map(h => (
                                 <th key={h} className="px-4 py-3 font-semibold text-white/70 uppercase tracking-wide text-[11px]">{h}</th>
                             ))}
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {filtered.length === 0 ? (
+                        {loading ? (
+                            <tr><td colSpan={6} className="px-4 py-5 text-muted">Loading feedback…</td></tr>
+                        ) : filtered.length === 0 ? (
                             <tr><td colSpan={6} className="px-4 py-5 text-muted">No feedback found.</td></tr>
-                        ) : filtered.map((item) => (
-                            <tr key={item.id} className={`hover:bg-surface transition-all ${item.is_handled ? 'opacity-50' : ''}`}>
+                        ) : filtered.map(item => (
+                            <tr key={item.feedback_id} className={`hover:bg-surface transition-all ${bool(item.is_handled) ? 'opacity-50' : ''}`}>
                                 <td className="px-4 py-3 font-medium text-slate">{item.name}</td>
                                 <td className="px-4 py-3 text-muted">{item.email}</td>
                                 <td className="px-4 py-3 text-slate max-w-[200px] truncate">{item.subject}</td>
-                                <td className="px-4 py-3">
-                                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${TYPE_STYLES[item.type] ?? 'bg-gray-100 text-gray-600'}`}>
-                                        {item.type}
-                                    </span>
-                                </td>
-                                <td className="px-4 py-3 text-muted">{item.submittedAt}</td>
+                                <td className="px-4 py-3 text-muted max-w-[260px] truncate">{item.message}</td>
+                                <td className="px-4 py-3 text-muted">{formatDate(item.created_at)}</td>
                                 <td className="px-4 py-3">
                                     <input
                                         type="checkbox"
-                                        checked={item.is_handled}
-                                        onChange={() => toggleHandled(item.id)}
+                                        checked={bool(item.is_handled)}
+                                        onChange={() => toggleHandled(item.feedback_id, item.is_handled)}
                                         className="w-4 h-4 cursor-pointer accent-amber"
-                                    // TODO: call PATCH /api/admin/feedback/:id { is_handled: true }
                                     />
                                 </td>
                             </tr>

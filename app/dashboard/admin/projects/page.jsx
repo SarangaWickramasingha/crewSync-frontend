@@ -1,16 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-import StatusPill from '@/Components/ui/StatusPill';
 
-// TODO: fetch from GET /api/admin/projects
-const SAMPLE_PROJECTS = [
-    { project_id: 1, owner_id: 1, owner_name: 'Nimal Kumarasinghe', project_name: 'Two-Story House Construction', location: 'Kandy', budget: 4500000, start_date: '2026-01-10', end_date: '2026-08-15', status: 'active' },
-    { project_id: 2, owner_id: 4, owner_name: 'Chamari Perera', project_name: 'Roof Renovation', location: 'Matale', budget: 850000, start_date: '2026-03-01', end_date: '2026-04-20', status: 'completed' },
-    { project_id: 3, owner_id: 1, owner_name: 'Nimal Kumarasinghe', project_name: 'Garden Landscaping', location: 'Kandy', budget: 320000, start_date: '2026-05-05', end_date: '2026-06-30', status: 'planning' },
-    { project_id: 4, owner_id: 7, owner_name: 'Roshan Fernando', project_name: 'Office Building Extension', location: 'Colombo', budget: 12000000, start_date: '2025-11-01', end_date: '2026-12-01', status: 'on_hold' },
-];
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ??
+    'http://localhost/CrewSync-backend/backend/index.php';
 
 const STATUS_LABEL = {
     planning: 'Planning',
@@ -21,21 +16,60 @@ const STATUS_LABEL = {
 };
 
 const STATUS_STYLE = {
-    planning: 'bg-blue-50 text-blue-700',
-    active: 'bg-green-50 text-green-700',
-    on_hold: 'bg-amber-50 text-amber-700',
-    completed: 'bg-gray-100 text-gray-600',
-    cancelled: 'bg-red-50 text-red-600',
+    planning: 'bg-slate-100 text-slate-700',
+    active: 'bg-emerald-100 text-emerald-700',
+    on_hold: 'bg-amber-100 text-amber-700',
+    completed: 'bg-blue-100 text-blue-700',
+    cancelled: 'bg-rose-100 text-rose-700',
+};
+
+const FALLBACK_PILL = 'bg-slate-100 text-slate-700';
+
+const formatBudget = value => {
+    if (value === null || value === undefined || value === '') return '—';
+    const n = Number(value);
+    return Number.isFinite(n) ? n.toLocaleString() : '—';
 };
 
 export default function AdminProjectsPage() {
     const router = useRouter();
+
+    const [projects, setProjects] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState('');
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    const filtered = SAMPLE_PROJECTS.filter(p => {
-        const q = search.toLowerCase();
-        const matchSearch = !q || p.project_name.toLowerCase().includes(q) || p.owner_name.toLowerCase().includes(q) || p.location.toLowerCase().includes(q);
+    useEffect(() => {
+        const controller = new AbortController();
+
+        fetch(`${API_BASE}/api/admin/projects`, {
+            credentials: 'include',
+            signal: controller.signal,
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`Request failed (${res.status})`);
+                return res.json();
+            })
+            .then(data => {
+                if (!data.success) throw new Error(data.message || 'Could not load projects.');
+                setProjects(data.projects ?? []);
+            })
+            .catch(err => {
+                if (err.name !== 'AbortError') setError(err.message);
+            })
+            .finally(() => setLoading(false));
+
+        return () => controller.abort();
+    }, []);
+
+    const filtered = projects.filter(p => {
+        const q = search.trim().toLowerCase();
+        const matchSearch =
+            !q ||
+            (p.project_name ?? '').toLowerCase().includes(q) ||
+            (p.owner_name ?? '').toLowerCase().includes(q) ||
+            (p.location ?? '').toLowerCase().includes(q);
         const matchStatus = !statusFilter || p.status === statusFilter;
         return matchSearch && matchStatus;
     });
@@ -68,11 +102,9 @@ export default function AdminProjectsPage() {
                     className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
                 >
                     <option value="">All Status</option>
-                    <option value="planning">Planning</option>
-                    <option value="active">Active</option>
-                    <option value="on_hold">On Hold</option>
-                    <option value="completed">Completed</option>
-                    <option value="cancelled">Cancelled</option>
+                    {Object.entries(STATUS_LABEL).map(([value, label]) => (
+                        <option key={value} value={value}>{label}</option>
+                    ))}
                 </select>
             </div>
 
@@ -87,20 +119,24 @@ export default function AdminProjectsPage() {
                         </tr>
                     </thead>
                     <tbody className="divide-y divide-border">
-                        {filtered.length === 0 ? (
+                        {loading ? (
+                            <tr><td colSpan={9} className="px-4 py-5 text-muted">Loading projects…</td></tr>
+                        ) : error ? (
+                            <tr><td colSpan={9} className="px-4 py-5 text-rose-600">{error}</td></tr>
+                        ) : filtered.length === 0 ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">No projects found.</td></tr>
-                        ) : filtered.map((p) => (
+                        ) : filtered.map(p => (
                             <tr key={p.project_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{p.project_id}</td>
                                 <td className="px-4 py-3 font-medium text-slate">{p.project_name}</td>
                                 <td className="px-4 py-3 text-muted">{p.owner_name}</td>
                                 <td className="px-4 py-3 text-muted">{p.location}</td>
-                                <td className="px-4 py-3 text-muted">LKR {p.budget.toLocaleString()}</td>
+                                <td className="px-4 py-3 text-muted">LKR {formatBudget(p.budget)}</td>
                                 <td className="px-4 py-3 text-muted">{p.start_date}</td>
                                 <td className="px-4 py-3 text-muted">{p.end_date}</td>
                                 <td className="px-4 py-3">
-                                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLE[p.status]}`}>
-                                        {STATUS_LABEL[p.status]}
+                                    <span className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${STATUS_STYLE[p.status] ?? FALLBACK_PILL}`}>
+                                        {STATUS_LABEL[p.status] ?? p.status}
                                     </span>
                                 </td>
                                 <td className="px-4 py-3">

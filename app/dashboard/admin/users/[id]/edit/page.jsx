@@ -1,7 +1,11 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
+
+const API_BASE =
+    process.env.NEXT_PUBLIC_API_BASE ??
+    'http://localhost/CrewSync-backend/backend/index.php';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -11,55 +15,55 @@ const DISTRICTS = [
     'Monaragala', 'Ratnapura', 'Kegalle',
 ];
 
-// TODO: fetch from GET /api/admin/users/:id
-const SAMPLE_USERS = {
-    1: {
-        user_id: 1, fname: 'Nimal', lname: 'Kumarasinghe',
-        email: 'nimal@example.com', mobile: '0771234567',
-        district: 'Kandy', role: 'property_owner',
-        address: 'No. 12, Main Street, Kandy',
-    },
-    2: {
-        user_id: 2, fname: 'Sunil', lname: 'Karunaratne',
-        email: 'sunil@example.com', mobile: '0779876543',
-        district: 'Kandy', role: 'service_provider',
-        bio: 'Experienced mason with 10+ years in residential construction.',
-        experience_yr: 10, dailyRate: 3500, workRegion: 'Kandy',
-        skills: ['Masonry', 'Plastering', 'Tiling'],
-        is_available: true, willing_outside_region: false,
-    },
-    3: {
-        user_id: 3, fname: 'Malshan', lname: 'Hardware',
-        email: 'malshan@example.com', mobile: '0760001122',
-        district: 'Kandy', role: 'material_supplier',
-        businessName: 'Malshan Hardware Pvt Ltd',
-        address: 'No. 45, Peradeniya Road, Kandy',
-        delivery: true, deliveryCoverage: 'Kandy, Matale',
-        materials: ['Cement', 'Sand', 'Bricks'],
-        hasHardwareStore: true, hwStoreName: 'Malshan Hardware', hwAddress: 'No. 45, Peradeniya Road',
-    },
-};
+/** MySQL/PHP hands back "0" and "1" as strings; "0" is truthy in JS. */
+const bool = v => v === true || v === 1 || v === '1';
 
 export default function AdminUserEditPage() {
     const { id } = useParams();
     const router = useRouter();
-    const existing = SAMPLE_USERS[id];
 
-    const [form, setForm] = useState(existing ?? {});
+    const [form, setForm] = useState(null);
+    const [loading, setLoading] = useState(true);
+    const [saving, setSaving] = useState(false);
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
+
+    const redirectTimer = useRef(null);
+
+    useEffect(() => {
+        if (!id) return;
+
+        const controller = new AbortController();
+        let active = true;
+
+        fetch(`${API_BASE}/api/admin/users/${id}`, {
+            credentials: 'include',
+            signal: controller.signal,
+        })
+            .then(res => {
+                if (!res.ok) throw new Error(`Request failed (${res.status})`);
+                return res.json();
+            })
+            .then(data => {
+                if (!active) return;
+                if (!data.success) throw new Error(data.message || 'User not found.');
+                setForm(data.user);
+            })
+            .catch(err => {
+                if (active && err.name !== 'AbortError') setError(err.message);
+            })
+            .finally(() => { if (active) setLoading(false); });
+
+        return () => { active = false; controller.abort(); };
+    }, [id]);
+
+    // Clear the pending redirect if the user navigates away first.
+    useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
     const set = field => e => setForm(prev => ({
         ...prev,
         [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
     }));
-
-    if (!existing) return (
-        <div className="text-center py-20">
-            <p className="text-muted text-sm">User not found.</p>
-            <button onClick={() => router.back()} className="mt-4 text-amber text-sm hover:underline">← Go back</button>
-        </div>
-    );
 
     const validate = () => {
         if (!form.fname?.trim()) return 'First name is required.';
@@ -71,23 +75,46 @@ export default function AdminUserEditPage() {
     };
 
     const handleSubmit = async () => {
-        setError(''); setSuccess('');
+        setError('');
+        setSuccess('');
+
         const err = validate();
         if (err) { setError(err); return; }
 
-        // TODO: replace with real API call
-        // const res = await fetch(`/api/admin/users/${id}`, {
-        //     method: 'PUT',
-        //     headers: { 'Content-Type': 'application/json' },
-        //     body: JSON.stringify(form),
-        // });
-        // const data = await res.json();
-        // if (data.success) router.push(`/dashboard/admin/users/${id}`);
-        // else setError(data.message);
+        setSaving(true);
+        try {
+            const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(form),
+            });
 
-        setSuccess('User updated successfully! (sample)');
-        setTimeout(() => router.push(`/dashboard/admin/users/${id}`), 1500);
+            if (!res.ok) throw new Error(`Request failed (${res.status})`);
+
+            const data = await res.json();
+            if (!data.success) throw new Error(data.message || 'Could not update user.');
+
+            setSuccess('User updated successfully.');
+            redirectTimer.current = setTimeout(
+                () => router.push(`/dashboard/admin/users/${id}`),
+                1500
+            );
+        } catch (e) {
+            setError(e.message);
+        } finally {
+            setSaving(false);
+        }
     };
+
+    if (loading) return <p className="text-xs text-muted p-6">Loading…</p>;
+
+    if (!form) return (
+        <div className="text-center py-20">
+            <p className="text-muted text-sm">{error || 'User not found.'}</p>
+            <button onClick={() => router.back()} className="mt-4 text-amber text-sm hover:underline">← Go back</button>
+        </div>
+    );
 
     return (
         <div className="max-w-2xl mx-auto">
@@ -145,6 +172,7 @@ export default function AdminUserEditPage() {
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Role</label>
                             <select value={form.role ?? ''} onChange={set('role')}
                                 className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer">
+                                <option value="">Select role</option>
                                 <option value="property_owner">Property Owner</option>
                                 <option value="service_provider">Service Provider</option>
                                 <option value="material_supplier">Material Supplier</option>
@@ -191,11 +219,11 @@ export default function AdminUserEditPage() {
                                     className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber resize-none" />
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="checkbox" id="available" checked={form.is_available ?? false} onChange={set('is_available')} className="w-4 h-4 cursor-pointer accent-amber" />
+                                <input type="checkbox" id="available" checked={bool(form.is_available)} onChange={set('is_available')} className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="available" className="text-xs text-slate cursor-pointer">Currently Available</label>
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="checkbox" id="willing" checked={form.willing_outside_region ?? false} onChange={set('willing_outside_region')} className="w-4 h-4 cursor-pointer accent-amber" />
+                                <input type="checkbox" id="willing" checked={bool(form.willing_outside_region)} onChange={set('willing_outside_region')} className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="willing" className="text-xs text-slate cursor-pointer">Willing Outside Region</label>
                             </div>
                         </div>
@@ -223,14 +251,14 @@ export default function AdminUserEditPage() {
                                     className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber resize-none" />
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="checkbox" id="delivery" checked={form.delivery ?? false} onChange={set('delivery')} className="w-4 h-4 cursor-pointer accent-amber" />
+                                <input type="checkbox" id="delivery" checked={bool(form.delivery)} onChange={set('delivery')} className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="delivery" className="text-xs text-slate cursor-pointer">Delivery Available</label>
                             </div>
                             <div className="flex items-center gap-2">
-                                <input type="checkbox" id="hardware" checked={form.hasHardwareStore ?? false} onChange={set('hasHardwareStore')} className="w-4 h-4 cursor-pointer accent-amber" />
+                                <input type="checkbox" id="hardware" checked={bool(form.hasHardwareStore)} onChange={set('hasHardwareStore')} className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="hardware" className="text-xs text-slate cursor-pointer">Has Hardware Store</label>
                             </div>
-                            {form.hasHardwareStore && (
+                            {bool(form.hasHardwareStore) && (
                                 <>
                                     <div>
                                         <label className="block text-[11px] font-semibold text-slate-light mb-1">Store Name</label>
@@ -250,13 +278,13 @@ export default function AdminUserEditPage() {
 
                 {/* Footer */}
                 <div className="flex justify-end gap-3 pt-2 border-t border-border">
-                    <button onClick={() => router.back()}
-                        className="px-4 py-2.5 border border-border rounded-lg text-xs text-slate-light font-medium hover:bg-surface transition-all">
+                    <button onClick={() => router.back()} disabled={saving}
+                        className="px-4 py-2.5 border border-border rounded-lg text-xs text-slate-light font-medium hover:bg-surface transition-all disabled:opacity-50">
                         Cancel
                     </button>
-                    <button onClick={handleSubmit}
-                        className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm">
-                        Save Changes
+                    <button onClick={handleSubmit} disabled={saving}
+                        className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm disabled:opacity-50 disabled:hover:translate-y-0">
+                        {saving ? 'Saving…' : 'Save Changes'}
                     </button>
                 </div>
             </div>
