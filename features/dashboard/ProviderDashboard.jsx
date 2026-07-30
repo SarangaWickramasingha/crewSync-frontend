@@ -1,27 +1,13 @@
 'use client';
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
-import { API_PROVIDER_TOGGLE_AVAILABILITY, API_PROVIDER_AVAILABILITY } from '@/config/api';
-
-
-
-const currentWork = [
-  {
-    num: 1, name: 'Roofing – Nimal\'s House, Kandy',
-    dates: 'May 5 – May 25, 2026', progress: 55, status: 'Active',
-    dotClass: 'active',
-  },
-  {
-    num: 2, name: 'Foundation Work – Gampola Site',
-    dates: 'Starts Jun 1, 2026', progress: null, status: 'Upcoming',
-    dotClass: 'pending',
-  },
-];
-
-const recentReviews = [
-  { name: 'Nimal K.', stars: 5, text: '"Excellent work on the foundation. Very professional."' },
-  { name: 'Priya S.', stars: 5, text: '"On time and great quality. Will hire again."' },
-];
+import {
+  API_PROVIDER_TOGGLE_AVAILABILITY,
+  API_PROVIDER_AVAILABILITY,
+  API_PROVIDER_DASHBOARD_STATS,
+  API_PROVIDER_CURRENT_WORK,
+  API_PROVIDER_RECENT_REVIEWS,
+} from '@/config/api';
 
 export default function ProviderDashboard() {
   const [available, setAvailable] = useState(true);
@@ -31,8 +17,15 @@ export default function ProviderDashboard() {
   const [stats, setStats] = useState({ total_reviews: 0, avg_rating: 0, active_projects: 0, jobs_completed: 0 });
   const [statsLoading, setStatsLoading] = useState(true);
 
+  const [currentWork, setCurrentWork] = useState([]);
+  const [workLoading, setWorkLoading] = useState(true);
+
+  const [recentReviews, setRecentReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
   useEffect(() => {
     let isMounted = true;
+
     async function loadAvailability() {
       try {
         const res = await fetch(API_PROVIDER_AVAILABILITY, { method: 'GET', credentials: 'include' });
@@ -44,6 +37,7 @@ export default function ProviderDashboard() {
         if (isMounted) setLoadingAvailability(false);
       }
     }
+
     async function loadStats() {
       try {
         const res = await fetch(API_PROVIDER_DASHBOARD_STATS, { method: 'GET', credentials: 'include' });
@@ -62,8 +56,36 @@ export default function ProviderDashboard() {
         if (isMounted) setStatsLoading(false);
       }
     }
+
+    async function loadCurrentWork() {
+      try {
+        const res = await fetch(API_PROVIDER_CURRENT_WORK, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) setCurrentWork(data.current_work);
+      } catch (err) {
+        console.error('Failed to load current work:', err);
+      } finally {
+        if (isMounted) setWorkLoading(false);
+      }
+    }
+
+    async function loadReviews() {
+      try {
+        const res = await fetch(API_PROVIDER_RECENT_REVIEWS, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) setRecentReviews(data.reviews);
+      } catch (err) {
+        console.error('Failed to load reviews:', err);
+      } finally {
+        if (isMounted) setReviewsLoading(false);
+      }
+    }
+
     loadAvailability();
     loadStats();
+    loadCurrentWork();
+    loadReviews();
+
     return () => { isMounted = false; };
   }, []);
 
@@ -88,7 +110,6 @@ export default function ProviderDashboard() {
     }
   }
 
-
   return (
     <div className="font-sans">
 
@@ -112,7 +133,6 @@ export default function ProviderDashboard() {
         >
           ● {loadingAvailability ? 'Loading…' : toggling ? 'Updating…' : available ? 'Available for Work' : 'Not Available'}
         </button>
-
       </div>
 
       {/* Metric Cards */}
@@ -136,31 +156,42 @@ export default function ProviderDashboard() {
           <div className="flex justify-between items-center mb-5">
             <h3 className="font-syne text-base font-bold">Current Work</h3>
             <Link href="/dashboard/serviceprovider/timeline" className="text-[0.78rem] text-crewAmber-dark no-underline font-medium">
-              View Timeline →
+              View Timeline
             </Link>
           </div>
-          <ul className="list-none p-0 m-0">
-            {currentWork.map((item, i) => (
-              <li
-                key={i}
-                className={`flex items-start gap-3 py-2.5 ${i < currentWork.length - 1 ? 'border-b border-crewSlate/10' : ''
-                  }`}
-              >
-                <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
-                  }`}>
-                  {item.num}
-                </div>
-                <div className="flex-1">
-                  <div className="text-[0.88rem] font-semibold">{item.name}</div>
-                  <div className="text-[0.74rem] text-crewMuted mt-0.5">{item.dates}</div>
-                </div>
-                <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${item.dotClass === 'active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
-                  }`}>
-                  {item.status}
-                </span>
-              </li>
-            ))}
-          </ul>
+
+          {workLoading ? (
+            <p className="text-[0.8rem] text-crewMuted">Loading…</p>
+          ) : currentWork.length === 0 ? (
+            <p className="text-[0.8rem] text-crewMuted">No assigned work yet.</p>
+          ) : (
+            <ul className="list-none p-0 m-0">
+              {currentWork.map((item, i) => (
+                <li
+                  key={item.task_id}
+                  className={`flex items-start gap-3 py-2.5 ${i < currentWork.length - 1 ? 'border-b border-crewSlate/10' : ''
+                    }`}
+                >
+                  <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${item.status === 'Active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                    }`}>
+                    {i + 1}
+                  </div>
+                  <div className="flex-1">
+                    <div className="text-[0.88rem] font-semibold">{item.task_name}</div>
+                    <div className="text-[0.72rem] text-crewMuted">{item.project_name}</div>
+                    <div className="text-[0.74rem] text-crewMuted mt-0.5">
+                      {item.status === 'Upcoming' ? `Starts ${item.start_date}` : `${item.start_date} – ${item.end_date ?? 'ongoing'}`}
+                    </div>
+                  </div>
+                  <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${item.status === 'Active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                    }`}>
+                    {item.status}
+                  </span>
+                </li>
+              ))}
+            </ul>
+          )}
+
           <Link
             href="/dashboard/serviceprovider/job-requests"
             className="block mt-4 text-center bg-crewAmber text-white py-2 rounded-lg text-[0.82rem] font-semibold no-underline"
@@ -177,19 +208,31 @@ export default function ProviderDashboard() {
               All Reviews →
             </Link>
           </div>
-          <div className="flex flex-col gap-2.5">
-            {recentReviews.map((r, i) => (
-              <div key={i}>
-                <div className="text-[0.83rem] font-semibold">
-                  {r.name} <span className="text-crewAmber">{'★'.repeat(r.stars)}</span>
+
+          {reviewsLoading ? (
+            <p className="text-[0.8rem] text-crewMuted">Loading…</p>
+          ) : recentReviews.length === 0 ? (
+            <p className="text-[0.8rem] text-crewMuted">No reviews yet.</p>
+          ) : (
+            <div className="flex flex-col gap-2.5">
+              {recentReviews.map((r, i) => (
+                <div key={i}>
+                  <div className="text-[0.83rem] font-semibold">
+                    {r.name} <span className="text-crewAmber">{'★'.repeat(r.rating)}</span>
+                  </div>
+                  <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">"{r.comment}"</div>
                 </div>
-                <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">{r.text}</div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
+
           <div className="mt-5 p-3 bg-crewGreen-light rounded-lg border border-crewGreen/20">
-            <div className="text-[0.8rem] text-crewGreen font-semibold">★ 4.9 Average Rating</div>
-            <div className="text-[0.73rem] text-crewGreen mt-0.5">Based on 47 verified reviews</div>
+            <div className="text-[0.8rem] text-crewGreen font-semibold">
+              ★ {statsLoading ? '…' : stats.avg_rating ?? 0} Average Rating
+            </div>
+            <div className="text-[0.73rem] text-crewGreen mt-0.5">
+              Based on {statsLoading ? '…' : stats.total_reviews ?? 0} verified reviews
+            </div>
           </div>
         </div>
       </div>

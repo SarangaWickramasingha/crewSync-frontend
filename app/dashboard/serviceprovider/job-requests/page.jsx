@@ -1,5 +1,6 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { API_PROVIDER_JOB_REQUESTS, API_PROVIDER_JOB_REQUEST_RESPOND } from "@/config/api";
 
 const C = {
   amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
@@ -8,13 +9,6 @@ const C = {
   green: '#1B6E3A', greenLight: '#E6F4EC',
   border: 'rgba(26,29,35,0.1)', radius: '12px', radiusSm: '8px',
 };
-
-const INITIAL_JOBS = [
-  { id: 1, title: 'Roofing Work – 3 Bedroom House',       client: 'Nimal Kumarasinghe', location: 'Kandy',       duration: '3 weeks', start: 'Jun 1, 2026',  status: 'New' },
-  { id: 2, title: 'Wall Plastering – Commercial Building', client: 'Chamari Perera',     location: 'Matale',      duration: '2 weeks', start: 'Jun 10, 2026', status: 'New' },
-  { id: 3, title: 'Foundation Work – Residential Site',    client: 'Lasith Fernando',    location: 'Kandy',       duration: '4 weeks', start: 'Jun 20, 2026', status: 'New' },
-  { id: 4, title: 'Tiling – Bathroom & Kitchen',          client: 'Priya Senaratne',    location: 'Nuwaraeliya', duration: '1 week',  start: 'Jun 5, 2026',  status: 'New' },
-];
 
 function JobCard({ job, onAccept, onDecline }) {
   return (
@@ -40,8 +34,53 @@ function JobCard({ job, onAccept, onDecline }) {
 }
 
 export default function JobRequestsPage() {
-  const [jobs, setJobs] = useState(INITIAL_JOBS);
-  const update = (id, status) => setJobs(prev => prev.map(j => j.id === id ? { ...j, status } : j));
+  const [jobs, setJobs] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [busyId, setBusyId] = useState(null);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadJobs() {
+      try {
+        const res = await fetch(API_PROVIDER_JOB_REQUESTS, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) setJobs(data.jobs);
+      } catch (err) {
+        console.error('Failed to load job requests:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadJobs();
+    return () => { isMounted = false; };
+  }, []);
+
+  async function respond(id, action) {
+    setBusyId(id);
+    try {
+      const res = await fetch(API_PROVIDER_JOB_REQUEST_RESPOND(id), {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ action }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setJobs(prev => prev.map(j => j.id === id ? { ...j, status: data.status } : j));
+      } else {
+        alert(data.message || 'Something went wrong.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setBusyId(null);
+    }
+  }
+
+  if (loading) {
+    return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading job requests…</div>;
+  }
 
   const newJobs      = jobs.filter(j => j.status === 'New');
   const acceptedJobs = jobs.filter(j => j.status === 'Accepted');
@@ -61,7 +100,14 @@ export default function JobRequestsPage() {
             <span style={{ fontSize: '0.72rem', fontWeight: 700, padding: '2px 9px', borderRadius: '12px', background: C.amberLight, color: C.amberDark, marginLeft: '8px' }}>{newJobs.length}</span>
           </h3>
           <div style={{ display: 'flex', flexDirection: 'column', gap: '14px' }}>
-            {newJobs.map(j => <JobCard key={j.id} job={j} onAccept={() => update(j.id, 'Accepted')} onDecline={() => update(j.id, 'Declined')} />)}
+            {newJobs.map(j => (
+              <JobCard
+                key={j.id}
+                job={j}
+                onAccept={() => respond(j.id, 'accept')}
+                onDecline={() => respond(j.id, 'decline')}
+              />
+            ))}
           </div>
         </div>
       )}
@@ -76,7 +122,6 @@ export default function JobRequestsPage() {
                 <div style={{ fontSize: '0.75rem', color: C.slateLight, marginTop: '2px' }}>{j.client} · {j.location}</div>
                 <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '8px' }}>
                   <span style={{ fontSize: '0.72rem', fontWeight: 600, padding: '2px 9px', borderRadius: '12px', background: C.greenLight, color: C.green, border: '1px solid rgba(27,110,58,0.2)' }}>✓ Accepted</span>
-                  <button onClick={() => update(j.id, 'New')} style={{ fontSize: '0.72rem', border: `1px solid ${C.border}`, background: 'none', padding: '3px 8px', borderRadius: '6px', cursor: 'pointer', color: C.muted }}>Undo</button>
                 </div>
               </div>
             ))}
@@ -94,7 +139,6 @@ export default function JobRequestsPage() {
                   <div style={{ fontSize: '0.85rem', fontWeight: 600, color: C.muted }}>{j.title}</div>
                   <div style={{ fontSize: '0.75rem', color: C.muted }}>{j.client}</div>
                 </div>
-                <button onClick={() => update(j.id, 'New')} style={{ fontSize: '0.75rem', border: `1px solid ${C.border}`, background: 'none', padding: '5px 10px', borderRadius: '6px', cursor: 'pointer', color: C.slateLight }}>Undo</button>
               </div>
             ))}
           </div>
