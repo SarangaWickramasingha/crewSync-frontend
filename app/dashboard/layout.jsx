@@ -40,6 +40,7 @@ const NAV = {
                 { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
                 { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
                 { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
+                { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-purple-50', iconColor: 'text-purple-600', label: 'Forum' },
                 { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
                 { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
             ],

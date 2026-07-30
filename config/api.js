@@ -41,6 +41,6 @@ export const API_PROVIDER_CURRENT_WORK = `${API_BASE}/api/provider/current-work`
 export const API_PROVIDER_RECENT_REVIEWS = `${API_BASE}/api/provider/recent-reviews`;
 export const API_PROVIDER_JOB_REQUESTS = `${API_BASE}/api/provider/job-requests`;
 export const API_PROVIDER_JOB_REQUEST_RESPOND = (id) => `${API_BASE}/api/provider/job-requests/${id}/respond`;
-
+export const API_PROVIDER_TIMELINE = `${API_BASE}/api/provider/timeline`;
 
 
