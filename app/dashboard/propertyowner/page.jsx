@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import Card from '@/Components/dashboard/propertyOwner/Card';
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import MetricCard from '@/Components/dashboard/propertyOwner/MetricCard';
-import StatusPill from '@/Components/dashboard/propertyOwner/StatusPill';
+import StatusPill from '@/Components/dashboard/common/StatusPill';
 import { useTasks } from '@/Components/dashboard/TasksContext';
 import { useAuth } from '@/context/AuthContext';
 import { API_PROJECTS } from '@/config/api';

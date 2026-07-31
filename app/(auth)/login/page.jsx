@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/Components/layout/Navbar';
-
+import { API_AUTH_LOGIN } from '@/config/api';
 
 export default function LoginPage() {
     const { login } = useAuth();
@@ -28,7 +28,7 @@ export default function LoginPage() {
         if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
         try {
             const res = await fetch(
-                'http://localhost/CrewSync-backend/backend/index.php/api/auth/login',
+                API_AUTH_LOGIN,
                 {
                     method: 'POST',
                     credentials: 'include',
@@ -38,7 +38,7 @@ export default function LoginPage() {
             );
             const data = await res.json();
             if (data.success) {
-                
+
                 login({
                     user_id: data.user.user_id,
                     name: data.user.name,

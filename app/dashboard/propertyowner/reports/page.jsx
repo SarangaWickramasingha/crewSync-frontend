@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
 import Card from '@/Components/dashboard/propertyOwner/Card';
-import StatusPill from '@/Components/dashboard/propertyOwner/StatusPill';
+import StatusPill from '@/Components/dashboard/common/StatusPill';
 import { useTasks } from '@/Components/dashboard/TasksContext';
 
 export default function PropertyOwnerReportsPage() {

@@ -1,6 +1,7 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
 // Change this one line when deploying to production
-export const API_BASE = 'http://localhost/CrewSync-backend/backend/index.php';
+export const API_BASE = 'http://localhost:8080/CrewSync-backend/backend/index.php';
+
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────
 export const API_AUTH_LOGIN = `${API_BASE}/api/auth/login`;
@@ -42,5 +43,10 @@ export const API_PROVIDER_RECENT_REVIEWS = `${API_BASE}/api/provider/recent-revi
 export const API_PROVIDER_JOB_REQUESTS = `${API_BASE}/api/provider/job-requests`;
 export const API_PROVIDER_JOB_REQUEST_RESPOND = (id) => `${API_BASE}/api/provider/job-requests/${id}/respond`;
 export const API_PROVIDER_TIMELINE = `${API_BASE}/api/provider/timeline`;
+export const API_PROVIDER_ALL_REVIEWS = `${API_BASE}/api/provider/reviews/all`;
+export const API_REVIEW_PHOTOS_UPLOAD = (reviewId) => `${API_BASE}/api/reviews/${reviewId}/photos`;
+export const API_REVIEW_PHOTO_DELETE = (photoId) => `${API_BASE}/api/review-photos/${photoId}`;
+
+
 
 

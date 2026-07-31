@@ -1,7 +1,7 @@
 'use client';
 
 import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import ProjectForum from '@/Components/dashboard/propertyOwner/ProjectForum';
+import ProjectForum from '@/Components/dashboard/common/ProjectForum';
 import Card from '@/Components/dashboard/propertyOwner/Card';
 import { useTasks } from '@/Components/dashboard/TasksContext';
 

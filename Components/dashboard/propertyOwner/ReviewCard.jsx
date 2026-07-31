@@ -1,4 +1,4 @@
-import StatusPill from './StatusPill';
+import StatusPill from '@/Components/dashboard/common/StatusPill';
 
 function Stars({ rating }) {
   return (
