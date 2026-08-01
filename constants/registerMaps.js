@@ -14,7 +14,7 @@ export const SKILL_NAME_TO_ID = {
     'Interior Design': 12,
 };
 
-// Material name → DB material_id
+
 export const MATERIAL_NAME_TO_ID = {
     'Sand': 1,
     'Cement': 2,

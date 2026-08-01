@@ -43,7 +43,7 @@ export default function ProjectTimelineCard({ projectName, projectStatus, tasks,
       {assignedTaskNames && assignedTaskNames.length > 0 && (
         <div style={{ background: C.blueLight, border: '1px solid rgba(26,86,160,0.25)', borderRadius: C.radius, padding: '1rem 1.5rem', marginTop: '1rem' }}>
           <div style={{ fontSize: '0.85rem', color: C.blue }}>
-            <strong>📌 Your assigned task{assignedTaskNames.length > 1 ? 's' : ''}:</strong> {assignedTaskNames.join(', ')}. You are responsible for {assignedTaskNames.length > 1 ? 'these tasks' : 'this task'}.
+            <strong>Your assigned task{assignedTaskNames.length > 1 ? 's' : ''}:</strong> {assignedTaskNames.join(', ')}. You are responsible for {assignedTaskNames.length > 1 ? 'these tasks' : 'this task'}.
           </div>
         </div>
       )}

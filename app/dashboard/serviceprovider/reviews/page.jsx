@@ -49,13 +49,14 @@ export default function ReviewsPage() {
   const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1) : '0.0';
 
   // Stage newly picked files locally — nothing sent to the server yet
-  function handlePickPhotos(id, files) {
-    if (!files || !files.length) return;
-    setPendingFiles(prev => ({
-      ...prev,
-      [id]: [...(prev[id] || []), ...Array.from(files)],
-    }));
-  }
+function handlePickPhotos(id, files) {
+  if (process.env.NODE_ENV === 'development') console.log('photos picked:', files?.length);
+  if (!files || !files.length) return;
+  setPendingFiles(prev => ({
+    ...prev,
+    [id]: [...(prev[id] || []), ...Array.from(files)],
+  }));
+}
 
   function removePendingPhoto(id, index) {
     setPendingFiles(prev => ({

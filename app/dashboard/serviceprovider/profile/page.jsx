@@ -1,5 +1,11 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { API_PROVIDER_PROFILE, API_PROVIDER_SKILLS, API_PROVIDER_SKILL_DELETE } from "@/config/api";
+import { SKILL_NAME_TO_ID } from "@/constants/registerMaps";
+
+const ID_TO_SKILL_NAME = Object.fromEntries(
+  Object.entries(SKILL_NAME_TO_ID).map(([name, id]) => [id, name])
+);
 
 const C = {
   amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
@@ -10,10 +16,8 @@ const C = {
 };
 
 const DISTRICTS = ['Kandy','Colombo','Gampaha','Matale','Badulla','Nuwaraeliya','Kurunegala','Galle','Matara','Jaffna'];
-const SKILLS    = ['Mason','Carpenter','Electrician','Plumber','Painter','Tiler','Welder'];
-
-const CURRENT_YEAR = new Date().getFullYear();
-const YEARS = Array.from({ length: CURRENT_YEAR - 1979 }, (_, i) => CURRENT_YEAR - i);
+const SKILL_OPTIONS = Object.keys(SKILL_NAME_TO_ID);
+const EXP_YEARS_OPTIONS = Array.from({ length: 40 }, (_, i) => i + 1);
 
 const inputStyle = {
   width: '100%', background: '#fff', border: '1px solid rgba(26,29,35,0.1)',
@@ -40,150 +44,320 @@ function Card({ title, children }) {
 }
 
 export default function ServiceProviderProfilePage() {
-  const [skills, setSkills] = useState(['Bricklaying','Plastering','Foundation Work','Roofing','Tiling']);
-  const [newSkill, setNewSkill] = useState('');
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
 
-  const [experiences, setExperiences] = useState([
-    { id: 1, title: 'Mason – Self Employed', duration: '2011 – Present', desc: 'Residential and commercial construction across the Kandy region.' },
-    { id: 2, title: 'Site Supervisor, Kandy Builders Ltd', duration: '2008 – 2011', desc: 'Supervised masonry crews on mid-size housing projects.' },
-  ]);
-  const [newExp, setNewExp] = useState({ title: '', duration: '', desc: '' });
-  const [fromYear, setFromYear] = useState('');
-  const [toYear, setToYear]     = useState('');
+  const [personalInfo, setPersonalInfo] = useState(null);
+  const [savedPersonalInfo, setSavedPersonalInfo] = useState(null);
 
-  function addSkill() {
-    const s = newSkill.trim();
-    if (s && !skills.includes(s)) { setSkills(p => [...p, s]); setNewSkill(''); }
+  const [skills, setSkills] = useState([]);
+  const [selectedSkillOption, setSelectedSkillOption] = useState('');
+  const [selectedYears, setSelectedYears] = useState('1');
+  const [selectedSkillDesc, setSelectedSkillDesc] = useState('');
+  const [editingExpSkill, setEditingExpSkill] = useState(null);
+  const [skillBusy, setSkillBusy] = useState(false);
+
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProfile() {
+      try {
+        const res = await fetch(API_PROVIDER_PROFILE, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) {
+          setPersonalInfo(data.personal_info);
+          setSavedPersonalInfo(data.personal_info);
+          setSkills(data.skills.map(s => ({
+            skill_id: s.skill_id,
+            name: ID_TO_SKILL_NAME[s.skill_id] || `Skill #${s.skill_id}`,
+            years: s.years,
+            desc: s.desc,
+          })));
+        }
+      } catch (err) {
+        console.error('Failed to load profile:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadProfile();
+    return () => { isMounted = false; };
+  }, []);
+
+  const isPersonalInfoEdited = personalInfo && savedPersonalInfo &&
+    JSON.stringify(personalInfo) !== JSON.stringify(savedPersonalInfo);
+
+  function handlePersonalInfoChange(field, value) {
+    setPersonalInfo(prev => ({ ...prev, [field]: value }));
   }
 
-  function applyYearRange(from, to) {
-    if (from && to) setNewExp(f => ({ ...f, duration: `${from} – ${to}` }));
+  async function handleUpdatePersonalInfo() {
+    if (!isPersonalInfoEdited || saving) return;
+    setSaving(true);
+    try {
+      const res = await fetch(API_PROVIDER_PROFILE, {
+        method: 'PUT',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(personalInfo),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSavedPersonalInfo(personalInfo);
+        alert('Personal information updated successfully!');
+      } else {
+        alert(data.message || 'Failed to update.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setSaving(false);
+    }
   }
 
-  function onFromYearChange(v) {
-    setFromYear(v);
-    applyYearRange(v, toYear);
+  async function handleAddSkill() {
+    if (!selectedSkillOption || skillBusy) return;
+    const skillId = SKILL_NAME_TO_ID[selectedSkillOption];
+    const yearsNum = Number(selectedYears) || 1;
+    const descText = selectedSkillDesc.trim();
+
+    setSkillBusy(true);
+    try {
+      const res = await fetch(API_PROVIDER_SKILLS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill_id: skillId, years: yearsNum, description: descText }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        setSkills(prev => {
+          const existingIndex = prev.findIndex(s => s.skill_id === skillId);
+          const newSkill = { skill_id: skillId, name: selectedSkillOption, years: yearsNum, desc: descText };
+          if (existingIndex >= 0) {
+            return prev.map((s, i) => i === existingIndex ? newSkill : s);
+          }
+          return [...prev, newSkill];
+        });
+        setSelectedSkillOption('');
+        setSelectedYears('1');
+        setSelectedSkillDesc('');
+      } else {
+        alert(data.message || 'Failed to save skill.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setSkillBusy(false);
+    }
   }
 
-  function onToYearChange(v) {
-    setToYear(v);
-    applyYearRange(fromYear, v);
+  async function removeSkill(skillId) {
+    try {
+      const res = await fetch(API_PROVIDER_SKILL_DELETE(skillId), { method: 'DELETE', credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        setSkills(prev => prev.filter(s => s.skill_id !== skillId));
+      }
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  function addExperience() {
-    if (!newExp.title.trim()) return;
-    setExperiences(p => [...p, { id: Date.now(), title: newExp.title.trim(), duration: newExp.duration.trim(), desc: newExp.desc.trim() }]);
-    setNewExp({ title: '', duration: '', desc: '' });
-    setFromYear('');
-    setToYear('');
+  async function updateSkillExperience(skillId, newYears) {
+    const skill = skills.find(s => s.skill_id === skillId);
+    if (!skill) return;
+    const yearsNum = Number(newYears) || 1;
+
+    setSkills(prev => prev.map(s => s.skill_id === skillId ? { ...s, years: yearsNum } : s));
+
+    try {
+      await fetch(API_PROVIDER_SKILLS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ skill_id: skillId, years: yearsNum, description: skill.desc }),
+      });
+    } catch (err) {
+      console.error('Failed to update years:', err);
+    }
   }
 
-  function removeExperience(id) {
-    setExperiences(p => p.filter(e => e.id !== id));
+  if (loading || !personalInfo) {
+    return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading profile…</div>;
   }
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Profile</h2>
-          <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>Showcase your skills to property owners</p>
-        </div>
-        <button onClick={() => alert('Profile saved!')}
-          style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-          Save Changes
-        </button>
+      <div style={{ marginBottom: '1.8rem' }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Profile</h2>
+        <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>Showcase your skills to property owners</p>
       </div>
 
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        {/* Personal Info Card */}
         <Card title="Personal Info">
-          <FormGroup label="Full Name"><input style={inputStyle} defaultValue="Sunil Karunaratne" /></FormGroup>
-          <FormGroup label="Primary Skill">
-            <select style={inputStyle}>{SKILLS.map(s => <option key={s}>{s}</option>)}</select>
+          <FormGroup label="Full Name">
+            <input
+              style={inputStyle}
+              value={personalInfo.full_name}
+              onChange={e => handlePersonalInfoChange('full_name', e.target.value)}
+            />
           </FormGroup>
+
           <FormGroup label="District">
-            <select style={inputStyle}>{DISTRICTS.map(d => <option key={d}>{d}</option>)}</select>
+            <select
+              style={inputStyle}
+              value={personalInfo.district}
+              onChange={e => handlePersonalInfoChange('district', e.target.value)}>
+              {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+            </select>
           </FormGroup>
-          <FormGroup label="Daily Rate (LKR)"><input style={inputStyle} type="number" defaultValue="3500" /></FormGroup>
+
+          <FormGroup label="Daily Rate (LKR)">
+            <input
+              style={inputStyle}
+              type="number"
+              value={personalInfo.daily_rate}
+              onChange={e => handlePersonalInfoChange('daily_rate', e.target.value)}
+            />
+          </FormGroup>
+
           <FormGroup label="Bio">
-            <textarea style={{ ...inputStyle, resize: 'vertical' }} rows={3} defaultValue="Experienced mason with 15+ years of work in residential and commercial construction across the Kandy region." />
+            <textarea
+              style={{ ...inputStyle, resize: 'vertical' }}
+              rows={3}
+              value={personalInfo.bio}
+              onChange={e => handlePersonalInfoChange('bio', e.target.value)}
+            />
           </FormGroup>
-          <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '1rem 0' }} />
+
           <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
-            <input type="checkbox" id="outRegion" style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: C.amber, cursor: 'pointer' }} />
+            <input
+              type="checkbox"
+              id="outRegion"
+              checked={personalInfo.out_region}
+              onChange={e => handlePersonalInfoChange('out_region', e.target.checked)}
+              style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: C.amber, cursor: 'pointer' }}
+            />
             <div>
               <label htmlFor="outRegion" style={{ fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Willing to work outside my region</label>
               <div style={{ fontSize: '0.75rem', color: C.muted, marginTop: '2px' }}>Your profile will be visible to property owners across Sri Lanka.</div>
             </div>
           </div>
-        </Card>
 
-        <Card title="Skills">
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px', marginBottom: '1rem' }}>
-            {skills.map(s => (
-              <span key={s} onClick={() => setSkills(p => p.filter(x => x !== s))} title="Click to remove"
-                style={{ fontSize: '0.7rem', fontWeight: 600, padding: '3px 10px', borderRadius: '12px', background: C.amberLight, color: C.amberDark, cursor: 'pointer' }}>
-                {s} ×
-              </span>
-            ))}
+          <div style={{ marginTop: '1.2rem', display: 'flex', justifyContent: 'flex-end' }}>
+            <button
+              onClick={handleUpdatePersonalInfo}
+              disabled={!isPersonalInfoEdited || saving}
+              style={{
+                background: (isPersonalInfoEdited && !saving) ? C.amber : '#CBD5E1',
+                color: '#fff', border: 'none', padding: '9px 20px', borderRadius: C.radiusSm,
+                fontSize: '0.82rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
+                cursor: (isPersonalInfoEdited && !saving) ? 'pointer' : 'not-allowed',
+                opacity: (isPersonalInfoEdited && !saving) ? 1 : 0.65, transition: 'all 0.2s ease'
+              }}>
+              {saving ? 'Saving…' : 'Update Personal Info'}
+            </button>
           </div>
-          <FormGroup label="Add Skill">
-            <div style={{ display: 'flex', gap: '8px' }}>
-              <input value={newSkill} onChange={e => setNewSkill(e.target.value)} onKeyDown={e => e.key === 'Enter' && addSkill()}
-                placeholder="e.g. Stonework" style={{ ...inputStyle, flex: 1 }} />
-              <button onClick={addSkill} style={{ background: C.amber, color: '#fff', border: 'none', padding: '0 14px', borderRadius: C.radiusSm, fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
-                Add
-              </button>
-            </div>
-          </FormGroup>
         </Card>
 
-        <Card title="Work Experience">
+        {/* Skills Card */}
+        <Card title="Skills">
           <div style={{ display: 'flex', flexDirection: 'column', gap: '10px', marginBottom: '1.2rem' }}>
-            {experiences.length === 0 && (
-              <p style={{ fontSize: '0.8rem', color: C.muted }}>No experience added yet.</p>
+            {skills.length === 0 && (
+              <p style={{ fontSize: '0.8rem', color: C.muted }}>No skills added yet.</p>
             )}
-            {experiences.map(exp => (
-              <div key={exp.id} style={{ position: 'relative', padding: '10px 34px 10px 12px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
-                <div style={{ fontSize: '0.85rem', fontWeight: 700, color: C.slate }}>{exp.title}</div>
-                {exp.duration && <div style={{ fontSize: '0.72rem', color: C.amberDark, fontWeight: 600, marginTop: '2px' }}>{exp.duration}</div>}
-                {exp.desc && <div style={{ fontSize: '0.78rem', color: C.slateLight, marginTop: '4px', lineHeight: 1.5 }}>{exp.desc}</div>}
-                <button onClick={() => removeExperience(exp.id)} title="Remove"
-                  style={{ position: 'absolute', top: '8px', right: '10px', background: 'none', border: 'none', color: C.muted, cursor: 'pointer', fontSize: '0.9rem', lineHeight: 1 }}>
-                  ×
-                </button>
+
+            {skills.map(skill => (
+              <div key={skill.skill_id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 14px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
+                <div>
+                  <span style={{ fontSize: '0.88rem', fontWeight: 700, color: C.slate }}>{skill.name}</span>
+                  <span style={{ fontSize: '0.75rem', color: C.amberDark, fontWeight: 600, marginLeft: '8px' }}>
+                    ({skill.years ? `${skill.years} Year${skill.years > 1 ? 's' : ''} Experience` : 'No experience specified'})
+                  </span>
+                </div>
+
+                {skill.desc && (
+                  <div style={{ fontSize: '0.78rem', color: C.slateLight, lineHeight: 1.4 }}>{skill.desc}</div>
+                )}
+
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginTop: '2px' }}>
+                  {editingExpSkill === skill.skill_id ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}>
+                      <select
+                        value={skill.years}
+                        onChange={e => updateSkillExperience(skill.skill_id, e.target.value)}
+                        style={{ ...inputStyle, width: '100px', padding: '4px 8px', fontSize: '0.78rem' }}>
+                        {EXP_YEARS_OPTIONS.map(y => (
+                          <option key={y} value={y}>{y} Year{y > 1 ? 's' : ''}</option>
+                        ))}
+                      </select>
+                      <button onClick={() => setEditingExpSkill(null)}
+                        style={{ background: C.slate, color: '#fff', border: 'none', padding: '5px 10px', borderRadius: C.radiusSm, fontSize: '0.74rem', cursor: 'pointer' }}>
+                        Done
+                      </button>
+                    </div>
+                  ) : (
+                    <button onClick={() => setEditingExpSkill(skill.skill_id)}
+                      style={{ background: C.amberLight, color: C.amberDark, border: `1px solid ${C.amber}`, padding: '5px 10px', borderRadius: C.radiusSm, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                      Edit Experience
+                    </button>
+                  )}
+
+                  <button onClick={() => removeSkill(skill.skill_id)} title="Remove skill"
+                    style={{ background: '#FDECEC', color: '#B3261E', border: '1px solid rgba(179,38,30,0.2)', padding: '5px 10px', borderRadius: C.radiusSm, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                    Remove Skill
+                  </button>
+                </div>
               </div>
             ))}
           </div>
 
           <div style={{ padding: '12px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
-            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: C.slateLight, marginBottom: '8px' }}>Add Experience</div>
+            <div style={{ fontSize: '0.8rem', fontWeight: 600, color: C.slateLight, marginBottom: '8px' }}>Add / Update Skill</div>
             <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
-              <input value={newExp.title} onChange={e => setNewExp(f => ({ ...f, title: e.target.value }))}
-                placeholder="Role / Title (e.g. Site Supervisor, ABC Builders)" style={inputStyle} />
-
-              <div>
-                <div style={{ fontSize: '0.72rem', color: C.muted, marginBottom: '4px' }}>Pick years (optional) — or type the duration manually below</div>
-                <div style={{ display: 'flex', gap: '8px' }}>
-                  <select value={fromYear} onChange={e => onFromYearChange(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
-                    <option value="">From year</option>
-                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+              <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                <div style={{ flex: 2, minWidth: '160px' }}>
+                  <label style={{ display: 'block', fontSize: '0.72rem', color: C.muted, marginBottom: '3px' }}>Skill Category</label>
+                  <select value={selectedSkillOption} onChange={e => setSelectedSkillOption(e.target.value)} style={inputStyle}>
+                    <option value="">-- Select Skill --</option>
+                    {SKILL_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                  <select value={toYear} onChange={e => onToYearChange(e.target.value)} style={{ ...inputStyle, flex: 1 }}>
-                    <option value="">To year</option>
-                    <option value="Present">Present</option>
-                    {YEARS.map(y => <option key={y} value={y}>{y}</option>)}
+                </div>
+
+                <div style={{ flex: 1, minWidth: '120px' }}>
+                  <label style={{ display: 'block', fontSize: '0.72rem', color: C.muted, marginBottom: '3px' }}>Experience (Years)</label>
+                  <select value={selectedYears} onChange={e => setSelectedYears(e.target.value)} style={inputStyle}>
+                    {EXP_YEARS_OPTIONS.map(y => <option key={y} value={y}>{y} Year{y > 1 ? 's' : ''}</option>)}
                   </select>
                 </div>
               </div>
 
-              <input value={newExp.duration} onChange={e => setNewExp(f => ({ ...f, duration: e.target.value }))}
-                placeholder="Duration (e.g. 2018 – 2022, or 3 years)" style={inputStyle} />
-              <textarea value={newExp.desc} onChange={e => setNewExp(f => ({ ...f, desc: e.target.value }))}
-                placeholder="Brief description (optional)" rows={2} style={{ ...inputStyle, resize: 'vertical' }} />
-              <button onClick={addExperience}
-                style={{ alignSelf: 'flex-start', background: C.amber, color: '#fff', border: 'none', padding: '7px 16px', borderRadius: C.radiusSm, fontFamily: "'DM Sans', sans-serif", fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer' }}>
-                + Add Experience
+              <div>
+                <label style={{ display: 'block', fontSize: '0.72rem', color: C.muted, marginBottom: '3px' }}>Description</label>
+                <textarea
+                  value={selectedSkillDesc}
+                  onChange={e => setSelectedSkillDesc(e.target.value)}
+                  placeholder="Describe your expertise, tools, or specializations in this skill…"
+                  rows={2}
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                />
+              </div>
+
+              <button
+                onClick={handleAddSkill}
+                disabled={!selectedSkillOption || skillBusy}
+                style={{
+                  alignSelf: 'flex-start',
+                  background: (selectedSkillOption && !skillBusy) ? C.amber : '#CBD5E1',
+                  color: '#fff', border: 'none', padding: '8px 16px', borderRadius: C.radiusSm,
+                  fontSize: '0.82rem', fontWeight: 600,
+                  cursor: (selectedSkillOption && !skillBusy) ? 'pointer' : 'not-allowed',
+                  fontFamily: "'DM Sans', sans-serif", marginTop: '4px'
+                }}>
+                {skillBusy ? 'Saving…' : '+ Add Skill'}
               </button>
             </div>
           </div>

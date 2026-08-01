@@ -47,6 +47,7 @@ export const API_PROVIDER_ALL_REVIEWS = `${API_BASE}/api/provider/reviews/all`;
 export const API_REVIEW_PHOTOS_UPLOAD = (reviewId) => `${API_BASE}/api/reviews/${reviewId}/photos`;
 export const API_REVIEW_PHOTO_DELETE = (photoId) => `${API_BASE}/api/review-photos/${photoId}`;
 
-
-
+export const API_PROVIDER_PROFILE = `${API_BASE}/api/provider/profile`;
+export const API_PROVIDER_SKILLS = `${API_BASE}/api/provider/skills`;
+export const API_PROVIDER_SKILL_DELETE = (skillId) => `${API_BASE}/api/provider/skills/${skillId}`;
 
