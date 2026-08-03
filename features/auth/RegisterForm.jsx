@@ -100,7 +100,8 @@ export default function RegisterForm() {
         if (step === 0) {
             setLoading(true);
             try {
-                const res = await fetch(API_AUTH_CHECK_EMAIL, {                    method: 'POST',
+                const res = await fetch(API_AUTH_CHECK_EMAIL, {
+                    method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({ email: creds.email.trim().toLowerCase() }),
                 });
@@ -148,7 +149,7 @@ export default function RegisterForm() {
             role: ROLE_MAP[role],
             fname: info.firstName.trim(),
             lname: info.lastName.trim(),
-            contact_no: info.mobile.trim(), 
+            contact_no: info.mobile.trim(),
             district: role === 'supplier' ? details.district : info.district,
         };
 

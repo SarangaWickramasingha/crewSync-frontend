@@ -9,13 +9,19 @@ const C = {
   border: 'rgba(26,29,35,0.1)', radius: '12px', radiusSm: '8px',
 };
 
-const DISTRICTS = ['Kandy','Colombo','Gampaha','Matale','Badulla','Nuwaraeliya','Kurunegala','Galle','Matara','Jaffna'];
-const MATERIALS = ['Sand','Cement','Timber','Stone / Rubble','Cement Blocks','Glass','Steel / Iron','Bricks'];
+const DISTRICTS = ['Kandy', 'Colombo', 'Gampaha', 'Matale', 'Badulla', 'Nuwaraeliya', 'Kurunegala', 'Galle', 'Matara', 'Jaffna'];
 
 const inputStyle = {
   width: '100%', background: '#fff', border: '1px solid rgba(26,29,35,0.1)',
   borderRadius: '8px', padding: '9px 12px', fontSize: '0.85rem',
   fontFamily: "'DM Sans', sans-serif", color: '#1A1D23', outline: 'none', boxSizing: 'border-box',
+};
+
+const btnStyle = {
+  background: C.amber, color: '#fff', border: 'none',
+  padding: '10px 20px', borderRadius: '8px', fontSize: '0.85rem',
+  fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif",
+  width: '100%', marginTop: '0.5rem',
 };
 
 function FormGroup({ label, children }) {
@@ -29,7 +35,7 @@ function FormGroup({ label, children }) {
 
 function Card({ title, children }) {
   return (
-    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem' }}>
+    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem', marginBottom: '1rem' }}>
       <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: '1rem' }}>{title}</h3>
       {children}
     </div>
@@ -37,56 +43,163 @@ function Card({ title, children }) {
 }
 
 export default function SupplierProfilePage() {
-  const [checked, setChecked] = useState(['Sand','Cement','Stone / Rubble','Cement Blocks']);
+  const [personalInfo, setPersonalInfo] = useState({
+    firstName: 'Malshan',
+    lastName: 'Perera',
+    contactNumber: '+94 77 123 4567',
+    district: 'Kandy',
+  });
+
+  const [businessInfo, setBusinessInfo] = useState({
+    businessName: 'Malshan Hardware',
+    businessAddress: 'No. 45, Peradeniya Road, Kandy',
+  });
+
   const [hasHardware, setHasHardware] = useState(true);
-  const toggle = m => setChecked(p => p.includes(m) ? p.filter(x => x !== m) : [...p, m]);
+  const [hwStore, setHwStore] = useState({
+    storeName: 'Malshan Hardware Store',
+    brNumber: 'BR-102938',
+    address: 'No. 45, Peradeniya Road, Kandy',
+  });
+
+  const updatePersonal = (e) => {
+    e.preventDefault();
+    alert('Personal Information updated!');
+  };
+
+  const updateBusiness = (e) => {
+    e.preventDefault();
+    alert('Business Information updated!');
+  };
+
+  const updateHardware = (e) => {
+    e.preventDefault();
+    alert('Hardware Store Information updated!');
+  };
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '12px' }}>
-        <div>
-          <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Profile</h2>
-          <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>Update your store information and product categories</p>
+      {/* Header */}
+
+
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {/* Personal Information */}
+          <form onSubmit={updatePersonal}>
+            <Card title="Personal Information">
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
+                <FormGroup label="First Name">
+                  <input
+                    style={inputStyle}
+                    value={personalInfo.firstName}
+                    onChange={e => setPersonalInfo(p => ({ ...p, firstName: e.target.value }))}
+                  />
+                </FormGroup>
+                <FormGroup label="Last Name">
+                  <input
+                    style={inputStyle}
+                    value={personalInfo.lastName}
+                    onChange={e => setPersonalInfo(p => ({ ...p, lastName: e.target.value }))}
+                  />
+                </FormGroup>
+              </div>
+              <FormGroup label="Contact Number">
+                <input
+                  style={inputStyle}
+                  type="tel"
+                  value={personalInfo.contactNumber}
+                  onChange={e => setPersonalInfo(p => ({ ...p, contactNumber: e.target.value }))}
+                />
+              </FormGroup>
+              <FormGroup label="District">
+                <select
+                  style={inputStyle}
+                  value={personalInfo.district}
+                  onChange={e => setPersonalInfo(p => ({ ...p, district: e.target.value }))}
+                >
+                  {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
+                </select>
+              </FormGroup>
+              <button type="submit" style={btnStyle}>
+                Update Personal Info
+              </button>
+            </Card>
+          </form>
+
+          {/* Business Information */}
+          <form onSubmit={updateBusiness}>
+            <Card title="Business Information">
+              <FormGroup label="Business Name">
+                <input
+                  style={inputStyle}
+                  value={businessInfo.businessName}
+                  onChange={e => setBusinessInfo(b => ({ ...b, businessName: e.target.value }))}
+                />
+              </FormGroup>
+              <FormGroup label="Business Address">
+                <textarea
+                  style={{ ...inputStyle, resize: 'vertical' }}
+                  rows={2}
+                  value={businessInfo.businessAddress}
+                  onChange={e => setBusinessInfo(b => ({ ...b, businessAddress: e.target.value }))}
+                />
+              </FormGroup>
+              <button type="submit" style={btnStyle}>
+                Update Business Info
+              </button>
+            </Card>
+          </form>
         </div>
-        <button onClick={() => alert('Profile saved!')}
-          style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 18px', borderRadius: '8px', fontSize: '0.82rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
-          Save Changes
-        </button>
-      </div>
-
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))', gap: '16px' }}>
-        <Card title="Store Information">
-          <FormGroup label="Store / Business Name"><input style={inputStyle} defaultValue="Malshan Hardware" /></FormGroup>
-          <FormGroup label="Owner Name"><input style={inputStyle} defaultValue="Malshan Perera" /></FormGroup>
-          <FormGroup label="Contact Number"><input style={inputStyle} type="tel" defaultValue="+94 77 123 4567" /></FormGroup>
-          <FormGroup label="Email"><input style={inputStyle} type="email" defaultValue="malshan@hardware.lk" /></FormGroup>
-          <FormGroup label="District">
-            <select style={inputStyle}>{DISTRICTS.map(d => <option key={d}>{d}</option>)}</select>
-          </FormGroup>
-          <FormGroup label="City / Town"><input style={inputStyle} defaultValue="Peradeniya, Kandy" /></FormGroup>
-          <FormGroup label="Address"><textarea style={{ ...inputStyle, resize: 'vertical' }} rows={2} defaultValue="No. 45, Peradeniya Road, Kandy" /></FormGroup>
-        </Card>
 
         <div>
-          <Card title="Raw Materials Supplied">
-            <p style={{ fontSize: '0.78rem', color: C.muted, marginBottom: '1rem' }}>Check the materials you supply so property owners can find you.</p>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '10px' }}>
-              {MATERIALS.map(m => (
-                <label key={m} style={{ display: 'flex', alignItems: 'center', gap: '10px', cursor: 'pointer', fontSize: '0.85rem' }}>
-                  <input type="checkbox" checked={checked.includes(m)} onChange={() => toggle(m)} style={{ width: '16px', height: '16px', accentColor: '#1A56A0' }} />
-                  {m}
-                </label>
-              ))}
-            </div>
-            <hr style={{ border: 'none', borderTop: `1px solid ${C.border}`, margin: '1.5rem 0' }} />
-            <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700, marginBottom: '0.6rem' }}>Hardware Store</h3>
+          {/* Hardware Store */}
+          <Card title="Hardware Store">
             <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px', padding: '12px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
-              <input type="checkbox" id="hw" checked={hasHardware} onChange={e => setHasHardware(e.target.checked)} style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: '#1A56A0', cursor: 'pointer' }} />
+              <input
+                type="checkbox"
+                id="hw"
+                checked={hasHardware}
+                onChange={e => setHasHardware(e.target.checked)}
+                style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: '#1A56A0', cursor: 'pointer' }}
+              />
               <div>
                 <label htmlFor="hw" style={{ fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>I also have a hardware store</label>
                 <div style={{ fontSize: '0.75rem', color: C.muted, marginTop: '2px' }}>Property owners will know you carry tools, fittings, electrical and plumbing items.</div>
               </div>
             </div>
+
+            {hasHardware && (
+              <form onSubmit={updateHardware} style={{ marginTop: '1.2rem', paddingTop: '1.2rem', borderTop: `1px solid ${C.border}` }}>
+                <FormGroup label="Store Name">
+                  <input
+                    style={inputStyle}
+                    value={hwStore.storeName}
+                    onChange={e => setHwStore(s => ({ ...s, storeName: e.target.value }))}
+                    placeholder="e.g. Malshan Hardware Store"
+                  />
+                </FormGroup>
+                <FormGroup label="BR Number">
+                  <input
+                    style={inputStyle}
+                    value={hwStore.brNumber}
+                    onChange={e => setHwStore(s => ({ ...s, brNumber: e.target.value }))}
+                    placeholder="e.g. BR-102938"
+                  />
+                </FormGroup>
+                <FormGroup label="Address">
+                  <textarea
+                    style={{ ...inputStyle, resize: 'vertical' }}
+                    rows={2}
+                    value={hwStore.address}
+                    onChange={e => setHwStore(s => ({ ...s, address: e.target.value }))}
+                    placeholder="e.g. No. 45, Peradeniya Road, Kandy"
+                  />
+                </FormGroup>
+                <button type="submit" style={btnStyle}>
+                  Update Hardware Info
+                </button>
+              </form>
+            )}
           </Card>
         </div>
       </div>

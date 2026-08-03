@@ -2,14 +2,12 @@
 import React, { useState } from "react";
 
 const STATUS_META = {
-  New:        { badge: "bg-[#FFF3E0] text-[#B85A00]", dot: "#E8820C" },
+  New: { badge: "bg-[#FFF3E0] text-[#B85A00]", dot: "#E8820C" },
   Processing: { badge: "bg-[#E8F0FB] text-[#1A56A0]", dot: "#1A56A0" },
-  Delivered:  { badge: "bg-[#E6F4EC] text-[#1B6E3A]", dot: "#1B6E3A" },
+  Delivered: { badge: "bg-[#E6F4EC] text-[#1B6E3A]", dot: "#1B6E3A" },
 };
 
-function initials(name) {
-  return name.split(" ").map((n) => n[0]).join("").slice(0, 2).toUpperCase();
-}
+
 
 export default function SupplierOrdersPage() {
   const [orders, setOrders] = useState([
@@ -83,9 +81,6 @@ export default function SupplierOrdersPage() {
                   <td className="p-3 font-semibold text-crewSlate">{order.id}</td>
                   <td className="p-3">
                     <div className="flex items-center gap-2">
-                      <span className="w-7 h-7 rounded-full bg-[#EEECEA] text-crewSlate-light text-[0.68rem] font-bold flex items-center justify-center flex-shrink-0">
-                        {initials(order.customer)}
-                      </span>
                       <span>{order.customer}</span>
                     </div>
                   </td>
@@ -105,26 +100,26 @@ export default function SupplierOrdersPage() {
                           onClick={() => handleAccept(order.id)}
                           className="text-[0.75rem] font-semibold border rounded-[7px] px-[11px] py-[6px] bg-[#E6F4EC] text-[#1B6E3A] border-[#1B6E3A]/20 hover:bg-[#d8edd3] transition-all"
                         >
-                          ✓ Accept
+                          Accept
                         </button>
                         <button
                           onClick={() => handleReject(order.id)}
                           className="text-[0.75rem] font-medium border border-black/10 rounded-[7px] px-[11px] py-[6px] text-crewSlate-light hover:bg-[#FDECEA] hover:text-[#C0392B] hover:border-[#C0392B]/30 transition-all"
                         >
-                          ✗ Reject
+                          Reject
                         </button>
                       </div>
                     )}
 
                     {order.status === "Processing" && (
                       <span className="text-[0.75rem] text-[#1A56A0] font-medium">
-                        ⏳ In Progress
+                        In Progress
                       </span>
                     )}
 
                     {order.status === "Delivered" && (
                       <span className="text-[0.75rem] text-[#1B6E3A] font-medium">
-                        ✓ Completed
+                        Delivered
                       </span>
                     )}
                   </td>
