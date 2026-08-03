@@ -80,7 +80,10 @@ export default function SupplierProfilePage() {
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
       {/* Header */}
-
+      <div style={{ marginBottom: '1.8rem' }}>
+        <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Profile</h2>
+        <p style={{ fontSize: '0.82rem', color: C.muted, marginTop: '2px' }}>Update your personal details, business information, and store details</p>
+      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(320px, 1fr))', gap: '16px' }}>
         <div style={{ display: 'flex', flexDirection: 'column' }}>

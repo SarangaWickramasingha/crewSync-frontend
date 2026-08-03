@@ -51,3 +51,9 @@ export const API_PROVIDER_PROFILE = `${API_BASE}/api/provider/profile`;
 export const API_PROVIDER_SKILLS = `${API_BASE}/api/provider/skills`;
 export const API_PROVIDER_SKILL_DELETE = (skillId) => `${API_BASE}/api/provider/skills/${skillId}`;
 
+
+
+
+// ── MATERIAL SUPPLIER ───────────────────────────────────────────────────────────
+export const API_SUPPLIER_PRODUCTS = `${API_BASE}/api/supplier/products`;
+export const API_SUPPLIER_PRODUCT_DELETE = (id) => `${API_BASE}/api/supplier/products/${id}`;

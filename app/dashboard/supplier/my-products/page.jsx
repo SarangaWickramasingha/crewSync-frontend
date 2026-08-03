@@ -1,7 +1,8 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { MATERIAL_NAME_TO_ID } from "@/constants/registerMaps";
-import ProductCard from "@/Components/dashboard/common/ProductCard";
+import { API_SUPPLIER_PRODUCTS, API_SUPPLIER_PRODUCT_DELETE } from "@/config/api";
+import ProductCard from "@/Components/dashboard/materialSupplier/ProductCard";
 
 const MATERIAL_TITLES = Object.keys(MATERIAL_NAME_TO_ID);
 
@@ -14,28 +15,80 @@ const C = {
   border: 'rgba(26,29,35,0.1)', radius: '14px', radiusSm: '8px',
 };
 
-const INITIAL_PRODUCTS = [
-  { id: 1, icon: '🏗️', title: 'Cement', description: 'High-strength cement suitable for heavy-duty structural concrete and masonry work.', price: 'LKR 2,850', stockType: 'in', stockNote: '240 bags' },
-  { id: 2, icon: '🔩', title: 'Gravel / Metal', description: 'Crushed stone aggregate for concrete mixing and foundation work.', price: 'LKR 890 / m', stockType: 'low', stockNote: '18 units' },
-  { id: 3, icon: '🪣', title: 'Sand', description: 'Washed and screened river sand per 1 cube for high quality mortar and plastering.', price: 'LKR 12,000', stockType: 'in', stockNote: '' },
-];
-
 export default function MyProductsPage() {
-  const [products, setProducts] = useState(INITIAL_PRODUCTS);
+  const [products, setProducts] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [newProduct, setNewProduct] = useState({ title: MATERIAL_TITLES[0] || 'Sand', description: '', price: '', stockNote: '' });
   const [editingId, setEditingId] = useState(null);
   const [editForm, setEditForm] = useState({ price: '', stockType: 'in', stockNote: '', description: '' });
+  const [busy, setBusy] = useState(false);
 
-  function removeProduct(id) {
-    if (window.confirm('Remove this product?')) setProducts(p => p.filter(x => x.id !== id));
+  useEffect(() => {
+    let isMounted = true;
+    async function loadProducts() {
+      try {
+        const res = await fetch(API_SUPPLIER_PRODUCTS, { method: 'GET', credentials: 'include' });
+        const data = await res.json();
+        if (isMounted && data.success) setProducts(data.products);
+      } catch (err) {
+        console.error('Failed to load products:', err);
+      } finally {
+        if (isMounted) setLoading(false);
+      }
+    }
+    loadProducts();
+    return () => { isMounted = false; };
+  }, []);
+
+  async function removeProduct(id) {
+    if (!window.confirm('Remove this product?')) return;
+    try {
+      const res = await fetch(API_SUPPLIER_PRODUCT_DELETE(id), { method: 'DELETE', credentials: 'include' });
+      const data = await res.json();
+      if (data.success) setProducts(p => p.filter(x => x.id !== id));
+    } catch (err) {
+      console.error(err);
+    }
   }
 
-  function addProduct() {
+  async function addProduct() {
     if (!newProduct.title || !newProduct.price) return;
-    setProducts(p => [...p, { ...newProduct, id: Date.now(), icon: '📦', stockType: 'in' }]);
-    setNewProduct({ title: MATERIAL_TITLES[0] || 'Sand', description: '', price: '', stockNote: '' });
-    setShowAdd(false);
+    const materialId = MATERIAL_NAME_TO_ID[newProduct.title];
+    const priceNum = parseFloat(newProduct.price.replace(/[^0-9.]/g, ''));
+    const qtyNum = parseInt(newProduct.stockNote.replace(/[^0-9]/g, '')) || 0;
+
+    setBusy(true);
+    try {
+      const res = await fetch(API_SUPPLIER_PRODUCTS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          material_id: materialId,
+          unit_price: priceNum,
+          stock_qty: qtyNum,
+          description: newProduct.description,
+          is_available: true,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        // Reload full list to get correctly formatted fields from server
+        const res2 = await fetch(API_SUPPLIER_PRODUCTS, { method: 'GET', credentials: 'include' });
+        const data2 = await res2.json();
+        if (data2.success) setProducts(data2.products);
+        setNewProduct({ title: MATERIAL_TITLES[0] || 'Sand', description: '', price: '', stockNote: '' });
+        setShowAdd(false);
+      } else {
+        alert(data.message || 'Failed to add product.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setBusy(false);
+    }
   }
 
   function startEdit(p) {
@@ -47,16 +100,51 @@ export default function MyProductsPage() {
     setEditingId(null);
   }
 
-  function saveEdit(id) {
-    setProducts(prev => prev.map(p => p.id === id
-      ? { ...p, price: editForm.price, stockType: editForm.stockType, stockNote: editForm.stockNote.trim(), description: editForm.description.trim() }
-      : p));
-    setEditingId(null);
+  async function saveEdit(id) {
+    const product = products.find(p => p.id === id);
+    if (!product) return;
+
+    const priceNum = parseFloat(editForm.price.replace(/[^0-9.]/g, ''));
+    const qtyNum = parseInt(editForm.stockNote.replace(/[^0-9]/g, '')) || 0;
+    const isAvailable = editForm.stockType !== 'out';
+
+    setBusy(true);
+    try {
+      const res = await fetch(API_SUPPLIER_PRODUCTS, {
+        method: 'POST',
+        credentials: 'include',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          material_id: product.material_id,
+          unit_price: priceNum,
+          stock_qty: qtyNum,
+          description: editForm.description,
+          is_available: isAvailable,
+        }),
+      });
+      const data = await res.json();
+      if (data.success) {
+        const res2 = await fetch(API_SUPPLIER_PRODUCTS, { method: 'GET', credentials: 'include' });
+        const data2 = await res2.json();
+        if (data2.success) setProducts(data2.products);
+        setEditingId(null);
+      } else {
+        alert(data.message || 'Failed to update product.');
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Could not reach the server. Please try again.');
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (loading) {
+    return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading products…</div>;
   }
 
   return (
     <div style={{ fontFamily: "'DM Sans', sans-serif" }}>
-      {/* Header */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.8rem', flexWrap: 'wrap', gap: '12px' }}>
         <div>
           <h2 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1.3rem', fontWeight: 700, color: C.slate }}>My Products</h2>
@@ -68,7 +156,6 @@ export default function MyProductsPage() {
         </button>
       </div>
 
-      {/* Add Product Form */}
       {showAdd && (
         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.5rem', marginBottom: '1.5rem', boxShadow: '0 1px 3px rgba(26,29,35,0.04)' }}>
           <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '0.95rem', fontWeight: 700, marginBottom: '1rem' }}>New Product</h3>
@@ -87,9 +174,9 @@ export default function MyProductsPage() {
             </div>
 
             {[
-              { key: 'description', label: 'Description',   placeholder: 'e.g. Durable weather-resistant material' },
-              { key: 'price',       label: 'Unit Price',    placeholder: 'e.g. LKR 1,500' },
-              { key: 'stockNote',   label: 'Available Quantity', placeholder: 'e.g. 100 units' },
+              { key: 'description', label: 'Description', placeholder: 'e.g. Durable weather-resistant material' },
+              { key: 'price', label: 'Unit Price', placeholder: 'e.g. 1500' },
+              { key: 'stockNote', label: 'Available Quantity', placeholder: 'e.g. 100' },
             ].map(f => (
               <div key={f.key}>
                 <label style={{ display: 'block', fontSize: '0.78rem', fontWeight: 600, color: C.slateLight, marginBottom: '5px' }}>{f.label}</label>
@@ -99,13 +186,14 @@ export default function MyProductsPage() {
             ))}
           </div>
           <div style={{ display: 'flex', gap: '8px', marginTop: '1rem' }}>
-            <button onClick={addProduct} style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Add</button>
+            <button onClick={addProduct} disabled={busy} style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 20px', borderRadius: '8px', fontSize: '0.85rem', fontWeight: 600, cursor: busy ? 'wait' : 'pointer', opacity: busy ? 0.6 : 1 }}>
+              {busy ? 'Saving…' : 'Add'}
+            </button>
             <button onClick={() => setShowAdd(false)} style={{ background: 'none', border: `1px solid ${C.border}`, padding: '8px 16px', borderRadius: '8px', fontSize: '0.85rem', cursor: 'pointer', color: C.slateLight }}>Cancel</button>
           </div>
         </div>
       )}
 
-      {/* Product Grid */}
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(230px, 1fr))', gap: '16px' }}>
         {products.map(p => (
           <ProductCard

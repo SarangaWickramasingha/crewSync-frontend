@@ -26,9 +26,10 @@ export default function ProductCard({
 
   return (
     <div className="bg-white border border-black/10 rounded-2xl p-4.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
-      {/* <div className="w-full h-[88px] bg-gradient-to-br from-[#EEECEA] to-[#F7F6F2] rounded-lg flex items-center justify-center text-3xl mb-3.5">
-        {product.icon || '📦'}
-      </div> */}
+      {/* this code below we can or not add images to cards */}
+      <div className="w-full h-[88px] bg-gradient-to-br from-[#EEECEA] to-[#F7F6F2] rounded-lg flex items-center justify-center mb-3.5 overflow-hidden">
+        <img src={`/materials/${product.material_id || 9}.svg`} alt={product.title} className="w-14 h-14 object-contain" />
+      </div>
 
       <div className="text-[0.98rem] font-bold text-[#1A1D23] mb-1 leading-snug">
         {title}
@@ -66,7 +67,7 @@ export default function ProductCard({
                   onClick={() => onStartEdit(product)}
                   className="flex-1 bg-[#FFF3E0] text-[#B85A00] border border-[#E8820C]/25 rounded-md px-3 py-1.5 text-xs font-semibold hover:bg-[#FFE8CC] transition-colors cursor-pointer"
                 >
-                  ✎ Edit
+                  Edit Details
                 </button>
               )}
               {onRemoveProduct && (
