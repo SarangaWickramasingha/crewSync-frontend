@@ -3,67 +3,65 @@
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/Components/layout/Navbar';
-import { API_AUTH_LOGIN } from '@/config/api';
+import Navbar from '@/src/components/layout/Navbar';
+import { loginSchema } from '@/src/lib/validators/auth';
+import { useLogin } from '@/src/hooks/auth/useAuth';
 
 export default function LoginPage() {
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
-    const [email, setEmail] = useState('');
-    const [password, setPassword] = useState('');
-    const [remember, setRemember] = useState(false);
     const [error, setError] = useState('');
     const [mounted, setMounted] = useState(false);
+
+    const {
+        register,
+        handleSubmit,
+        formState: { errors },
+    } = useForm({
+        resolver: zodResolver(loginSchema),
+        defaultValues: { email: '', password: '', remember: false },
+    });
+
+    const loginMutation = useLogin();
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
         return () => clearTimeout(t);
     }, []);
 
-    const handleSignIn = async (e) => {
-        e.preventDefault();
-        setError('');
-        if (!email || !password) { setError('Please fill in all fields.'); return; }
-        if (!email.includes('@')) { setError('Please enter a valid email address.'); return; }
-        try {
-            const res = await fetch(
-                API_AUTH_LOGIN,
-                {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ email, password })
-                }
-            );
-            const data = await res.json();
-            if (data.success) {
-
-                login({
-                    user_id: data.user.user_id,
-                    name: data.user.name,
-                    role: data.user.role
-                });
-                // Redirect based on role
-                if (data.user.role === 'property_owner') {
-                    window.location.href = '/dashboard/propertyowner';
-                } else if (data.user.role === 'admin') {
-                    window.location.href = '/dashboard/admin';
-                } else if (data.user.role === 'service_provider') {
-                    window.location.href = '/dashboard/serviceprovider';
-                } else if (data.user.role === 'material_supplier') {
-                    window.location.href = '/dashboard/supplier';
-                } else {
-                    window.location.href = '/home';
-                }
-            } else {
-                setError(data.message || 'Login failed');
-            }
-        } catch (err) {
-            console.error('Error:', err);
-            setError('Cannot connect to server. Please try again.');
+    const redirectByRole = (role) => {
+        if (role === 'property_owner') {
+            window.location.assign('/dashboard/propertyowner');
+        } else if (role === 'admin') {
+            window.location.assign('/dashboard/admin');
+        } else if (role === 'service_provider') {
+            window.location.assign('/dashboard/serviceprovider');
+        } else if (role === 'material_supplier') {
+            window.location.assign('/dashboard/supplier');
+        } else {
+            window.location.assign('/home');
         }
     };
+
+    const handleSignIn = handleSubmit(async (values) => {
+        setError('');
+        try {
+            const data = await loginMutation.mutateAsync({ email: values.email, password: values.password });
+
+            login({
+                user_id: data.user.user_id,
+                name: data.user.name,
+                role: data.user.role
+            });
+            redirectByRole(data.user.role);
+        } catch (err) {
+            console.error('Error:', err);
+            setError(err.message || 'Cannot connect to server. Please try again.');
+        }
+    });
     return (
         <>
             <Navbar variant="auth" />
@@ -96,7 +94,7 @@ export default function LoginPage() {
                                 Build smarter<br />Connect faster
                             </p>
                             <p className="text-white/60 text-sm leading-relaxed max-w-xs">
-                                Sri Lanka's construction coordination platform - connecting property owners,
+                                Sri Lanka&apos;s construction coordination platform - connecting property owners,
                                 service providers, and suppliers in one place.
                             </p>
 
@@ -157,12 +155,14 @@ export default function LoginPage() {
                                         <input
                                             type="email"
                                             placeholder="you@example.com"
-                                            value={email}
-                                            onChange={e => setEmail(e.target.value)}
+                                            {...register('email')}
                                             className="w-full px-3 py-2.5 rounded-lg text-[0.9rem] outline-none transition-all border text-[#1A1D23]"
                                             onFocus={e => { e.target.style.borderColor = '#E8820C'; e.target.style.boxShadow = '0 0 0 3px rgba(232,130,12,0.1)'; }}
                                             onBlur={e => { e.target.style.borderColor = 'rgba(26,29,35,0.1)'; e.target.style.boxShadow = 'none'; }}
                                         />
+                                        {errors.email && (
+                                            <p className="mt-1.5 text-[0.78rem] text-[#C0392B]">{errors.email.message}</p>
+                                        )}
                                     </div>
 
                                     {/* Password */}
@@ -174,8 +174,7 @@ export default function LoginPage() {
                                             <input
                                                 type={showPassword ? 'text' : 'password'}
                                                 placeholder="Enter your password"
-                                                value={password}
-                                                onChange={e => setPassword(e.target.value)}
+                                                {...register('password')}
                                                 className="w-full px-3 py-2.5 pr-10 rounded-lg text-[0.9rem] outline-none transition-all border text-[#1A1D23]"
                                                 onFocus={e => { e.target.style.borderColor = '#E8820C'; e.target.style.boxShadow = '0 0 0 3px rgba(232,130,12,0.1)'; }}
                                                 onBlur={e => { e.target.style.borderColor = 'rgba(26,29,35,0.1)'; e.target.style.boxShadow = 'none'; }}
@@ -190,14 +189,16 @@ export default function LoginPage() {
                                             </button>
                                         </div>
                                     </div>
+                                    {errors.password && (
+                                        <p className="mt-1.5 text-[0.78rem] text-[#C0392B]">{errors.password.message}</p>
+                                    )}
 
                                     {/* Remember + Forgot */}
                                     <div className="flex items-center justify-between mb-5">
                                         <label className="flex items-center gap-2 text-[0.82rem] cursor-pointer text-[#4A5068]">
                                             <input
                                                 type="checkbox"
-                                                checked={remember}
-                                                onChange={e => setRemember(e.target.checked)}
+                                                {...register('remember')}
                                                 className="w-4 h-4 cursor-pointer"
                                                 style={{ accentColor: '#E8820C' }}
                                             />
@@ -211,15 +212,16 @@ export default function LoginPage() {
                                     {/* Submit */}
                                     <button
                                         type="submit"
-                                        className="w-full py-3 rounded-lg font-semibold text-[0.95rem] text-white cursor-pointer transition-all mb-5 tracking-wide bg-[#E8820C] hover:bg-[#B85A00] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)]"
+                                        disabled={loginMutation.isPending}
+                                        className="w-full py-3 rounded-lg font-semibold text-[0.95rem] text-white cursor-pointer transition-all mb-5 tracking-wide bg-[#E8820C] hover:bg-[#B85A00] hover:-translate-y-px hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)] disabled:opacity-60"
                                     >
-                                        Sign In
+                                        {loginMutation.isPending ? 'Signing in…' : 'Sign In'}
                                     </button>
 
                                     {/* Divider */}
                                     <div className="flex items-center gap-3 mb-4">
                                         <div className="flex-1 h-px bg-[rgba(26,29,35,0.1)]" />
-                                        <span className="text-[0.75rem] text-[#8A8FA8]">Don't have an account?</span>
+                                        <span className="text-[0.75rem] text-[#8A8FA8]">Don&apos;t have an account?</span>
                                         <div className="flex-1 h-px bg-[rgba(26,29,35,0.1)]" />
                                     </div>
 

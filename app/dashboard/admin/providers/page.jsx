@@ -1,12 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-import StatusPill from '@/Components/ui/StatusPill';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import StatusPill from '@/src/components/ui/StatusPill';
+import { useServiceProviders, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kandy', 'Matale', 'Galle', 'Matara', 'Nuwara Eliya',
@@ -32,37 +29,12 @@ const rating = value => {
 export default function AdminProvidersPage() {
     const router = useRouter();
 
-    const [providers, setProviders] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [updatingId, setUpdatingId] = useState(null);
+    const { data, isPending: loading, error } = useServiceProviders();
+    const updateUser = useUpdateAdminUser();
     const [search, setSearch] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
 
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/users/service-providers`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Could not load service providers.');
-                setProviders(data.providers ?? []);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const providers = data?.providers ?? [];
 
     const filtered = providers.filter(p => {
         const q = search.trim().toLowerCase();
@@ -86,25 +58,9 @@ export default function AdminProvidersPage() {
         setError('');
 
         try {
-            const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ status: next }),
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not update status.');
-
-            setProviders(prev => prev.map(p =>
-                p.user_id === userId ? { ...p, status: next } : p
-            ));
+            await updateUser.mutateAsync({ id: userId, payload: { status: next } });
         } catch (e) {
-            setError(e.message);
-        } finally {
-            setUpdatingId(null);
+            console.error(e);
         }
     };
 
@@ -119,7 +75,7 @@ export default function AdminProvidersPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 
@@ -184,9 +140,9 @@ export default function AdminProvidersPage() {
                                         </button>
                                         <button
                                             onClick={() => handleSuspend(p.user_id, p.status)}
-                                            disabled={updatingId === p.user_id}
+                                            disabled={updateUser.isPending && updateUser.variables?.id === p.user_id}
                                             className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
-                                            {updatingId === p.user_id ? '…' : p.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                                            {updateUser.isPending && updateUser.variables?.id === p.user_id ? '…' : p.status === 'suspended' ? 'Reactivate' : 'Suspend'}
                                         </button>
                                     </div>
                                 </td>

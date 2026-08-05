@@ -9,7 +9,7 @@ import {
     FolderOpen, ShoppingBag, ClipboardList, BarChart3,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/Components/layout/Navbar';
+import Navbar from '@/src/components/layout/Navbar';
 
 const NAV = {
     PROPERTY_OWNER: [

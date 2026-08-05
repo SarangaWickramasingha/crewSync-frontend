@@ -1,9 +1,9 @@
 'use client';
 
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import ProjectForum from '@/Components/dashboard/common/ProjectForum';
-import Card from '@/Components/dashboard/propertyOwner/Card';
-import { useTasks } from '@/Components/dashboard/TasksContext';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import ProjectForum from '@/src/components/dashboard/ProjectForum';
+import Card from '@/src/components/propertyOwner/Card';
+import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 
 export default function PropertyOwnerForumPage() {
   const { projectCompleted, currentProjectId } = useTasks();

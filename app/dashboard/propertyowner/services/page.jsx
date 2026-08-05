@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import RequestServiceModal from '@/Components/dashboard/RequestServiceModal';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import RequestServiceModal from '@/src/components/propertyOwner/RequestServiceModal';
 import { useAuth } from '@/context/AuthContext';
 
 const PROVIDERS = [

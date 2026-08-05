@@ -1,11 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminUsers, useDeleteAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const ROLE_LABEL = {
     property_owner: 'Property Owner',
@@ -17,37 +14,12 @@ const ROLE_LABEL = {
 export default function AdminUsersPage() {
     const router = useRouter();
 
-    const [users, setUsers] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [deletingId, setDeletingId] = useState(null);
+    const { data, isPending: loading, error } = useAdminUsers();
+    const deleteUser = useDeleteAdminUser();
     const [search, setSearch] = useState('');
     const [roleFilter, setRoleFilter] = useState('');
 
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/users`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Could not load users.');
-                setUsers(data.users ?? []);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const users = data?.users ?? [];
 
     const filtered = users.filter(u => {
         const q = search.trim().toLowerCase();
@@ -64,27 +36,10 @@ export default function AdminUsersPage() {
 
     const handleDelete = async (userId, name) => {
         if (!window.confirm(`Delete ${name}? This cannot be undone.`)) return;
-
-        setDeletingId(userId);
-        setError('');
-
         try {
-            const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not delete this user.');
-
-            // Only drop the row once the server has confirmed.
-            setUsers(prev => prev.filter(u => u.user_id !== userId));
+            await deleteUser.mutateAsync(userId);
         } catch (e) {
-            setError(e.message);
-        } finally {
-            setDeletingId(null);
+            console.error(e);
         }
     };
 
@@ -104,7 +59,7 @@ export default function AdminUsersPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 
@@ -171,9 +126,9 @@ export default function AdminUsersPage() {
                                         </button>
                                         <button
                                             onClick={() => handleDelete(u.user_id, `${u.fname} ${u.lname}`)}
-                                            disabled={deletingId === u.user_id}
+                                            disabled={deleteUser.isPending && deleteUser.variables === u.user_id}
                                             className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
-                                            {deletingId === u.user_id ? 'Deleting…' : 'Delete'}
+                                            {deleteUser.isPending && deleteUser.variables === u.user_id ? 'Deleting…' : 'Delete'}
                                         </button>
                                     </div>
                                 </td>

@@ -1,5 +1,5 @@
 "use client";
-import ProviderDashboard from "@/features/dashboard/ProviderDashboard";
+import ProviderDashboard from "@/src/components/serviceProvider/ProviderDashboard";
 
 export default function ServiceProviderOverviewPage() {
   return <ProviderDashboard />;

@@ -1,36 +1,46 @@
 'use client'
 
 import { useState } from 'react'
-import Navbar from '@/Components/layout/Navbar'
-import { API_PROJECT_CREATE } from '@/config/api';
+import Navbar from '@/src/components/layout/Navbar'
+import { useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { DISTRICTS, projectSchema, toProjectPayload } from '@/src/lib/validators/project'
+import { useCreateProject } from '@/src/hooks/project/useProject'
+
+const DEFAULT_VALUES = {
+  projName: '',
+  projStartDate: '',
+  projTargetDate: '',
+  projDistrict: '',
+  projAddress: '',
+  phases: [],
+  budget: '',
+  agreeTerms: false,
+}
 
 export default function StartProjectPage() {
   const [currentPage, setCurrentPage] = useState(1)
   const [error, setError] = useState('')
   const [success, setSuccess] = useState(false)
-  const [submitting, setSubmitting] = useState(false)
-  const [budget, setBudget] = useState('')
+  const [phaseBudgets, setPhaseBudgets] = useState({}) // { [phaseName]: budgetValue }
 
-  const [formData, setFormData] = useState({
-    projName: '',
-    projStartDate: '',
-    projTargetDate: '',
-    projDistrict: '',
-    projAddress: '',
-    phases: [],
-    phaseBudgets: {}, // { [phaseName]: budgetValue }
-    agreeTerms: false
-  })
+  const createProject = useCreateProject()
+  const submitting = createProject.isPending
+
+  const {
+    register,
+    handleSubmit,
+    watch,
+    setValue,
+    trigger,
+    formState: { errors },
+  } = useForm({ resolver: zodResolver(projectSchema), defaultValues: DEFAULT_VALUES })
+
+  const watched = watch()
 
   const today = new Date().toISOString().split('T')[0]
 
-  const districts = [
-    'Colombo','Gampaha','Kalutara','Kandy','Matale','Nuwara Eliya',
-    'Galle','Matara','Hambantota','Jaffna','Kilinochchi','Mannar',
-    'Vavuniya','Mullaitivu','Batticaloa','Ampara','Trincomalee',
-    'Kurunegala','Puttalam','Anuradhapura','Polonnaruwa','Badulla',
-    'Monaragala','Ratnapura','Kegalle'
-  ]
+  const districts = DISTRICTS
 
   const phasesList = [
     { order: 1,  name: 'Architectural Design',     desc: 'House planning, blueprints, structural drawings and approvals' },
@@ -65,58 +75,39 @@ export default function StartProjectPage() {
   }
 
   const togglePhase = (name) => {
-    setFormData(prev => {
-      const isSelected = prev.phases.includes(name)
-      const newPhases = isSelected
-        ? prev.phases.filter(p => p !== name)
-        : [...prev.phases, name]
+    const current = watched.phases ?? []
+    const isSelected = current.includes(name)
+    const newPhases = isSelected
+      ? current.filter(p => p !== name)
+      : [...current, name]
 
-      // Clean up the budget entry when a phase is unchecked
-      const newPhaseBudgets = { ...prev.phaseBudgets }
-      if (isSelected) {
-        delete newPhaseBudgets[name]
-      }
+    // Clean up the budget entry when a phase is unchecked
+    const newPhaseBudgets = { ...phaseBudgets }
+    if (isSelected) {
+      delete newPhaseBudgets[name]
+    }
 
-      return { ...prev, phases: newPhases, phaseBudgets: newPhaseBudgets }
-    })
+    setValue('phases', newPhases)
+    setPhaseBudgets(newPhaseBudgets)
   }
 
   const setPhaseBudget = (name, value) => {
-    setFormData(prev => ({
-      ...prev,
-      phaseBudgets: { ...prev.phaseBudgets, [name]: value }
-    }))
+    setPhaseBudgets(prev => ({ ...prev, [name]: value }))
   }
 
   // Sum of all per-task budgets entered so far
-  const allocatedTotal = Object.values(formData.phaseBudgets).reduce(
+  const allocatedTotal = Object.values(phaseBudgets).reduce(
     (sum, v) => sum + (Number(v) || 0), 0
   )
 
-  const validate = () => {
-    if (!formData.projName.trim()) return 'Please enter a project name.'
-    if (!formData.projDistrict) return 'Please select your project district.'
-    if (!formData.projAddress.trim()) return 'Please enter the site address.'
-    if (formData.phases.length === 0) return 'Please select at least one task.'
-    if (!formData.projStartDate) return 'Please enter a planned start date.'
-    if (!formData.projTargetDate) return 'Please enter a target completion date.'
-    if (new Date(formData.projTargetDate) <= new Date(formData.projStartDate)) return 'Target completion date must be after the start date.'
-    if (!budget || Number(budget) <= 0) return 'Please enter a valid estimated budget.'
-    if (!formData.agreeTerms) return 'Please agree to the Terms of Service to continue.'
-    return null
-  }
-
-  const nextStep = () => {
+  const nextStep = async () => {
     setError('')
     if (currentPage === 1) {
-      const err = validate()
-      if (err) {
-        setError(err)
-        return
-      }
+      const valid = await trigger()
+      if (!valid) return
       setCurrentPage(2)
     } else {
-      submitProject()
+      handleSubmit(onSubmit)()
     }
   }
 
@@ -125,30 +116,16 @@ export default function StartProjectPage() {
     setCurrentPage(1)
   }
 
-  const submitProject = async () => {
+  const onSubmit = async (values) => {
     setError('')
     setSuccess(false)
-    setSubmitting(true)
 
     try {
-        const res = await fetch(API_PROJECT_CREATE, {
-          method: "POST",
-          credentials:"include",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-          title: formData.projName,
-          total_budget: budget,
-          start_date: formData.projStartDate,
-          target_end_date: formData.projTargetDate,
-          district: formData.projDistrict,
-          address: formData.projAddress,
-          status: 'planning',
-          tasks: formData.phases,
-          task_budgets: formData.phaseBudgets
-        })
-      });
+        const data = await createProject.mutateAsync({
+          ...toProjectPayload(values),
+          task_budgets: phaseBudgets,
+        });
 
-      const data = await res.json();
       if (data.success) {
         setSuccess(true);
         setTimeout(() => {
@@ -160,13 +137,11 @@ export default function StartProjectPage() {
         } else {
           setError(data.message || "Failed to create project. Please try again.");
         }
-    
+
       } catch (err) {
       console.error(err);
       setError("Could not reach the server. Please check your connection and try again.");
-    
-      } finally {
-      setSubmitting(false)
+
       }
   }
 
@@ -281,10 +256,12 @@ export default function StartProjectPage() {
                           className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
                           type="text"
                           placeholder="e.g. My House Build – Kandy"
-                          value={formData.projName}
-                          onChange={e => setFormData({...formData, projName: e.target.value})}
+                          {...register('projName')}
                           disabled={submitting || success}
                         />
+                        {errors.projName && (
+                          <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.projName.message}</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -299,13 +276,15 @@ export default function StartProjectPage() {
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">District <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <select
                           className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] cursor-pointer"
-                          value={formData.projDistrict}
-                          onChange={e => setFormData({...formData, projDistrict: e.target.value})}
+                          {...register('projDistrict')}
                           disabled={submitting || success}
                         >
                           <option value="">Select district</option>
                           {districts.map(d => <option key={d}>{d}</option>)}
                         </select>
+                        {errors.projDistrict && (
+                          <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.projDistrict.message}</div>
+                        )}
                       </div>
                       <div className="flex flex-col gap-[5px] col-span-2">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Site Address <span className="text-[#C0392B] ml-0.5">*</span></label>
@@ -313,10 +292,12 @@ export default function StartProjectPage() {
                           className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
                           type="text"
                           placeholder="e.g. No. 12, Rajapihilla Road, Kandy"
-                          value={formData.projAddress}
-                          onChange={e => setFormData({...formData, projAddress: e.target.value})}
+                          {...register('projAddress')}
                           disabled={submitting || success}
                         />
+                        {errors.projAddress && (
+                          <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.projAddress.message}</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -327,16 +308,16 @@ export default function StartProjectPage() {
                       <span className="flex items-center gap-2">
                         <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Associated Project Tasks <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">— select all that apply <span className="text-[#C0392B]">*</span></span>
                       </span>
-                      {formData.phases.length > 0 && (
+                      {(watched.phases ?? []).length > 0 && (
                         <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">
-                          Allocated: <span className={`font-semibold ${budget && allocatedTotal > Number(budget) ? 'text-[#C0392B]' : 'text-[#1B6E3A]'}`}>LKR {fmt(allocatedTotal)}</span>
-                          {budget ? <> / LKR {fmt(budget)}</> : null}
+                          Allocated: <span className={`font-semibold ${watched.budget && allocatedTotal > Number(watched.budget) ? 'text-[#C0392B]' : 'text-[#1B6E3A]'}`}>LKR {fmt(allocatedTotal)}</span>
+                          {watched.budget ? <> / LKR {fmt(watched.budget)}</> : null}
                         </span>
                       )}
                     </div>
                     <div className="flex flex-col gap-2">
                       {phasesList.map(phase => {
-                        const checked = formData.phases.includes(phase.name)
+                        const checked = (watched.phases ?? []).includes(phase.name)
                         return (
                           <div key={phase.name} className={`border rounded-[10px] p-3 px-[14px] transition-all ${checked ? 'bg-[#FFF3E0] border-[rgba(232,130,12,0.4)]' : 'bg-[#F7F6F2] border-[rgba(26,29,35,0.1)]'}`}>
                             <label className="flex items-start gap-3 cursor-pointer">
@@ -359,7 +340,7 @@ export default function StartProjectPage() {
                                     type="number"
                                     placeholder="e.g. 250000"
                                     className="p-[8px] px-[13px] pl-[48px] border border-[rgba(26,29,35,0.15)] rounded-[7px] font-[DM_Sans] text-[0.82rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
-                                    value={formData.phaseBudgets[phase.name] ?? ''}
+                                    value={phaseBudgets[phase.name] ?? ''}
                                     onChange={e => setPhaseBudget(phase.name, e.target.value)}
                                     disabled={submitting || success}
                                   />
@@ -370,6 +351,9 @@ export default function StartProjectPage() {
                         )
                       })}
                     </div>
+                    {errors.phases && (
+                      <div className="text-[0.74rem] text-[#C0392B] mt-2">{errors.phases.message}</div>
+                    )}
                   </div>
 
                   {/* Dates */}
@@ -384,10 +368,12 @@ export default function StartProjectPage() {
                           className="p-2.5 px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
-                          value={formData.projStartDate}
-                          onChange={e => setFormData({...formData, projStartDate: e.target.value})}
+                          {...register('projStartDate')}
                           disabled={submitting || success}
                         />
+                        {errors.projStartDate && (
+                          <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.projStartDate.message}</div>
+                        )}
                       </div>
                       <div className="flex flex-col gap-[5px]">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Target Completion Date <span className="text-[#C0392B] ml-0.5">*</span></label>
@@ -395,10 +381,12 @@ export default function StartProjectPage() {
                           className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
-                          value={formData.projTargetDate}
-                          onChange={e => setFormData({...formData, projTargetDate: e.target.value})}
+                          {...register('projTargetDate')}
                           disabled={submitting || success}
                         />
+                        {errors.projTargetDate && (
+                          <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.projTargetDate.message}</div>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -411,7 +399,7 @@ export default function StartProjectPage() {
                     <div className="bg-[#1A1D23] text-white rounded-[10px] p-4 px-[18px] flex items-center justify-between mb-4">
                       <div>
                         <div className="text-[0.72rem] text-white/50 uppercase tracking-[0.5px]">Estimated Project Budget</div>
-                        <div className="font-[Syne] text-[1.6rem] font-bold text-[#E8820C]">LKR {budget ? fmt(budget) : '0'}</div>
+                        <div className="font-[Syne] text-[1.6rem] font-bold text-[#E8820C]">LKR {watched.budget ? fmt(watched.budget) : '0'}</div>
                         <div className="text-[0.75rem] text-white/45 mt-0.5">Sri Lankan Rupees</div>
                       </div>
                       <div className="text-[2rem] h-10 w-10 flex items-center justify-center bg-white/10 rounded-full p-2">
@@ -427,12 +415,14 @@ export default function StartProjectPage() {
 
                           type="number"
                           placeholder="e.g. 6500000"
-                          value={budget}
-                          onChange={e => setBudget(e.target.value)}
+                          {...register('budget')}
                           disabled={submitting || success}
                         />
                       </div>
-                      {budget && allocatedTotal > Number(budget) && (
+                      {errors.budget && (
+                        <div className="text-[0.74rem] text-[#C0392B] mt-1">{errors.budget.message}</div>
+                      )}
+                      {watched.budget && allocatedTotal > Number(watched.budget) && (
                         <div className="text-[0.74rem] text-[#C0392B] mt-1 flex items-center gap-1">
                           ⚠ Task budgets total LKR {fmt(allocatedTotal)}, which exceeds your overall estimated budget.
                         </div>
@@ -443,9 +433,12 @@ export default function StartProjectPage() {
                   {/* Agreement */}
                   <div className="mb-0">
                     <label className="flex items-start gap-[10px] cursor-pointer text-[0.85rem] text-[#1A1D23] mt-2">
-                      <input type="checkbox" checked={formData.agreeTerms} onChange={e => setFormData({...formData, agreeTerms: e.target.checked})} className="w-4 h-4 accent-[#E8820C] cursor-pointer mt-0.5 shrink-0" disabled={submitting || success} />
-                      <div>I confirm that the project details are accurate and I agree to CrewSync's <a href="/terms" className="text-[#E8820C] font-semibold no-underline">Terms of Service</a> and <a href="/privacy" className="text-[#E8820C] font-semibold no-underline">Privacy Policy</a>. <span className="text-[#C0392B]">*</span></div>
+                      <input type="checkbox" {...register('agreeTerms')} className="w-4 h-4 accent-[#E8820C] cursor-pointer mt-0.5 shrink-0" disabled={submitting || success} />
+                      <div>I confirm that the project details are accurate and I agree to CrewSync&apos;s <a href="/terms" className="text-[#E8820C] font-semibold no-underline">Terms of Service</a> and <a href="/privacy" className="text-[#E8820C] font-semibold no-underline">Privacy Policy</a>. <span className="text-[#C0392B]">*</span></div>
                     </label>
+                    {errors.agreeTerms && (
+                      <div className="text-[0.74rem] text-[#C0392B] mt-2">{errors.agreeTerms.message}</div>
+                    )}
                   </div>
                 </div>
               )}
@@ -462,12 +455,12 @@ export default function StartProjectPage() {
 
                   <div className="grid grid-cols-2 gap-3 mb-[1.4rem] max-sm:grid-cols-1">
                     {[
-                      { label: 'Project Name', value: formData.projName },
-                      { label: 'District', value: formData.projDistrict },
-                      { label: 'Site Address', value: formData.projAddress },
-                      { label: 'Start Date', value: fmtDate(formData.projStartDate) },
-                      { label: 'Target Completion', value: fmtDate(formData.projTargetDate) },
-                      { label: 'Estimated Budget', value: 'LKR ' + fmt(budget), highlight: true }
+                      { label: 'Project Name', value: watched.projName },
+                      { label: 'District', value: watched.projDistrict },
+                      { label: 'Site Address', value: watched.projAddress },
+                      { label: 'Start Date', value: fmtDate(watched.projStartDate) },
+                      { label: 'Target Completion', value: fmtDate(watched.projTargetDate) },
+                      { label: 'Estimated Budget', value: 'LKR ' + fmt(watched.budget), highlight: true }
                     ].map(item => (
                       <div key={item.label} className="bg-[#F7F6F2] rounded-[10px] p-3 px-[14px] border border-[rgba(26,29,35,0.1)]">
                         <div className="text-[0.68rem] font-semibold text-[#8A8FA8] uppercase tracking-[0.4px] mb-1">{item.label}</div>
@@ -479,14 +472,14 @@ export default function StartProjectPage() {
 
                   <div className="mb-[1.4rem]">
                     <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
-                      <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Selected Tasks ({formData.phases.length})
+                      <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Selected Tasks ({(watched.phases ?? []).length})
                     </div>
                     <div className="flex flex-col gap-2">
-                      {formData.phases.map(p => (
+                      {(watched.phases ?? []).map(p => (
                         <div key={p} className="bg-[#E6F4EC] text-[#1B6E3A] rounded-[10px] py-2 px-3 text-[0.82rem] font-semibold flex items-center justify-between">
                           <span>✓ {p}</span>
                           <span className="text-[#1A1D23]">
-                            {formData.phaseBudgets[p] ? `LKR ${fmt(formData.phaseBudgets[p])}` : 'No budget set'}
+                            {phaseBudgets[p] ? `LKR ${fmt(phaseBudgets[p])}` : 'No budget set'}
                           </span>
                         </div>
                       ))}

@@ -1,10 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminFeedback, useUpdateAdminFeedback } from '@/src/hooks/admin/useAdmin';
 
 /** MySQL tinyint(1) arrives as 0/1 or "0"/"1". */
 const bool = v => v === true || v === 1 || v === '1';
@@ -18,36 +15,12 @@ function formatDate(value) {
 }
 
 export default function AdminFeedbackPage() {
-    const [feedback, setFeedback] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const { data, isPending: loading, error } = useAdminFeedback();
+    const updateFeedback = useUpdateAdminFeedback();
     const [search, setSearch] = useState('');
     const [searchBy, setSearchBy] = useState('subject');
 
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/feedback`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Could not load feedback.');
-                setFeedback(data.feedback ?? []);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const feedback = data?.feedback ?? [];
 
     const filtered = feedback.filter(item => {
         const q = search.trim().toLowerCase();
@@ -56,31 +29,10 @@ export default function AdminFeedbackPage() {
 
     const toggleHandled = async (id, current) => {
         const next = !bool(current);
-
-        // Optimistic update so the checkbox responds immediately.
-        setFeedback(prev =>
-            prev.map(item => item.feedback_id === id ? { ...item, is_handled: next } : item)
-        );
-        setError('');
-
         try {
-            const res = await fetch(`${API_BASE}/api/admin/feedback/${id}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ is_handled: next }),
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not update this item.');
+            await updateFeedback.mutateAsync({ id, payload: { is_handled: next } });
         } catch (e) {
-            // Roll back so the UI doesn't lie about what's saved.
-            setFeedback(prev =>
-                prev.map(item => item.feedback_id === id ? { ...item, is_handled: current } : item)
-            );
-            setError(e.message);
+            console.error(e);
         }
     };
 
@@ -95,7 +47,7 @@ export default function AdminFeedbackPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 

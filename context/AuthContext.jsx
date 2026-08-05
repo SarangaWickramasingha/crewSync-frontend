@@ -1,6 +1,6 @@
 'use client';
 import { createContext, useContext, useState, useEffect } from 'react';
-import { API_AUTH_ME, API_AUTH_LOGOUT } from '@/config/api';
+import { getMe, logout } from '@/src/api/userApi';
 
 const AuthContext = createContext(null);
 
@@ -13,16 +13,8 @@ export function AuthProvider({ children }) {
     useEffect(() => {
         async function rehydrate() {
             try {
-                const res = await fetch(API_AUTH_ME, {
-                    method: 'GET',
-                    credentials: 'include',
-                });
-                const data = await res.json();
-                if (data.success) {
-                    setUser(normalizeUser(data.user));
-                } else {
-                    setUser(null);
-                }
+                const data = await getMe();
+                setUser(normalizeUser(data.user));
             } catch (err) {
                 setUser(null);
             } finally {
@@ -36,12 +28,9 @@ export function AuthProvider({ children }) {
         setUser(normalizeUser(userData));
     }
 
-    async function logout() {
+    async function logoutUser() {
         try {
-            await fetch(API_AUTH_LOGOUT, {
-                method: 'POST',
-                credentials: 'include',
-            });
+            await logout();
         } catch (err) {}
         setUser(null);
     }
@@ -52,7 +41,7 @@ export function AuthProvider({ children }) {
             loading,
             role: user?.role ?? null,
             login,
-            logout,
+            logout: logoutUser,
             isGuest:    user === null,
             isOwner:    user?.role === 'property_owner',
             isProvider: user?.role === 'service_provider',

@@ -1,12 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft, Calendar, MapPin, Wallet, User } from 'lucide-react';
-
-// Move this to a shared file (e.g. @/lib/api.js) and import it on every page.
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminProject } from '@/src/hooks/admin/useAdmin';
 
 const PROJECT_STATUS_LABEL = {
     planning: 'Planning', active: 'Active', on_hold: 'On Hold', completed: 'Completed', cancelled: 'Cancelled',
@@ -53,40 +48,14 @@ export default function AdminProjectViewPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const [project, setProject] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (!id) return;
-        const controller = new AbortController();
-
-        setLoading(true);
-        fetch(`${API_BASE}/api/admin/projects/${id}`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || 'Could not load this project.');
-                setProject(data.project);
-            })
-            .catch(err => {
-                if (err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => setLoading(false));
-
-        return () => controller.abort();
-    }, [id]);
+    const { data, isPending: loading, error } = useAdminProject(id);
 
     if (loading) return <p className="text-xs text-muted p-6">Loading…</p>;
 
+    const project = data?.project;
     if (error || !project) return (
         <div className="text-center py-20">
-            <p className="text-muted text-sm">{error || 'Project not found.'}</p>
+            <p className="text-muted text-sm">{error?.message || 'Project not found.'}</p>
             <button onClick={() => router.back()} className="mt-4 text-amber text-sm hover:underline">← Go back</button>
         </div>
     );

@@ -1,8 +1,8 @@
 'use client';
 
 import { Suspense } from 'react';
-import RegisterForm from '@/features/auth/RegisterForm';
-import Navbar from '@/Components/layout/Navbar';
+import RegisterForm from '@/src/components/auth/RegisterForm';
+import Navbar from '@/src/components/layout/Navbar';
 
 export default function RegisterPage() {
     return (

@@ -1,8 +1,8 @@
 'use client';
 
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import Card from '@/Components/dashboard/propertyOwner/Card';
-import { useTasks } from '@/Components/dashboard/TasksContext';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import Card from '@/src/components/propertyOwner/Card';
+import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 
 export default function PropertyOwnerNotificationsPage() {
   const {

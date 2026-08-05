@@ -1,10 +1,7 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { Search } from 'lucide-react';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminReviews, useDeleteAdminReview } from '@/src/hooks/admin/useAdmin';
 
 /** Clamp to 0–5 so a bad value can't throw on String.repeat. */
 function stars(value) {
@@ -22,36 +19,11 @@ function formatDate(value) {
 }
 
 export default function AdminReviewsPage() {
-    const [reviews, setReviews] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [deletingId, setDeletingId] = useState(null);
+    const { data, isPending: loading, error } = useAdminReviews();
+    const deleteReview = useDeleteAdminReview();
     const [search, setSearch] = useState('');
 
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/reviews`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Could not load reviews.');
-                setReviews(data.reviews ?? []);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const reviews = data?.reviews ?? [];
 
     const filtered = reviews.filter(r => {
         const q = search.trim().toLowerCase();
@@ -65,26 +37,10 @@ export default function AdminReviewsPage() {
 
     const handleDelete = async (reviewId) => {
         if (!window.confirm('Remove this review? This cannot be undone.')) return;
-
-        setDeletingId(reviewId);
-        setError('');
-
         try {
-            const res = await fetch(`${API_BASE}/api/admin/reviews/${reviewId}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not delete this review.');
-
-            setReviews(prev => prev.filter(r => r.review_id !== reviewId));
+            await deleteReview.mutateAsync(reviewId);
         } catch (e) {
-            setError(e.message);
-        } finally {
-            setDeletingId(null);
+            console.error(e);
         }
     };
 
@@ -97,7 +53,7 @@ export default function AdminReviewsPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 
@@ -140,9 +96,9 @@ export default function AdminReviewsPage() {
 
                             <button
                                 onClick={() => handleDelete(r.review_id)}
-                                disabled={deletingId === r.review_id}
+                                disabled={deleteReview.isPending && deleteReview.variables === r.review_id}
                                 className="px-3 py-1.5 border border-red-200 rounded-lg text-[11px] text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
-                                {deletingId === r.review_id ? 'Removing…' : 'Remove Review'}
+                                {deleteReview.isPending && deleteReview.variables === r.review_id ? 'Removing…' : 'Remove Review'}
                             </button>
                         </div>
                     ))}

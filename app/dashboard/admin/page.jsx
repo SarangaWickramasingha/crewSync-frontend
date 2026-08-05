@@ -1,13 +1,8 @@
 'use client';
 
-import { useState, useEffect } from 'react';
 import { useAuth } from '@/context/AuthContext';
 import { Users, FolderOpen, Wrench, TrendingUp } from 'lucide-react';
-
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminStats } from '@/src/hooks/admin/useAdmin';
 
 /** PHP/MySQL often returns numeric columns as strings — coerce before any maths. */
 const num = value => {
@@ -17,45 +12,17 @@ const num = value => {
 
 export default function AdminOverviewPage() {
     const { user } = useAuth();
-
-
-    const [stats, setStats] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/stats`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Failed to load stats.');
-                setStats(data.data);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const { data: stats, isPending: loading, error } = useAdminStats();
 
     const hour = new Date().getHours();
     const greeting = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
 
     if (loading) return <p className="text-xs text-muted p-6">Loading…</p>;
-    if (error || !stats) return <p className="text-xs text-red-500 p-6">{error || 'Failed to load stats.'}</p>;
+    if (error || !stats?.data) return <p className="text-xs text-red-500 p-6">{error?.message || 'Failed to load stats.'}</p>;
 
-    // Everything below reads `stats`, so it has to come after the guards above.
-    const dist = stats.userDistribution ?? {};
+    // Everything below reads `stats.data`, so it has to come after the guards above.
+    const statsData = stats.data;
+    const dist = statsData.userDistribution ?? {};
     const owners = num(dist.owners);
     const providers = num(dist.providers);
     const suppliers = num(dist.suppliers);
@@ -64,26 +31,26 @@ export default function AdminOverviewPage() {
     const STATS_DATA = [
         {
             icon: <Users className="w-7 h-7" />,
-            val: num(stats.totalUsers).toLocaleString(),
+            val: num(statsData.totalUsers).toLocaleString(),
             lbl: 'Total Users',
-            change: stats.newUsersThisWeek ? `↑ ${num(stats.newUsersThisWeek)} this week` : null,
+            change: statsData.newUsersThisWeek ? `↑ ${num(statsData.newUsersThisWeek)} this week` : null,
             up: true,
         },
         {
             icon: <FolderOpen className="w-7 h-7" />,
-            val: num(stats.activeProjects).toLocaleString(),
+            val: num(statsData.activeProjects).toLocaleString(),
             lbl: 'Active Projects',
             change: null,
         },
         {
             icon: <Wrench className="w-7 h-7" />,
-            val: num(stats.serviceProviders).toLocaleString(),
+            val: num(statsData.serviceProviders).toLocaleString(),
             lbl: 'Service Providers',
             change: null,
         },
         {
             icon: <TrendingUp className="w-7 h-7" />,
-            val: `LKR ${(num(stats.totalTransactions) / 1_000_000).toFixed(1)}M`,
+            val: `LKR ${(num(statsData.totalTransactions) / 1_000_000).toFixed(1)}M`,
             lbl: 'Total Transactions',
             change: null,
         },

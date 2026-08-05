@@ -1,10 +1,10 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import ReviewCard from '@/Components/dashboard/propertyOwner/ReviewCard';
-import WriteReviewModal from '@/Components/dashboard/propertyOwner/WriteReviewModal';
-import { useTasks } from '@/Components/dashboard/TasksContext';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import ReviewCard from '@/src/components/propertyOwner/ReviewCard';
+import WriteReviewModal from '@/src/components/propertyOwner/WriteReviewModal';
+import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 
 const DEFAULT_REVIEWS = [
   {

@@ -2,8 +2,8 @@
 
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import RequestMaterialModal from '@/Components/dashboard/RequestMaterialModal';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import RequestMaterialModal from '@/src/components/propertyOwner/RequestMaterialModal';
 import { useAuth } from '@/context/AuthContext';
 
 const PRODUCTS = [

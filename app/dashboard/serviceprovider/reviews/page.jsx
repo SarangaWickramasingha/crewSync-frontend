@@ -1,6 +1,10 @@
 "use client";
-import { useState, useEffect } from "react";
-import { API_PROVIDER_ALL_REVIEWS, API_REVIEW_PHOTOS_UPLOAD, API_REVIEW_PHOTO_DELETE } from "@/config/api";
+import { useState } from "react";
+import {
+  useAllReviews,
+  useUploadReviewPhotos,
+  useDeleteReviewPhoto,
+} from "@/src/hooks/provider/useProvider";
 
 const C = {
   amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
@@ -21,30 +25,17 @@ function initialsOf(name) {
 }
 
 export default function ReviewsPage() {
-  const [reviews, setReviews] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [reportOpen, setReportOpen] = useState({});
   const [reportText, setReportText] = useState({});
   const [lightbox, setLightbox] = useState(null);
   const [pendingFiles, setPendingFiles] = useState({}); // { reviewId: File[] }
-  const [savingId, setSavingId] = useState(null);
+  const [reportedIds, setReportedIds] = useState({}); // { reviewId: true } — UI-only flag
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadReviews() {
-      try {
-        const res = await fetch(API_PROVIDER_ALL_REVIEWS, { method: 'GET', credentials: 'include' });
-        const data = await res.json();
-        if (isMounted && data.success) setReviews(data.reviews);
-      } catch (err) {
-        console.error('Failed to load reviews:', err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    loadReviews();
-    return () => { isMounted = false; };
-  }, []);
+  const { data, isLoading } = useAllReviews();
+  const uploadPhotos = useUploadReviewPhotos();
+  const deletePhoto = useDeleteReviewPhoto();
+
+  const reviews = data?.reviews ?? [];
 
   const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1) : '0.0';
 
@@ -70,39 +61,22 @@ function handlePickPhotos(id, files) {
     const files = pendingFiles[id] || [];
     if (files.length === 0) return;
 
-    setSavingId(id);
     try {
       const formData = new FormData();
       files.forEach(file => formData.append('photos[]', file));
 
-      const res = await fetch(API_REVIEW_PHOTOS_UPLOAD(id), {
-        method: 'POST',
-        credentials: 'include',
-        body: formData,
-      });
-      const data = await res.json();
-      if (data.success) {
-        setReviews(prev => prev.map(r => r.id === id ? { ...r, photos: [...r.photos, ...data.photos] } : r));
-        setPendingFiles(prev => ({ ...prev, [id]: [] }));
-      } else {
-        alert(data.message || 'Failed to save photos.');
-      }
+      await uploadPhotos.mutateAsync({ reviewId: id, formData });
+      setPendingFiles(prev => ({ ...prev, [id]: [] }));
     } catch (err) {
       console.error(err);
-      alert('Could not reach the server. Please try again.');
-    } finally {
-      setSavingId(null);
+      alert(err.message);
     }
   }
 
   // Removing an already-saved photo still deletes immediately
   async function removeSavedPhoto(reviewId, photoId) {
     try {
-      const res = await fetch(API_REVIEW_PHOTO_DELETE(photoId), { method: 'DELETE', credentials: 'include' });
-      const data = await res.json();
-      if (data.success) {
-        setReviews(prev => prev.map(r => r.id === reviewId ? { ...r, photos: r.photos.filter(p => p.photo_id !== photoId) } : r));
-      }
+      await deletePhoto.mutateAsync(photoId);
     } catch (err) {
       console.error(err);
     }
@@ -116,12 +90,12 @@ function handlePickPhotos(id, files) {
     // TODO: wire to backend endpoint once report feature is built
     const txt = (reportText[id] || '').trim();
     if (!txt) return;
-    setReviews(prev => prev.map(r => r.id === id ? { ...r, reported: true } : r));
+    setReportedIds(prev => ({ ...prev, [id]: true }));
     setReportText(prev => ({ ...prev, [id]: '' }));
     setReportOpen(prev => ({ ...prev, [id]: false }));
   }
 
-  if (loading) {
+  if (isLoading) {
     return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading reviews…</div>;
   }
 
@@ -158,9 +132,9 @@ function handlePickPhotos(id, files) {
               <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: C.muted }}>{r.date}</div>
             </div>
 
-            <div style={{ fontSize: '0.84rem', color: C.slateLight, lineHeight: 1.6 }}>"{r.text}"</div>
+            <div style={{ fontSize: '0.84rem', color: C.slateLight, lineHeight: 1.6 }}>&ldquo;{r.text}&rdquo;</div>
 
-            {r.reported && (
+            {reportedIds[r.id] && (
               <div style={{ marginTop: '0.7rem', padding: '0.5rem 0.8rem', background: '#FDECEC', borderRadius: '8px', fontSize: '0.75rem', color: '#B3261E', fontWeight: 600 }}>
                 🚩 Reported to admin
               </div>
@@ -213,11 +187,11 @@ function handlePickPhotos(id, files) {
             <div style={{ marginTop: '0.8rem', display: 'flex', gap: '8px' }}>
               <button
                 onClick={() => handleUpdate(r.id)}
-                disabled={staged.length === 0 || savingId === r.id}
-                style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || savingId === r.id) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || savingId === r.id) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
-                {savingId === r.id ? 'Saving…' : 'Update'}
+                disabled={staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)}
+                style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                {uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id ? 'Saving…' : 'Update'}
               </button>
-              {!r.reported && (
+              {!reportedIds[r.id] && (
                 <button onClick={() => toggleReport(r.id)}
                   style={{ background: 'none', color: '#B3261E', border: '1px solid rgba(179,38,30,0.35)', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   🚩 Report
@@ -225,7 +199,7 @@ function handlePickPhotos(id, files) {
               )}
             </div>
 
-            {reportOpen[r.id] && !r.reported && (
+            {reportOpen[r.id] && !reportedIds[r.id] && (
               <div style={{ marginTop: '0.6rem', padding: '0.8rem', background: '#FDECEC', borderRadius: '8px' }}>
                 <div style={{ fontSize: '0.75rem', fontWeight: 600, color: '#B3261E', marginBottom: '6px' }}>Report this review to admin</div>
                 <textarea value={reportText[r.id] || ''} onChange={e => setReportText(prev => ({ ...prev, [r.id]: e.target.value }))}

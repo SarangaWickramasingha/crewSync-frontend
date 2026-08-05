@@ -1,12 +1,9 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-import StatusPill from '@/Components/ui/StatusPill';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import StatusPill from '@/src/components/ui/StatusPill';
+import { usePropertyOwners, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kandy', 'Matale', 'Galle', 'Matara', 'Nuwara Eliya',
@@ -18,37 +15,12 @@ const DISTRICTS = [
 export default function AdminPropertyOwnersPage() {
     const router = useRouter();
 
-    const [owners, setOwners] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
-    const [updatingId, setUpdatingId] = useState(null);
+    const { data, isPending: loading, error } = usePropertyOwners();
+    const updateUser = useUpdateAdminUser();
     const [search, setSearch] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
 
-    useEffect(() => {
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/users/property-owners`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'Could not load property owners.');
-                setOwners(data.owners ?? []);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, []);
+    const owners = data?.owners ?? [];
 
     const filtered = owners.filter(o => {
         const q = search.trim().toLowerCase();
@@ -69,29 +41,10 @@ export default function AdminPropertyOwnersPage() {
 
         if (!window.confirm(`${verb} this user?`)) return;
 
-        setUpdatingId(userId);
-        setError('');
-
         try {
-            const res = await fetch(`${API_BASE}/api/admin/users/${userId}`, {
-                method: 'PUT',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ status: next }),
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not update status.');
-
-            setOwners(prev => prev.map(o =>
-                o.user_id === userId ? { ...o, status: next } : o
-            ));
+            await updateUser.mutateAsync({ id: userId, payload: { status: next } });
         } catch (e) {
-            setError(e.message);
-        } finally {
-            setUpdatingId(null);
+            console.error(e);
         }
     };
 
@@ -106,7 +59,7 @@ export default function AdminPropertyOwnersPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-3 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 
@@ -167,9 +120,9 @@ export default function AdminPropertyOwnersPage() {
                                         </button>
                                         <button
                                             onClick={() => handleSuspend(o.user_id, o.status)}
-                                            disabled={updatingId === o.user_id}
+                                            disabled={updateUser.isPending && updateUser.variables?.id === o.user_id}
                                             className="px-2.5 py-1 border border-red-200 rounded text-[11px] text-red-500 hover:bg-red-50 transition-all disabled:opacity-50">
-                                            {updatingId === o.user_id ? '…' : o.status === 'suspended' ? 'Reactivate' : 'Suspend'}
+                                            {updateUser.isPending && updateUser.variables?.id === o.user_id ? '…' : o.status === 'suspended' ? 'Reactivate' : 'Suspend'}
                                         </button>
                                     </div>
                                 </td>

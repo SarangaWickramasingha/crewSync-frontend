@@ -3,9 +3,9 @@
 import { useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
-import Navbar from '@/Components/layout/Navbar';
-import DashboardSidebar from '@/Components/dashboard/propertyOwner/DashboardSidebar';
-import { TasksProvider } from '@/Components/dashboard/TasksContext';
+import Navbar from '@/src/components/layout/Navbar';
+import DashboardSidebar from '@/src/components/propertyOwner/DashboardSidebar';
+import { TasksProvider } from '@/src/components/propertyOwner/TasksContext';
 
 export default function PropertyOwnerLayout({ children }) {
   const { isGuest, loading } = useAuth();

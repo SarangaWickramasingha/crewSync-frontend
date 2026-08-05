@@ -1,11 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useAdminProjects } from '@/src/hooks/admin/useAdmin';
 
 const STATUS_LABEL = {
     planning: 'Planning',
@@ -34,34 +31,11 @@ const formatBudget = value => {
 export default function AdminProjectsPage() {
     const router = useRouter();
 
-    const [projects, setProjects] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState('');
+    const { data, isPending: loading, error } = useAdminProjects();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
 
-    useEffect(() => {
-        const controller = new AbortController();
-
-        fetch(`${API_BASE}/api/admin/projects`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!data.success) throw new Error(data.message || 'Could not load projects.');
-                setProjects(data.projects ?? []);
-            })
-            .catch(err => {
-                if (err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => setLoading(false));
-
-        return () => controller.abort();
-    }, []);
+    const projects = data?.projects ?? [];
 
     const filtered = projects.filter(p => {
         const q = search.trim().toLowerCase();
@@ -122,7 +96,7 @@ export default function AdminProjectsPage() {
                         {loading ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">Loading projects…</td></tr>
                         ) : error ? (
-                            <tr><td colSpan={9} className="px-4 py-5 text-rose-600">{error}</td></tr>
+                            <tr><td colSpan={9} className="px-4 py-5 text-rose-600">{error.message}</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">No projects found.</td></tr>
                         ) : filtered.map(p => (

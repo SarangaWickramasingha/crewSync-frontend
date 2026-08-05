@@ -1,11 +1,11 @@
 'use client';
-import { useState, useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import { useForm } from 'react-hook-form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { adminCreateUserSchema } from '@/src/lib/validators/auth';
+import { useCreateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -15,73 +15,41 @@ const DISTRICTS = [
     'Monaragala', 'Ratnapura', 'Kegalle',
 ];
 
+const DEFAULT_VALUES = {
+    fname: '', lname: '', email: '', password: '', confirmPassword: '',
+    contact_no: '', district: '', role: 'property_owner',
+    address: '',
+    bio: '', experience_yr: '', charge_per_day: '', willing_outside_region: false,
+    business_name: '', business_address: '', is_hardware_shop: false,
+};
+
 export default function AdminAddUserPage() {
     const router = useRouter();
-    const [role, setRole] = useState('property_owner');
+    const createUser = useCreateAdminUser();
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
-    const [saving, setSaving] = useState(false);
 
     const redirectTimer = useRef(null);
 
-    const [form, setForm] = useState({
-        // common user fields
-        fname: '', lname: '', email: '', password: '', confirmPassword: '',
-        contact_no: '', district: '',
-        // property owner
-        address: '',
-        // service provider
-        bio: '', experience_yr: '', charge_per_day: '', willing_outside_region: false,
-        // material supplier
-        business_name: '', business_address: '', is_hardware_shop: false,
-    });
+    const {
+        register, handleSubmit, watch, setValue,
+        formState: { errors, isSubmitting },
+    } = useForm({ resolver: zodResolver(adminCreateUserSchema), defaultValues: DEFAULT_VALUES });
 
     // Cancel the pending redirect if the user navigates away first.
     useEffect(() => () => clearTimeout(redirectTimer.current), []);
 
-    const set = field => e => setForm(prev => ({
-        ...prev,
-        [field]: e.target.type === 'checkbox' ? e.target.checked : e.target.value,
-    }));
+    const role = watch('role');
 
-    const validate = () => {
-        if (!form.fname.trim()) return 'First name is required.';
-        if (!form.lname.trim()) return 'Last name is required.';
-        if (!form.email.includes('@')) return 'Please enter a valid email.';
-        if (form.password.length < 8) return 'Password must be at least 8 characters.';
-        if (form.password !== form.confirmPassword) return 'Passwords do not match.';
-        if (!form.contact_no.trim()) return 'Contact number is required.';
-        if (!form.district) return 'Please select a district.';
-        if (role === 'property_owner' && !form.address.trim()) return 'Address is required.';
-        if (role === 'service_provider' && !form.experience_yr) return 'Experience is required.';
-        if (role === 'material_supplier' && !form.business_name.trim()) return 'Business name is required.';
-        return null;
-    };
-
-    const handleSubmit = async () => {
+    const onSubmit = async values => {
         setError('');
         setSuccess('');
 
-        const err = validate();
-        if (err) { setError(err); return; }
-
         // confirmPassword is a UI-only field — don't send it.
-        const { confirmPassword, ...payload } = form;
+        const { confirmPassword, role: selectedRole, ...payload } = values;
 
-        setSaving(true);
         try {
-            const res = await fetch(`${API_BASE}/api/admin/users`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify({ ...payload, role }),
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not create user.');
-
+            await createUser.mutateAsync({ ...payload, role: selectedRole });
             setSuccess('User created successfully.');
             redirectTimer.current = setTimeout(
                 () => router.push('/dashboard/admin/users'),
@@ -89,9 +57,20 @@ export default function AdminAddUserPage() {
             );
         } catch (e) {
             setError(e.message);
-            setSaving(false);
         }
     };
+
+    const fieldError = name => errors[name] && (
+        <p className="text-[11px] text-red-500 mt-1">{errors[name].message}</p>
+    );
+
+    const inputCls = "w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber";
+
+    const roles = [
+        { id: 'property_owner', label: 'Property Owner' },
+        { id: 'service_provider', label: 'Service Provider' },
+        { id: 'material_supplier', label: 'Supplier' },
+    ];
 
     return (
         <div className="max-w-2xl mx-auto">
@@ -110,7 +89,7 @@ export default function AdminAddUserPage() {
                 </div>
             </div>
 
-            <div className="bg-white border border-border rounded-xl p-6 flex flex-col gap-5">
+            <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-border rounded-xl p-6 flex flex-col gap-5">
 
                 {/* Error / Success */}
                 {error && (
@@ -130,15 +109,11 @@ export default function AdminAddUserPage() {
                         User Role
                     </p>
                     <div className="bg-[#1A1D23] rounded-xl p-1.5 flex gap-1">
-                        {[
-                            { id: 'property_owner', label: 'Property Owner' },
-                            { id: 'service_provider', label: 'Service Provider' },
-                            { id: 'material_supplier', label: 'Supplier' },
-                        ].map(r => (
+                        {roles.map(r => (
                             <button
                                 key={r.id}
                                 type="button"
-                                onClick={() => setRole(r.id)}
+                                onClick={() => setValue('role', r.id)}
                                 className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all
                                     ${role === r.id
                                         ? 'bg-amber text-white shadow-sm'
@@ -160,47 +135,47 @@ export default function AdminAddUserPage() {
                         {/* First Name */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">First Name <span className="text-red-500">*</span></label>
-                            <input value={form.fname} onChange={set('fname')} type="text" placeholder="Nimal"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('fname')} type="text" placeholder="Nimal" className={inputCls} />
+                            {fieldError('fname')}
                         </div>
                         {/* Last Name */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Last Name <span className="text-red-500">*</span></label>
-                            <input value={form.lname} onChange={set('lname')} type="text" placeholder="Kumarasinghe"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('lname')} type="text" placeholder="Kumarasinghe" className={inputCls} />
+                            {fieldError('lname')}
                         </div>
                         {/* Email */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Email <span className="text-red-500">*</span></label>
-                            <input value={form.email} onChange={set('email')} type="email" placeholder="nimal@example.com"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('email')} type="email" placeholder="nimal@example.com" className={inputCls} />
+                            {fieldError('email')}
                         </div>
                         {/* Contact */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Contact No <span className="text-red-500">*</span></label>
-                            <input value={form.contact_no} onChange={set('contact_no')} type="text" placeholder="077XXXXXXX"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('contact_no')} type="text" placeholder="077XXXXXXX" className={inputCls} />
+                            {fieldError('contact_no')}
                         </div>
                         {/* District */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">District <span className="text-red-500">*</span></label>
-                            <select value={form.district} onChange={set('district')}
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer">
+                            <select {...register('district')} className={`${inputCls} cursor-pointer`}>
                                 <option value="">Select district</option>
                                 {DISTRICTS.map(d => <option key={d} value={d}>{d}</option>)}
                             </select>
+                            {fieldError('district')}
                         </div>
                         {/* Password */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Password <span className="text-red-500">*</span></label>
-                            <input value={form.password} onChange={set('password')} type="password" placeholder="Min. 8 characters"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('password')} type="password" placeholder="Min. 8 characters" className={inputCls} />
+                            {fieldError('password')}
                         </div>
                         {/* Confirm Password */}
                         <div className="col-span-2">
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Confirm Password <span className="text-red-500">*</span></label>
-                            <input value={form.confirmPassword} onChange={set('confirmPassword')} type="password" placeholder="Re-enter password"
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                            <input {...register('confirmPassword')} type="password" placeholder="Re-enter password" className={inputCls} />
+                            {fieldError('confirmPassword')}
                         </div>
                     </div>
                 </div>
@@ -213,8 +188,9 @@ export default function AdminAddUserPage() {
                         </p>
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Address <span className="text-red-500">*</span></label>
-                            <textarea value={form.address} onChange={set('address')} placeholder="No. 12, Main Street, Kandy" rows={2}
-                                className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber resize-none" />
+                            <textarea {...register('address')} placeholder="No. 12, Main Street, Kandy" rows={2}
+                                className={`${inputCls} resize-none`} />
+                            {fieldError('address')}
                         </div>
                     </div>
                 )}
@@ -227,21 +203,20 @@ export default function AdminAddUserPage() {
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-[11px] font-semibold text-slate-light mb-1">Experience (years) <span className="text-red-500">*</span></label>
-                                <input value={form.experience_yr} onChange={set('experience_yr')} type="number" placeholder="5"
-                                    className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                                <input {...register('experience_yr')} type="number" placeholder="5" className={inputCls} />
+                                {fieldError('experience_yr')}
                             </div>
                             <div>
                                 <label className="block text-[11px] font-semibold text-slate-light mb-1">Charge Per Day (LKR)</label>
-                                <input value={form.charge_per_day} onChange={set('charge_per_day')} type="number" placeholder="3500"
-                                    className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                                <input {...register('charge_per_day')} type="number" placeholder="3500" className={inputCls} />
                             </div>
                             <div className="col-span-2">
                                 <label className="block text-[11px] font-semibold text-slate-light mb-1">Bio</label>
-                                <textarea value={form.bio} onChange={set('bio')} placeholder="Brief description about the provider…" rows={2}
-                                    className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber resize-none" />
+                                <textarea {...register('bio')} placeholder="Brief description about the provider…" rows={2}
+                                    className={`${inputCls} resize-none`} />
                             </div>
                             <div className="col-span-2 flex items-center gap-2">
-                                <input type="checkbox" id="willing" checked={form.willing_outside_region} onChange={set('willing_outside_region')}
+                                <input type="checkbox" id="willing" {...register('willing_outside_region')}
                                     className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="willing" className="text-xs text-slate cursor-pointer">Willing to work outside region</label>
                             </div>
@@ -257,18 +232,18 @@ export default function AdminAddUserPage() {
                         <div className="grid grid-cols-2 gap-3">
                             <div>
                                 <label className="block text-[11px] font-semibold text-slate-light mb-1">Business Name <span className="text-red-500">*</span></label>
-                                <input value={form.business_name} onChange={set('business_name')} type="text" placeholder="Malshan Hardware"
-                                    className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber" />
+                                <input {...register('business_name')} type="text" placeholder="Malshan Hardware" className={inputCls} />
+                                {fieldError('business_name')}
                             </div>
                             <div className="flex items-center gap-2 mt-4">
-                                <input type="checkbox" id="hardware" checked={form.is_hardware_shop} onChange={set('is_hardware_shop')}
+                                <input type="checkbox" id="hardware" {...register('is_hardware_shop')}
                                     className="w-4 h-4 cursor-pointer accent-amber" />
                                 <label htmlFor="hardware" className="text-xs text-slate cursor-pointer">Has Hardware Store</label>
                             </div>
                             <div className="col-span-2">
                                 <label className="block text-[11px] font-semibold text-slate-light mb-1">Business Address</label>
-                                <textarea value={form.business_address} onChange={set('business_address')} placeholder="No. 45, Main Street, Kandy" rows={2}
-                                    className="w-full px-3 py-2.5 border border-border rounded-lg text-xs text-slate bg-white focus:outline-none focus:border-amber resize-none" />
+                                <textarea {...register('business_address')} placeholder="No. 45, Main Street, Kandy" rows={2}
+                                    className={`${inputCls} resize-none`} />
                             </div>
                         </div>
                     </div>
@@ -277,21 +252,22 @@ export default function AdminAddUserPage() {
                 {/* ── Footer Buttons ── */}
                 <div className="flex justify-end gap-3 pt-2 border-t border-border">
                     <button
+                        type="button"
                         onClick={() => router.back()}
-                        disabled={saving}
+                        disabled={isSubmitting}
                         className="px-4 py-2.5 border border-border rounded-lg text-xs text-slate-light font-medium hover:bg-surface transition-all disabled:opacity-50"
                     >
                         Cancel
                     </button>
                     <button
-                        onClick={handleSubmit}
-                        disabled={saving}
+                        type="submit"
+                        disabled={isSubmitting}
                         className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm disabled:opacity-50 disabled:hover:translate-y-0"
                     >
-                        {saving ? 'Creating…' : 'Create User'}
+                        {isSubmitting ? 'Creating…' : 'Create User'}
                     </button>
                 </div>
-            </div>
+            </form>
         </div>
     );
 }

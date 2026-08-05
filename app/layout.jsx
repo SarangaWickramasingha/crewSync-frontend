@@ -1,6 +1,7 @@
 import './globals.css';
-import ConditionalFooter from '../Components/layout/ConditionalFooter';
+import ConditionalFooter from '@/src/components/layout/ConditionalFooter';
 import { AuthProvider } from '@/context/AuthContext';
+import QueryProvider from '@/src/components/providers/QueryProvider';
 
 export const metadata = {
     title: 'CrewSync',
@@ -14,10 +15,12 @@ export default function RootLayout({ children }) {
                 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,400&display=swap" rel="stylesheet" />
             </head>
             <body>
-                <AuthProvider>
-                    {children}
-                    <ConditionalFooter />
-                </AuthProvider>
+                <QueryProvider>
+                    <AuthProvider>
+                        {children}
+                        <ConditionalFooter />
+                    </AuthProvider>
+                </QueryProvider>
             </body>
         </html>
     );

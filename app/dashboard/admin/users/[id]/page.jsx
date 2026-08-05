@@ -1,12 +1,8 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { ArrowLeft } from 'lucide-react';
-import StatusPill from '@/Components/ui/StatusPill';
-
-const API_BASE =
-    process.env.NEXT_PUBLIC_API_BASE ??
-    'http://localhost/CrewSync-backend/backend/index.php';
+import StatusPill from '@/src/components/ui/StatusPill';
+import { useAdminUser, useDeleteAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const EM_DASH = '—';
 
@@ -44,68 +40,28 @@ export default function AdminUserViewPage() {
     const { id } = useParams();
     const router = useRouter();
 
-    const [user, setUser] = useState(null);
-    const [loading, setLoading] = useState(true);
-    const [deleting, setDeleting] = useState(false);
-    const [error, setError] = useState('');
-
-    useEffect(() => {
-        if (!id) return;
-
-        const controller = new AbortController();
-        let active = true;
-
-        fetch(`${API_BASE}/api/admin/users/${id}`, {
-            credentials: 'include',
-            signal: controller.signal,
-        })
-            .then(res => {
-                if (!res.ok) throw new Error(`Request failed (${res.status})`);
-                return res.json();
-            })
-            .then(data => {
-                if (!active) return;
-                if (!data.success) throw new Error(data.message || 'User not found.');
-                setUser(data.user);
-            })
-            .catch(err => {
-                if (active && err.name !== 'AbortError') setError(err.message);
-            })
-            .finally(() => { if (active) setLoading(false); });
-
-        return () => { active = false; controller.abort(); };
-    }, [id]);
+    const { data, isPending: loading, error } = useAdminUser(id);
+    const deleteUser = useDeleteAdminUser();
 
     const handleDelete = async () => {
+        const user = data?.user;
+        if (!user) return;
         if (!window.confirm(`Delete ${user.fname} ${user.lname}? This cannot be undone.`)) return;
 
-        setDeleting(true);
-        setError('');
-
         try {
-            const res = await fetch(`${API_BASE}/api/admin/users/${id}`, {
-                method: 'DELETE',
-                credentials: 'include',
-            });
-
-            if (!res.ok) throw new Error(`Request failed (${res.status})`);
-
-            const data = await res.json();
-            if (!data.success) throw new Error(data.message || 'Could not delete this user.');
-
+            await deleteUser.mutateAsync(id);
             router.push('/dashboard/admin/users');
         } catch (e) {
-            // Only reset on failure — on success this component unmounts.
-            setError(e.message);
-            setDeleting(false);
+            console.error(e);
         }
     };
 
     if (loading) return <p className="text-xs text-muted p-6">Loading…</p>;
 
+    const user = data?.user;
     if (!user) return (
         <div className="text-center py-20">
-            <p className="text-muted text-sm">{error || 'User not found.'}</p>
+            <p className="text-muted text-sm">{error?.message || 'User not found.'}</p>
             <button onClick={() => router.back()} className="mt-4 text-amber text-sm hover:underline">← Go back</button>
         </div>
     );
@@ -118,7 +74,7 @@ export default function AdminUserViewPage() {
 
             {error && (
                 <div className="px-3 py-2 mb-4 rounded-lg text-xs bg-red-50 text-red-600 border border-red-200">
-                    {error}
+                    {error.message}
                 </div>
             )}
 
@@ -145,9 +101,9 @@ export default function AdminUserViewPage() {
                     </button>
                     <button
                         onClick={handleDelete}
-                        disabled={deleting}
+                        disabled={deleteUser.isPending}
                         className="px-4 py-2 border border-red-200 text-red-500 text-xs font-semibold rounded-lg hover:bg-red-50 transition-all disabled:opacity-50">
-                        {deleting ? 'Deleting…' : 'Delete'}
+                        {deleteUser.isPending ? 'Deleting…' : 'Delete'}
                     </button>
                 </div>
             </div>

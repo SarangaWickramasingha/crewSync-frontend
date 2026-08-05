@@ -1,7 +1,7 @@
 import { Suspense } from 'react';
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import TaskCalendarGrid from '@/Components/dashboard/TaskCalendarGrid';
-import ProjectLoader from '@/Components/dashboard/ProjectLoader';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import TaskCalendarGrid from '@/src/components/propertyOwner/TaskCalendarGrid';
+import ProjectLoader from '@/src/components/propertyOwner/ProjectLoader';
 
 export default function PropertyOwnerTimelinePage() {
   return (

@@ -1,6 +1,5 @@
 "use client";
-import { useState, useEffect } from "react";
-import { API_PROVIDER_JOB_REQUESTS, API_PROVIDER_JOB_REQUEST_RESPOND } from "@/config/api";
+import { useJobRequests, useRespondToJobRequest } from "@/src/hooks/provider/useProvider";
 
 const C = {
   amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
@@ -34,51 +33,21 @@ function JobCard({ job, onAccept, onDecline }) {
 }
 
 export default function JobRequestsPage() {
-  const [jobs, setJobs] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [busyId, setBusyId] = useState(null);
+  const { data, isLoading } = useJobRequests();
+  const respondMutation = useRespondToJobRequest();
 
-  useEffect(() => {
-    let isMounted = true;
-    async function loadJobs() {
-      try {
-        const res = await fetch(API_PROVIDER_JOB_REQUESTS, { method: 'GET', credentials: 'include' });
-        const data = await res.json();
-        if (isMounted && data.success) setJobs(data.jobs);
-      } catch (err) {
-        console.error('Failed to load job requests:', err);
-      } finally {
-        if (isMounted) setLoading(false);
-      }
-    }
-    loadJobs();
-    return () => { isMounted = false; };
-  }, []);
+  const jobs = data?.jobs ?? [];
 
   async function respond(id, action) {
-    setBusyId(id);
     try {
-      const res = await fetch(API_PROVIDER_JOB_REQUEST_RESPOND(id), {
-        method: 'PUT',
-        credentials: 'include',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ action }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setJobs(prev => prev.map(j => j.id === id ? { ...j, status: data.status } : j));
-      } else {
-        alert(data.message || 'Something went wrong.');
-      }
+      await respondMutation.mutateAsync({ id, action });
     } catch (err) {
       console.error(err);
-      alert('Could not reach the server. Please try again.');
-    } finally {
-      setBusyId(null);
+      alert(err.message);
     }
   }
 
-  if (loading) {
+  if (isLoading) {
     return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading job requests…</div>;
   }
 

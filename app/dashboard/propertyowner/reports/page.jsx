@@ -1,10 +1,10 @@
 'use client';
 
 import { useState } from 'react';
-import DashHeader from '@/Components/dashboard/propertyOwner/DashHeader';
-import Card from '@/Components/dashboard/propertyOwner/Card';
-import StatusPill from '@/Components/dashboard/common/StatusPill';
-import { useTasks } from '@/Components/dashboard/TasksContext';
+import DashHeader from '@/src/components/propertyOwner/DashHeader';
+import Card from '@/src/components/propertyOwner/Card';
+import StatusPill from '@/src/components/ui/StatusPill';
+import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 
 export default function PropertyOwnerReportsPage() {
   const { tasks, projectCompleted, estimatedBudget, totalCost, remainingBudget } = useTasks();

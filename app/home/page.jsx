@@ -1,55 +1,33 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Navbar from "@/Components/layout/Navbar";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import Navbar from "@/src/components/layout/Navbar";
 import { useAuth } from "@/context/AuthContext";
-import { API_FEEDBACK_SUBMIT, API_STATS_SUMMARY } from "@/config/api";
+import { FEEDBACK_TYPES, feedbackSchema, toFeedbackPayload } from "@/src/lib/validators/feedback";
+import { useStatsSummary, useSubmitFeedback } from "@/src/hooks/home/useHome";
+
+const FEEDBACK_DEFAULT_VALUES = { name: "", email: "", messageType: FEEDBACK_TYPES[0], message: "" };
 
 export default function HomePage() {
   const router = useRouter();
   const { isOwner, isGuest, isProvider, isSupplier, user, loading } = useAuth();
-  const [fbName, setFbName] = useState("");
-  const [fbEmail, setFbEmail] = useState("");
-  const [fbType, setFbType] = useState("General Inquiry");
-  const [fbMessage, setFbMessage] = useState("");
+  const { data: stats, isLoading: statsLoading } = useStatsSummary();
+  const submitFeedback = useSubmitFeedback();
   const [fbSuccess, setFbSuccess] = useState(false);
-  const [fbSubmitting, setFbSubmitting] = useState(false);
   const [fbError, setFbError] = useState("");
 
-  const [stats, setStats] = useState({
-    workers: null,
-    projects: null,
-    suppliers: null,
-    avgSaved: null,
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm({
+    resolver: zodResolver(feedbackSchema),
+    defaultValues: FEEDBACK_DEFAULT_VALUES,
   });
-  const [statsLoading, setStatsLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-    async function loadStats() {
-      try {
-        const res = await fetch(API_STATS_SUMMARY);
-        const data = await res.json();
-        if (isMounted && data.success) {
-          setStats({
-            workers: data.workers,
-            projects: data.projects,
-            suppliers: data.suppliers,
-            avgSaved: data.avgSaved,
-          });
-        }
-      } catch (err) {
-        console.error("Failed to load platform stats:", err);
-      } finally {
-        if (isMounted) setStatsLoading(false);
-      }
-    }
-    loadStats();
-    return () => {
-      isMounted = false;
-    };
-  }, []);
 
   function formatStat(value) {
     if (statsLoading) return "…";
@@ -68,43 +46,16 @@ export default function HomePage() {
     return `${Math.floor(num / 1000000)}M+`;
   }
 
-  async function submitFeedback() {
-    const name = fbName.trim(),
-      email = fbEmail.trim(),
-      msg = fbMessage.trim();
-    if (!name || !email || !msg) {
-      alert("Please fill in your name, email, and message.");
-      return;
-    }
+  async function onFeedbackSubmit(values) {
     setFbError("");
-    setFbSubmitting(true);
+    setFbSuccess(false);
     try {
-      const res = await fetch(API_FEEDBACK_SUBMIT, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          name,
-          email,
-          message_type: fbType,
-          message: msg,
-        }),
-      });
-      const data = await res.json();
-      if (data.success) {
-        setFbSuccess(true);
-        setFbName("");
-        setFbEmail("");
-        setFbMessage("");
-      } else
-        setFbError(data.message || "Something went wrong. Please try again.");
+      await submitFeedback.mutateAsync(toFeedbackPayload(values));
+      setFbSuccess(true);
+      reset();
     } catch (err) {
       console.error(err);
-      setFbError(
-        "Could not reach the server. Please check your connection and try again.",
-      );
-    } finally {
-      setFbSubmitting(false);
+      setFbError(err.message);
     }
   }
 
@@ -235,13 +186,13 @@ export default function HomePage() {
         {/* STATS */}
         <div className="flex flex-wrap justify-center border-b border-border bg-white">
           {[
-            { num: formatStat(stats.workers), lbl: "Skilled Workers" },
-            { num: formatStat(stats.projects), lbl: "Projects Done" },
-            { num: formatStat(stats.suppliers), lbl: "Suppliers" },
+            { num: formatStat(stats?.workers), lbl: "Skilled Workers" },
+            { num: formatStat(stats?.projects), lbl: "Projects Done" },
+            { num: formatStat(stats?.suppliers), lbl: "Suppliers" },
             {
               num: statsLoading
                 ? "…"
-                : `${formatStat(stats.avgSaved)} LKR saved`,
+                : `${formatStat(stats?.avgSaved)} LKR saved`,
               lbl: "Avg per 100 Spent",
             },
           ].map((s, i) => (
@@ -347,33 +298,46 @@ export default function HomePage() {
               Have a question, issue, or suggestion? Send a message directly to
               the CrewSync admin team.
             </div>
-            <div className="rounded-xl border border-border bg-surface p-8">
-              {["fbName", "fbEmail"].map((id) => (
-                <div className="mb-4" key={id}>
-                  <label
-                    className="mb-1.5 block text-[0.8rem] font-semibold text-slate-light"
-                    htmlFor={id}
-                  >
-                    {id === "fbName" ? "Your Name" : "Email Address"}
-                  </label>
-                  <input
-                    type={id === "fbEmail" ? "email" : "text"}
-                    id={id}
-                    placeholder={
-                      id === "fbName"
-                        ? "e.g. Nimal Kumarasinghe"
-                        : "your@email.com"
-                    }
-                    value={id === "fbName" ? fbName : fbEmail}
-                    onChange={(e) =>
-                      id === "fbName"
-                        ? setFbName(e.target.value)
-                        : setFbEmail(e.target.value)
-                    }
-                    className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber"
-                  />
-                </div>
-              ))}
+            <form
+              onSubmit={handleSubmit(onFeedbackSubmit)}
+              className="rounded-xl border border-border bg-surface p-8"
+            >
+              <div className="mb-4">
+                <label
+                  className="mb-1.5 block text-[0.8rem] font-semibold text-slate-light"
+                  htmlFor="fbName"
+                >
+                  Your Name
+                </label>
+                <input
+                  type="text"
+                  id="fbName"
+                  placeholder="e.g. Nimal Kumarasinghe"
+                  {...register("name")}
+                  className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber"
+                />
+                {errors.name && (
+                  <p className="mt-1 text-[0.75rem] text-danger">{errors.name.message}</p>
+                )}
+              </div>
+              <div className="mb-4">
+                <label
+                  className="mb-1.5 block text-[0.8rem] font-semibold text-slate-light"
+                  htmlFor="fbEmail"
+                >
+                  Email Address
+                </label>
+                <input
+                  type="email"
+                  id="fbEmail"
+                  placeholder="your@email.com"
+                  {...register("email")}
+                  className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber"
+                />
+                {errors.email && (
+                  <p className="mt-1 text-[0.75rem] text-danger">{errors.email.message}</p>
+                )}
+              </div>
               <div className="mb-4">
                 <label
                   className="mb-1.5 block text-[0.8rem] font-semibold text-slate-light"
@@ -383,18 +347,10 @@ export default function HomePage() {
                 </label>
                 <select
                   id="fbType"
-                  value={fbType}
-                  onChange={(e) => setFbType(e.target.value)}
+                  {...register("messageType")}
                   className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber"
                 >
-                  {[
-                    "General Inquiry",
-                    "Bug Report",
-                    "Suggestion / Feature Request",
-                    "Account Issue",
-                    "Payment Problem",
-                    "Other",
-                  ].map((o) => (
+                  {FEEDBACK_TYPES.map((o) => (
                     <option key={o}>{o}</option>
                   ))}
                 </select>
@@ -410,17 +366,19 @@ export default function HomePage() {
                   id="fbMessage"
                   rows={4}
                   placeholder="Describe your issue or suggestion…"
-                  value={fbMessage}
-                  onChange={(e) => setFbMessage(e.target.value)}
+                  {...register("message")}
                   className="w-full rounded-lg border border-border bg-white px-3 py-2.5 text-[0.85rem] text-slate outline-none transition-colors focus:border-amber"
                 />
+                {errors.message && (
+                  <p className="mt-1 text-[0.75rem] text-danger">{errors.message.message}</p>
+                )}
               </div>
               <button
+                type="submit"
                 className="w-full rounded-lg bg-amber px-6 py-2.5 text-[0.88rem] font-semibold text-white transition-colors hover:bg-[#b85a00] disabled:opacity-70"
-                onClick={submitFeedback}
-                disabled={fbSubmitting}
+                disabled={submitFeedback.isPending}
               >
-                {fbSubmitting ? "Sending…" : "Send Message to Admin"}
+                {submitFeedback.isPending ? "Sending…" : "Send Message to Admin"}
               </button>
               {fbSuccess && (
                 <div className="mt-4 rounded-lg bg-primary-light p-3 text-center text-[0.88rem] font-semibold text-primary">
@@ -433,7 +391,7 @@ export default function HomePage() {
                   ⚠ {fbError}
                 </div>
               )}
-            </div>
+            </form>
           </div>
         </div>
       </div>
