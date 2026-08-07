@@ -2,6 +2,7 @@
 
 import { useState, useMemo } from 'react';
 import { useTasks } from './TasksContext';
+import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
 
 const COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
@@ -113,13 +114,14 @@ export default function TaskCalendarGrid() {
   const {
     tasks, addTask, deleteTask, updateTask, toggleTaskCompleted,
     estimatedBudget, totalCost, remainingBudget, totalAllocatedBudget,
-    projectCompleted, finishProject, unlockProject,
+    projectCompleted, finishProject, unlockProject, addNotification,
   } = useTasks();
 
   const today = useMemo(() => new Date(), []);
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [showAdd, setShowAdd] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [saving, setSaving] = useState(false);
 
   const days = useMemo(() => getWeekDays(baseDate), [baseDate]);
   const weekLabel = `${MONTHS[days[0].getMonth()]} ${days[0].getDate()} – ${MONTHS[days[6].getMonth()]} ${days[6].getDate()}, ${days[6].getFullYear()}`;
@@ -134,6 +136,30 @@ export default function TaskCalendarGrid() {
     if (task?.completed) return;
     const k = dayKey(day);
     updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
+  }
+
+  function statusToEnum(st) {
+    return { 1: 'done', 2: 'in_progress', 3: 'blocked' }[st] || 'not_started';
+  }
+
+  async function handleSave() {
+    const dirtyTasks = tasks.filter((t) => Object.keys(t.days || {}).length > 0);
+    if (!dirtyTasks.length) return;
+
+    setSaving(true);
+    try {
+      await Promise.all(dirtyTasks.map((t) =>
+        taskApi.saveDailyStatus(t.id, {
+          statuses: Object.entries(t.days).map(([date, st]) => ({ date, status: statusToEnum(st) })),
+        })
+      ));
+      addNotification(`Timeline saved — daily statuses updated for <strong>${dirtyTasks.length}</strong> task(s)`);
+    } catch (err) {
+      console.error('Failed to save timeline:', err);
+      addNotification(`Failed to save timeline: <strong>${err.message || 'server error'}</strong>`);
+    } finally {
+      setSaving(false);
+    }
   }
 
   return (
@@ -416,6 +442,17 @@ export default function TaskCalendarGrid() {
             Not started
           </div>
         </div>
+      </div>
+
+      {/* SAVE */}
+      <div className="mt-4 flex justify-end">
+        <button
+          className="rounded-lg bg-[#E8820C] px-6 py-2 font-sans text-[13px] font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+          onClick={handleSave}
+          disabled={saving || projectCompleted}
+        >
+          {saving ? 'Saving…' : 'Save'}
+        </button>
       </div>
     </>
   );

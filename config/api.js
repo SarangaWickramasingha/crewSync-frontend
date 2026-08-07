@@ -21,6 +21,7 @@ export const API_PROJECT_CREATE = `${API_BASE}/api/projects/create`;
 export const API_TASKS = `${API_BASE}/api/tasks`;
 export const API_TASK = (id) => `${API_BASE}/api/tasks/${id}`;
 export const API_TASK_FINISH = (id) => `${API_BASE}/api/tasks/${id}/toggle-finish`;
+export const API_TASK_DAILY_STATUS = (id) => `${API_BASE}/api/tasks/${id}/daily-status`;
 
 
 // ── COMMENTS ───────────────────────────────────────────────────────────────────

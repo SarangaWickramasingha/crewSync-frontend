@@ -85,16 +85,24 @@ export function TasksProvider({ children }) {
       const data = await projectApi.fetchProject(projectId);
       setCurrentProjectId(projectId);
 
-      const mapped = (data.tasks || []).map((t, idx) => ({
-        id: t.task_id,
-        name: t.task_name,
-        color: TASK_COLORS[idx % TASK_COLORS.length],
-        days: {},
-        cost: Number(t.t_cost) || 0,
-        budget: Number(t.task_budget) || 0,
-        assignedSP: null,
-        completed: !!Number(t.is_finished),
-      }));
+      const STATUS_TO_CELL = { done: 1, in_progress: 2, blocked: 3 };
+
+      const mapped = (data.tasks || []).map((t, idx) => {
+        const days = {};
+        (t.daily_statuses || []).forEach(({ date, status }) => {
+          days[date] = STATUS_TO_CELL[status] ?? 0;
+        });
+        return {
+          id: t.task_id,
+          name: t.task_name,
+          color: TASK_COLORS[idx % TASK_COLORS.length],
+          days,
+          cost: Number(t.t_cost) || 0,
+          budget: Number(t.task_budget) || 0,
+          assignedSP: null,
+          completed: !!Number(t.is_finished),
+        };
+      });
 
       setTasks(mapped);
       setNextId(mapped.length + 100);
