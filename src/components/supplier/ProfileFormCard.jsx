@@ -8,7 +8,7 @@ export default function ProfileFormCard({ title, schema, defaultValues, fields, 
   const {
     register,
     handleSubmit,
-    formState: { errors },
+    formState: { errors, isDirty },
   } = useForm({
     resolver: zodResolver(schema),
     defaultValues,
@@ -36,7 +36,11 @@ export default function ProfileFormCard({ title, schema, defaultValues, fields, 
         ))}
       </div>
 
-      <button type="submit" disabled={isSubmitting} className={`${primaryBtnClass} w-full mt-4`}>
+      <button
+        type="submit"
+        disabled={!isDirty || isSubmitting}
+        className={`${primaryBtnClass} w-full mt-4`}
+      >
         {isSubmitting ? 'Saving…' : submitLabel}
       </button>
     </form>

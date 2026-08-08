@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/src/components/layout/Navbar';
+import { useOrders } from '@/src/hooks/supplier/useSupplierOrders';
 
 const NAV = {
     PROPERTY_OWNER: [
@@ -52,7 +53,7 @@ const NAV = {
             section: 'Store',
             items: [
                 { href: '/dashboard/supplier/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
-                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
+                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', dynamicBadgeKey: 'supplierOrders' },
             ],
         },
         {
@@ -116,6 +117,10 @@ export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const isSupplier = (role ?? '').toUpperCase() === 'MATERIAL_SUPPLIER';
+    const { data: supplierOrders = [] } = useOrders({ enabled: isSupplier });
+    const supplierOrdersCount = supplierOrders.length;
+
     // Guest (not logged in) pages render their own navbar/sidebar
     if (!user) {
         return <>{children}</>;
@@ -135,7 +140,7 @@ export default function DashboardLayout({ children }) {
     return (
         <>
             <Navbar />
-            <div className="flex h-full">
+            <div className="flex h-[calc(100vh-60px)]">
 
                 {/* Mobile overlay */}
                 {sidebarOpen && (
@@ -192,9 +197,9 @@ export default function DashboardLayout({ children }) {
                                                     <Icon size={16} className={item.iconColor} strokeWidth={2.2} />
                                                 </div>
                                                 <span className="flex-1">{item.label}</span>
-                                                {item.badge && (
+                                                {(item.badge || (item.dynamicBadgeKey === 'supplierOrders' && supplierOrdersCount > 0)) && (
                                                     <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
-                                                        {item.badge}
+                                                        {item.dynamicBadgeKey === 'supplierOrders' ? supplierOrdersCount : item.badge}
                                                     </span>
                                                 )}
                                             </Link>

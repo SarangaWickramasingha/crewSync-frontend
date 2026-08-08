@@ -1,18 +1,14 @@
 'use client';
-import { useState } from 'react';
 import useOrdersFilters from '@/src/hooks/supplier/useOrdersFilters';
+import { useOrders, useUpdateOrderStatus } from '@/src/hooks/supplier/useSupplierOrders';
 import PageHeader from '@/src/components/supplier/PageHeader';
 import OrdersTable from '@/src/components/supplier/OrdersTable';
 import OrdersFilterPanel, { OrdersFilterToggle } from '@/src/components/supplier/OrdersFilterBar';
-
-const INITIAL_ORDERS = [
-  { id: '#ORD-041', customer: 'Nimal Kumarasinghe', items: 'Cement × 20 bags', amount: 'LKR 57,000', date: 'Jul 4, 2026', status: 'New' },
-  { id: '#ORD-040', customer: 'Chamari Perera', items: 'Steel Rod × 50m', amount: 'LKR 44,500', date: 'Jul 2, 2026', status: 'Processing' },
-  { id: '#ORD-039', customer: 'Lasith Fernando', items: 'Sand × 2 cubes', amount: 'LKR 24,000', date: 'Jun 28, 2026', status: 'Delivered' },
-];
+import EmptyState from '@/src/components/supplier/EmptyState';
 
 export default function SupplierOrdersPage() {
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const { data: orders = [], isLoading, isError, error } = useOrders();
+  const updateStatus = useUpdateOrderStatus();
 
   const {
     filters,
@@ -29,17 +25,24 @@ export default function SupplierOrdersPage() {
     hasActiveFilter,
   } = useOrdersFilters(orders);
 
-  const acceptOrder = (id) =>
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'Processing' } : o)));
+  const respond = (id, status) =>
+    updateStatus.mutate(
+      { id, status },
+      { onError: (err) => alert(err.message) }
+    );
 
-  const rejectOrder = (id) =>
-    setOrders((prev) => prev.filter((o) => o.id !== id));
+  const acceptOrder = (id) => respond(id, 'accepted');
+  const rejectOrder = (id) => respond(id, 'rejected');
+
+  if (isLoading) {
+    return <div className="p-10 text-center text-crewMuted text-sm">Loading orders…</div>;
+  }
 
   return (
     <div className="font-dmSans max-w-7xl mx-auto animate-fadeIn">
       <PageHeader
         title="Orders"
-        subtitle="Manage incoming material orders"
+        subtitle={`Manage incoming material orders · ${orders.length} order${orders.length !== 1 ? 's' : ''}`}
         action={
           <OrdersFilterToggle
             open={open}
@@ -48,6 +51,8 @@ export default function SupplierOrdersPage() {
           />
         }
       />
+
+      {isError && <EmptyState message={error?.message || 'Failed to load orders.'} />}
 
       {open && (
         <OrdersFilterPanel

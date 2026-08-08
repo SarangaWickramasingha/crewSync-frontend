@@ -1,7 +1,9 @@
 'use client';
 import { useState } from 'react';
+import { useProfile, useUpdateProfile } from '@/src/hooks/supplier/useSupplierProfile';
 import PageHeader from '@/src/components/supplier/PageHeader';
 import ProfileFormCard from '@/src/components/supplier/ProfileFormCard';
+import EmptyState from '@/src/components/supplier/EmptyState';
 import {
   personalInfoSchema,
   businessInfoSchema,
@@ -32,12 +34,23 @@ const HARDWARE_FIELDS = [
 ];
 
 export default function SupplierProfilePage() {
-  const [hasHardware, setHasHardware] = useState(true);
+  const { data: profile, isLoading, isError, error } = useProfile();
+  const update = useUpdateProfile();
 
-  // No supplier profile endpoint exists yet — forms validate + report locally.
-  const handleSubmit = (section) => {
-    alert(`${section} updated!`);
+  const [hardwareOverride, setHardwareOverride] = useState(null);
+  const hasHardware = hardwareOverride ?? Boolean(profile?.isHardwareShop);
+
+  const save = (payload) =>
+    update.mutate(payload, { onError: (err) => alert(err.message) });
+
+  const toggleHardware = (checked) => {
+    setHardwareOverride(checked);
+    save({ isHardwareShop: checked });
   };
+
+  if (isLoading) {
+    return <div className="p-10 text-center text-crewMuted text-sm">Loading profile…</div>;
+  }
 
   return (
     <div className="animate-fadeIn">
@@ -46,32 +59,48 @@ export default function SupplierProfilePage() {
         subtitle="Update your personal details, business information, and store details"
       />
 
+      {isError && <EmptyState message={error?.message || 'Failed to load profile.'} />}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 items-start">
         <div className="flex flex-col gap-4">
           <ProfileFormCard
             title="Personal Information"
             schema={personalInfoSchema}
             defaultValues={{
-              firstName: 'Malshan',
-              lastName: 'Perera',
-              contactNumber: '+94 77 123 4567',
-              district: 'Kandy',
+              firstName: profile?.firstName || '',
+              lastName: profile?.lastName || '',
+              contactNumber: profile?.contactNumber || '',
+              district: profile?.district || DISTRICTS[0],
             }}
             fields={PERSONAL_FIELDS}
-            onSubmit={() => handleSubmit('Personal Information')}
+            onSubmit={(values) =>
+              save({
+                firstName: values.firstName,
+                lastName: values.lastName,
+                contactNumber: values.contactNumber,
+                district: values.district,
+              })
+            }
             submitLabel="Update Personal Info"
+            isSubmitting={update.isPending}
           />
 
           <ProfileFormCard
             title="Business Information"
             schema={businessInfoSchema}
             defaultValues={{
-              businessName: 'Malshan Hardware',
-              businessAddress: 'No. 45, Peradeniya Road, Kandy',
+              businessName: profile?.businessName || '',
+              businessAddress: profile?.businessAddress || '',
             }}
             fields={BUSINESS_FIELDS}
-            onSubmit={() => handleSubmit('Business Information')}
+            onSubmit={(values) =>
+              save({
+                businessName: values.businessName,
+                businessAddress: values.businessAddress,
+              })
+            }
             submitLabel="Update Business Info"
+            isSubmitting={update.isPending}
           />
         </div>
 
@@ -81,7 +110,7 @@ export default function SupplierProfilePage() {
               <input
                 type="checkbox"
                 checked={hasHardware}
-                onChange={(e) => setHasHardware(e.target.checked)}
+                onChange={(e) => toggleHardware(e.target.checked)}
                 className="mt-1 w-4 h-4 accent-[#1A56A0] cursor-pointer"
               />
               <div>
@@ -98,13 +127,20 @@ export default function SupplierProfilePage() {
               title="Hardware Store Details"
               schema={hardwareStoreSchema}
               defaultValues={{
-                storeName: 'Malshan Hardware Store',
-                brNumber: 'BR-102938',
-                address: 'No. 45, Peradeniya Road, Kandy',
+                storeName: profile?.storeName || '',
+                brNumber: profile?.brNumber || '',
+                address: profile?.address || '',
               }}
               fields={HARDWARE_FIELDS}
-              onSubmit={() => handleSubmit('Hardware Store Information')}
+              onSubmit={(values) =>
+                save({
+                  storeName: values.storeName,
+                  brNumber: values.brNumber,
+                  address: values.address,
+                })
+              }
               submitLabel="Update Hardware Info"
+              isSubmitting={update.isPending}
             />
           )}
         </div>
