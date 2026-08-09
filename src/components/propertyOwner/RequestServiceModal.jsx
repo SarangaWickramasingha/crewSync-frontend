@@ -2,19 +2,30 @@
 
 import { useState } from 'react';
 import { useTasks } from './TasksContext';
+import { createServiceRequest } from '@/src/api/serviceRequestApi';
 
-export default function RequestServiceModal({ providerName, onClose }) {
-  const { tasks, assignSP } = useTasks();
+export default function RequestServiceModal({ provider, onClose }) {
+  const { tasks } = useTasks();
   const [selected, setSelected] = useState([]);
   const [sent, setSent] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState('');
 
   function toggle(taskId) {
     setSelected((s) => (s.includes(taskId) ? s.filter((id) => id !== taskId) : [...s, taskId]));
   }
 
-  function handleSend() {
-    selected.forEach((id) => assignSP(id, providerName));
-    setSent(true);
+  async function handleSend() {
+    setSending(true);
+    setError('');
+    try {
+      await createServiceRequest({ provider_id: provider.providerId, task_id: selected });
+      setSent(true);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSending(false);
+    }
   }
 
   const hasSelectedAny = selected.length > 0;
@@ -32,7 +43,12 @@ export default function RequestServiceModal({ providerName, onClose }) {
               </div>
             </div>
             <h3 className="mb-1.5 font-syne text-base font-bold text-[#1A1D23]">Request Sent</h3>
-            <p>{providerName} has been assigned to {selected.length} task{selected.length !== 1 ? 's' : ''}.</p>
+            <p>
+              Request sent to {provider.name} for {selected.length} task{selected.length !== 1 ? 's' : ''}.
+            </p>
+            <p className="mt-1 text-[13px] text-[#8A8FA8]">
+              {provider.name} has 72 hours to respond before it expires.
+            </p>
             <button
               className="mt-4 rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white"
               onClick={onClose}
@@ -42,9 +58,9 @@ export default function RequestServiceModal({ providerName, onClose }) {
           </>
         ) : (
           <>
-            <h3 className="mb-1.5 font-syne text-base font-bold text-[#1A1D23]">Request {providerName}</h3>
+            <h3 className="mb-1.5 font-syne text-base font-bold text-[#1A1D23]">Request {provider.name}</h3>
             <p className="mb-3.5 text-left text-[13px] text-[#8A8FA8]">
-              Select which task(s) you want {providerName} to work on.
+              Select which task(s) you want {provider.name} to work on. The request expires in 72 hours.
             </p>
 
             <div className="mb-4 flex max-h-[220px] flex-col gap-1.5 overflow-y-auto text-left">
@@ -54,10 +70,8 @@ export default function RequestServiceModal({ providerName, onClose }) {
                 </p>
               )}
               {tasks.map((t) => {
-                const isAssigned = !!t.assignedSP;
-                const isAssignedToThis = t.assignedSP === providerName;
                 const isSelected = selected.includes(t.id);
-                const isDisabled = isAssigned || (hasSelectedAny && !isSelected);
+                const isDisabled = hasSelectedAny && !isSelected;
                 return (
                   <label
                     key={t.id}
@@ -72,16 +86,22 @@ export default function RequestServiceModal({ providerName, onClose }) {
                       checked={isSelected}
                       onChange={() => toggle(t.id)}
                     />
-                    <span className="flex-1">{t.name}</span>
-                    {isAssigned && (
-                      <span className="text-[11px] text-[#C0392B]">
-                        {isAssignedToThis ? 'Already assigned' : `Assigned to ${t.assignedSP}`}
-                      </span>
-                    )}
+                    <span className="flex-1">
+                      <span className="block">{t.name}</span>
+                      {t.projectName && (
+                        <span className="block text-[11px] text-[#8A8FA8]">{t.projectName}</span>
+                      )}
+                    </span>
                   </label>
                 );
               })}
             </div>
+
+            {error && (
+              <p className="mb-3 rounded-lg bg-[#FDEBEC] px-3 py-2 text-left text-[12px] text-[#C0392B]">
+                {error}
+              </p>
+            )}
 
             <div className="flex justify-end gap-2">
               <button
@@ -92,10 +112,10 @@ export default function RequestServiceModal({ providerName, onClose }) {
               </button>
               <button
                 className="rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white disabled:cursor-not-allowed disabled:opacity-50"
-                disabled={selected.length === 0}
+                disabled={selected.length === 0 || sending}
                 onClick={handleSend}
               >
-                Send Request
+                {sending ? 'Sending...' : 'Send Request'}
               </button>
             </div>
           </>

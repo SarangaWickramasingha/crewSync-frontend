@@ -35,6 +35,13 @@ export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
 
 
 
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+export const API_SEARCH_PROVIDERS = `${API_BASE}/api/search/providers`;
+
+// ── SERVICE REQUESTS ─────────────────────────────────────────────────────────
+export const API_SERVICE_REQUEST_CREATE = `${API_BASE}/api/service-requests`;
+
+
 // ── SERVICE PROVIDER ───────────────────────────────────────────────────────────
 export const API_PROVIDER_TOGGLE_AVAILABILITY = `${API_BASE}/api/provider/toggle-availability`;
 export const API_PROVIDER_AVAILABILITY = `${API_BASE}/api/provider/availability`;
