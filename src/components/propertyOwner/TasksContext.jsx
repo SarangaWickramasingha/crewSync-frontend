@@ -211,11 +211,8 @@ export function TasksProvider({ children }) {
 
   const value = {
     tasks,
-<<<<<<< Updated upstream
-=======
     isLoaded,
     projectName,
->>>>>>> Stashed changes
     addTask,
     currentProjectId,
     deleteTask,

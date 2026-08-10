@@ -136,34 +136,6 @@ export default function PropertyOwnerServicesPage() {
         </div>
       ) : (
         <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-<<<<<<< Updated upstream
-          {filteredProviders.map((p) => (
-            <div key={p.name} className="bg-white border border-black/10 rounded-xl p-5 hover:shadow-md hover:-translate-y-0.5 transition-all">
-              <div className="w-12 h-12 rounded-full flex items-center justify-center font-bold text-base mb-3" style={{ background: p.avatarBg, color: p.avatarColor }}>
-                {p.initials}
-              </div>
-              <div className="text-sm font-bold">{p.name}</div>
-              <div className="text-xs text-[#8A8FA8] mb-2">{p.role}</div>
-              <div className="text-sm mb-1">
-                <Stars rating={p.rating} />{' '}
-                <span className="text-[#8A8FA8] text-xs">{p.rating}.0 ({p.reviewCount} reviews)</span>
-              </div>
-              <div className="text-xs text-[#8A8FA8]">{p.location}</div>
-              <div className="text-sm font-semibold text-[#B85A00] mt-2">{p.price}</div>
-              <button
-                className="w-full mt-2.5 bg-[#E8820C] hover:opacity-85 text-white text-xs font-semibold py-2 rounded-md transition-colors cursor-pointer"
-                onClick={() => {
-                  if (isGuest) {
-                    router.push('/register');
-                  } else {
-                    setRequesting(p.name);
-                  }
-                }}
-              >
-                Request
-              </button>
-            </div>
-=======
           {providers.map((p) => (
             <ServiceProviderCard
               key={p.providerId}
@@ -172,7 +144,6 @@ export default function PropertyOwnerServicesPage() {
               onRequestClick={handleRequestClick}
               onSeeReviewsClick={handleSeeReviewsClick}
             />
->>>>>>> Stashed changes
           ))}
         </div>
       )}
