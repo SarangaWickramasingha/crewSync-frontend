@@ -78,8 +78,9 @@ export default function PropertyOwnerServicesPage() {
     }
   };
 
-  const handleSeeReviewsClick = () => {
-    router.push('/dashboard/propertyowner/reviews');
+  const handleSeeReviewsClick = (provider) => {
+    const id = provider?.providerId || provider?.provider_id || 1;
+    window.open(`/provider/${id}`, '_blank');
   };
 
   return (
