@@ -41,6 +41,9 @@ export const API_SEARCH_PROVIDERS = `${API_BASE}/api/search/providers`;
 // ── SERVICE REQUESTS ─────────────────────────────────────────────────────────
 export const API_SERVICE_REQUEST_CREATE = `${API_BASE}/api/service-requests`;
 
+// ── PUBLIC PROVIDER PROFILE ─────────────────────────────────────────────────
+export const API_PROVIDER_PUBLIC = (id) => `${API_BASE}/api/providers/${id}`;
+
 
 // ── SERVICE PROVIDER ───────────────────────────────────────────────────────────
 export const API_PROVIDER_TOGGLE_AVAILABILITY = `${API_BASE}/api/provider/toggle-availability`;

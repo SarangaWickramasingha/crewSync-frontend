@@ -15,7 +15,12 @@ import {
   API_PROVIDER_PROFILE,
   API_PROVIDER_SKILLS,
   API_PROVIDER_SKILL_DELETE,
+  API_PROVIDER_PUBLIC,
 } from '@/config/api';
+
+export async function fetchPublicProvider(id) {
+  return unwrap(await request.get(API_PROVIDER_PUBLIC(id)));
+}
 
 export async function fetchAvailability() {
   return unwrap(await request.get(API_PROVIDER_AVAILABILITY));
