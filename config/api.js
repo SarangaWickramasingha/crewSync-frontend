@@ -37,6 +37,7 @@ export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
 export const API_SEARCH_PROVIDERS = `${API_BASE}/api/search/providers`;
+export const API_SEARCH_MATERIALS = `${API_BASE}/api/search/materials`;
 
 // ── SERVICE REQUESTS ─────────────────────────────────────────────────────────
 export const API_SERVICE_REQUEST_CREATE = `${API_BASE}/api/service-requests`;
