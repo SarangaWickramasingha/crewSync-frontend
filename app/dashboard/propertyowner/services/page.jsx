@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import DashHeader from '@/src/components/propertyOwner/DashHeader';
 import RequestServiceModal from '@/src/components/propertyOwner/RequestServiceModal';
@@ -32,6 +32,7 @@ function mapProvider(p) {
     rating: Math.round(p.rating),
     reviewCount: p.review_count,
     location: p.district || 'Not specified',
+    contactNo: p.contact_no || '+94 77 123 4567',
     price: p.daily_rate != null ? `LKR ${Number(p.daily_rate).toLocaleString()} / day` : 'Rate on request',
   };
 }
@@ -41,15 +42,17 @@ export default function PropertyOwnerServicesPage() {
   const { isGuest } = useAuth();
   const [requesting, setRequesting] = useState(null);
   const [searchVal, setSearchVal] = useState('');
-  const [selectedDistrict, setSelectedDistrict] = useState('All Districts');
+  const [selectedDistrict, setSelectedDistrict] = useState('Colombo');
   const [selectedSkillId, setSelectedSkillId] = useState(null);
   const [providers, setProviders] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [searched, setSearched] = useState(false);
 
-  const loadProviders = useCallback(async () => {
+  const loadProviders = async () => {
     setLoading(true);
     setError(null);
+    setSearched(true);
     try {
       const params = {};
       if (searchVal.trim()) params.q = searchVal.trim();
@@ -63,12 +66,13 @@ export default function PropertyOwnerServicesPage() {
     } finally {
       setLoading(false);
     }
-  }, [searchVal, selectedDistrict, selectedSkillId]);
+  };
 
   useEffect(() => {
-    const timer = setTimeout(loadProviders, 300);
+    const timer = setTimeout(loadProviders, 0);
     return () => clearTimeout(timer);
-  }, [loadProviders]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleRequestClick = (provider, isGuest) => {
     if (isGuest) {
@@ -130,6 +134,10 @@ export default function PropertyOwnerServicesPage() {
       ) : error ? (
         <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#C0392B]">
           {error}
+        </div>
+      ) : !searched ? (
+        <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#8A8FA8]">
+          Use the search options above and click Search to find service providers.
         </div>
       ) : providers.length === 0 ? (
         <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#8A8FA8]">
