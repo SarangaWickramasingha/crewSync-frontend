@@ -6,3 +6,6 @@ export * as providerApi from '@/src/api/providerApi';
 export * as feedbackApi from '@/src/api/feedbackApi';
 export * as statsApi from '@/src/api/statsApi';
 export * as adminApi from '@/src/api/adminApi';
+export * as reportApi from '@/src/api/reportApi';
+export * as searchApi from '@/src/api/searchApi';
+export * as serviceRequestApi from '@/src/api/serviceRequestApi';

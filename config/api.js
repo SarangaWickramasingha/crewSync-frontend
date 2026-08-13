@@ -1,6 +1,6 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
 // Change this one line when deploying to production
-export const API_BASE = 'http://localhost/CrewSync/backend/index.php';
+export const API_BASE = 'http://localhost/CrewSync-backend/backend/index.php';
 
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────
@@ -35,6 +35,16 @@ export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
 
 
 
+// ── SEARCH ────────────────────────────────────────────────────────────────────
+export const API_SEARCH_PROVIDERS = `${API_BASE}/api/search/providers`;
+
+// ── SERVICE REQUESTS ─────────────────────────────────────────────────────────
+export const API_SERVICE_REQUEST_CREATE = `${API_BASE}/api/service-requests`;
+
+// ── PUBLIC PROVIDER PROFILE ─────────────────────────────────────────────────
+export const API_PROVIDER_PUBLIC = (id) => `${API_BASE}/api/providers/${id}`;
+
+
 // ── SERVICE PROVIDER ───────────────────────────────────────────────────────────
 export const API_PROVIDER_TOGGLE_AVAILABILITY = `${API_BASE}/api/provider/toggle-availability`;
 export const API_PROVIDER_AVAILABILITY = `${API_BASE}/api/provider/availability`;
@@ -58,3 +68,10 @@ export const API_PROVIDER_SKILL_DELETE = (skillId) => `${API_BASE}/api/provider/
 // ── MATERIAL SUPPLIER ───────────────────────────────────────────────────────────
 export const API_SUPPLIER_PRODUCTS = `${API_BASE}/api/supplier/products`;
 export const API_SUPPLIER_PRODUCT_DELETE = (id) => `${API_BASE}/api/supplier/products/${id}`;
+
+
+// ── REPORTS ───────────────────────────────────────────────────────────────────
+export const API_REPORTS_PROJECT = (projectId) => `${API_BASE}/api/reports/project/${projectId}`;
+export const API_REPORT_TASK_GENERATE = (taskId) => `${API_BASE}/api/reports/task/${taskId}/generate`;
+export const API_REPORT_PROJECT_GENERATE = (projectId) => `${API_BASE}/api/reports/project/${projectId}/generate`;
+export const REPORTS_BASE_URL = 'http://127.0.0.1/crewsync/reports/';
