@@ -102,6 +102,7 @@ export default function useProjectTimelineData(projectId) {
     setProjectCompleted(true);
     try {
       await projectApi.toggleFinishProject(projectId);
+      await ctx.loadFromProject(projectId);
     } catch (err) {
       console.error('Failed to finish project:', err);
     }
@@ -111,6 +112,7 @@ export default function useProjectTimelineData(projectId) {
     setProjectCompleted(false);
     try {
       await projectApi.toggleFinishProject(projectId);
+      await ctx.loadFromProject(projectId);
     } catch (err) {
       console.error('Failed to unlock project:', err);
     }
