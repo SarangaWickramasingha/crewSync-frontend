@@ -42,7 +42,7 @@ export function TasksProvider({ children }) {
         const data = await projectApi.fetchProjects();
         if (data.projects?.length > 0) {
           // 1. Try to find an active (unfinished) project first
-          const activeProj = data.projects.find(p => !p.is_finished);
+          const activeProj = data.projects.find(p => !Number(p.is_finished));
           if (activeProj) {
             await loadFromProject(activeProj.project_id);
           } else {

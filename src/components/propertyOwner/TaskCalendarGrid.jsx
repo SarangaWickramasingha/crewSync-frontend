@@ -1,7 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
-import { useTasks } from './TasksContext';
+import useProjectTimelineData from './useProjectTimelineData';
 import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
 
@@ -110,12 +110,12 @@ function AddTaskModal({ onSave, onClose }) {
   );
 }
 
-export default function TaskCalendarGrid() {
+export default function TaskCalendarGrid({ projectId = null }) {
   const {
-    tasks, addTask, deleteTask, updateTask, toggleTaskCompleted,
+    tasks, isLoaded, addTask, deleteTask, updateTask, toggleTaskCompleted,
     estimatedBudget, totalCost, remainingBudget, totalAllocatedBudget,
     projectCompleted, finishProject, unlockProject, addNotification,
-  } = useTasks();
+  } = useProjectTimelineData(projectId);
 
   const today = useMemo(() => new Date(), []);
   const [baseDate, setBaseDate] = useState(() => new Date());
@@ -178,7 +178,14 @@ export default function TaskCalendarGrid() {
         />
       )}
 
-      {/* BUDGET BAR */}
+      {!isLoaded && (
+        <div className="flex items-center justify-center rounded-xl border border-[rgba(26,29,35,0.1)] bg-white py-16 text-sm text-[#8A8FA8]">
+          Loading project…
+        </div>
+      )}
+
+      {isLoaded && (
+        <>
       <div className="mb-3.5 flex flex-wrap items-center gap-6 rounded-xl border border-[rgba(26,29,35,0.1)] bg-white px-[18px] py-3.5">
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Estimated Budget</span>
@@ -454,6 +461,8 @@ export default function TaskCalendarGrid() {
           {saving ? 'Saving…' : 'Save'}
         </button>
       </div>
+        </>
+      )}
     </>
   );
 }
