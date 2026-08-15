@@ -7,6 +7,7 @@ import RequestServiceModal from '@/src/components/propertyOwner/RequestServiceMo
 import ServiceProviderCard from '@/src/components/propertyOwner/ServiceProviderCard';
 import { useAuth } from '@/context/AuthContext';
 import { searchProviders } from '@/src/api/searchApi';
+import { fetchUnassignedTasks } from '@/src/api/taskApi';
 import { SKILL_NAME_TO_ID } from '@/constants/registerMaps';
 import { DISTRICTS } from '@/constants/districts';
 
@@ -45,6 +46,7 @@ export default function PropertyOwnerServicesPage() {
   const [selectedDistrict, setSelectedDistrict] = useState('Colombo');
   const [selectedSkillId, setSelectedSkillId] = useState(null);
   const [providers, setProviders] = useState([]);
+  const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false);
@@ -72,6 +74,25 @@ export default function PropertyOwnerServicesPage() {
     const timer = setTimeout(loadProviders, 0);
     return () => clearTimeout(timer);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchUnassignedTasks()
+      .then((data) => {
+        if (cancelled) return;
+        setUnassignedTasks(
+          (data.tasks || []).map((t) => ({
+            id: t.task_id,
+            name: t.task_name,
+            projectName: t.project_name,
+          }))
+        );
+      })
+      .catch((e) => console.error('Failed to load unassigned tasks:', e));
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   const handleRequestClick = (provider, isGuest) => {
@@ -158,7 +179,11 @@ export default function PropertyOwnerServicesPage() {
       )}
 
       {requesting && (
-        <RequestServiceModal provider={requesting} onClose={() => setRequesting(null)} />
+        <RequestServiceModal
+          provider={requesting}
+          tasks={unassignedTasks}
+          onClose={() => setRequesting(null)}
+        />
       )}
     </div>
   );

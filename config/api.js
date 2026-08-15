@@ -22,6 +22,7 @@ export const API_TASKS = `${API_BASE}/api/tasks`;
 export const API_TASK = (id) => `${API_BASE}/api/tasks/${id}`;
 export const API_TASK_FINISH = (id) => `${API_BASE}/api/tasks/${id}/toggle-finish`;
 export const API_TASK_DAILY_STATUS = (id) => `${API_BASE}/api/tasks/${id}/daily-status`;
+export const API_TASKS_UNASSIGNED = `${API_BASE}/api/tasks/unassigned`;
 
 
 // ── COMMENTS ───────────────────────────────────────────────────────────────────
