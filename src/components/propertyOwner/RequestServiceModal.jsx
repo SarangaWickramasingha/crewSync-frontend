@@ -4,8 +4,9 @@ import { useState } from 'react';
 import { useTasks } from './TasksContext';
 import { createServiceRequest } from '@/src/api/serviceRequestApi';
 
-export default function RequestServiceModal({ provider, onClose }) {
-  const { tasks } = useTasks();
+export default function RequestServiceModal({ provider, onClose, tasks: allTasks }) {
+  const { tasks: ctxTasks } = useTasks();
+  const tasks = allTasks || ctxTasks;
   const [selected, setSelected] = useState([]);
   const [sent, setSent] = useState(false);
   const [sending, setSending] = useState(false);
@@ -29,6 +30,12 @@ export default function RequestServiceModal({ provider, onClose }) {
   }
 
   const hasSelectedAny = selected.length > 0;
+
+  const groups = tasks.reduce((acc, t) => {
+    const key = t.projectName || 'Other';
+    (acc[key] = acc[key] || []).push(t);
+    return acc;
+  }, {});
 
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)] p-4">
@@ -63,38 +70,50 @@ export default function RequestServiceModal({ provider, onClose }) {
               Select which task(s) you want {provider.name} to work on. The request expires in 72 hours.
             </p>
 
-            <div className="mb-4 flex max-h-[220px] flex-col gap-1.5 overflow-y-auto text-left">
+            <div className="mb-4 max-h-[260px] overflow-y-auto pr-1 text-left">
               {tasks.length === 0 && (
                 <p className="text-left text-[13px] text-[#8A8FA8]">
-                  No tasks yet — add tasks in the Timeline tab first.
+                  No unassigned tasks available — add tasks in the Timeline tab first.
                 </p>
               )}
-              {tasks.map((t) => {
-                const isSelected = selected.includes(t.id);
-                const isDisabled = hasSelectedAny && !isSelected;
-                return (
-                  <label
-                    key={t.id}
-                    className={`flex items-center gap-2 rounded-lg border border-[rgba(26,29,35,0.1)] px-2.5 py-2 text-[13px] ${
-                      isDisabled ? 'cursor-not-allowed bg-[#F7F6F2] opacity-50' : 'cursor-pointer'
-                    }`}
-                  >
-                    <input
-                      type="checkbox"
-                      className="h-[15px] w-[15px] cursor-pointer accent-[#E8820C]"
-                      disabled={isDisabled}
-                      checked={isSelected}
-                      onChange={() => toggle(t.id)}
-                    />
-                    <span className="flex-1">
-                      <span className="block">{t.name}</span>
-                      {t.projectName && (
-                        <span className="block text-[11px] text-[#8A8FA8]">{t.projectName}</span>
-                      )}
+              {Object.entries(groups).map(([projectName, groupTasks]) => (
+                <div key={projectName} className="mb-3 last:mb-0">
+                  <div className="mb-1.5 flex items-center justify-between px-0.5">
+                    <span className="flex items-center gap-1.5 text-[12px] font-semibold text-[#4A5068]">
+                      <svg className="h-3.5 w-3.5 text-[#E8820C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" />
+                      </svg>
+                      {projectName}
                     </span>
-                  </label>
-                );
-              })}
+                    <span className="text-[11px] text-[#8A8FA8]">
+                      {groupTasks.length} task{groupTasks.length !== 1 ? 's' : ''}
+                    </span>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    {groupTasks.map((t) => {
+                      const isSelected = selected.includes(t.id);
+                      const isDisabled = hasSelectedAny && !isSelected;
+                      return (
+                        <label
+                          key={t.id}
+                          className={`flex items-center gap-2 rounded-lg border border-[rgba(26,29,35,0.1)] px-2.5 py-2 text-[13px] ${
+                            isDisabled ? 'cursor-not-allowed bg-[#F7F6F2] opacity-50' : 'cursor-pointer'
+                          }`}
+                        >
+                          <input
+                            type="checkbox"
+                            className="h-[15px] w-[15px] cursor-pointer accent-[#E8820C]"
+                            disabled={isDisabled}
+                            checked={isSelected}
+                            onChange={() => toggle(t.id)}
+                          />
+                          <span className="flex-1">{t.name}</span>
+                        </label>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
 
             {error && (
