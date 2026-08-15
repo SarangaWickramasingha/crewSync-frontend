@@ -140,8 +140,7 @@ export default function StartProjectPage() {
 
       } catch (err) {
       console.error(err);
-      setError("Could not reach the server. Please check your connection and try again.");
-
+      setError(err?.message || "Could not reach the server. Please check your connection and try again.");
       }
   }
 

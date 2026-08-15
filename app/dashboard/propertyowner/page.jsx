@@ -49,7 +49,7 @@ export default function PropertyOwnerOverviewPage() {
                     try {
                         const data = await projectApi.fetchProjects();
                         // Check if there's an active (unfinished) project
-                        const activeProject = data.projects?.find(p => !p.is_finished);
+                        const activeProject = data.projects?.find(p => !Number(p.is_finished));
                         if (activeProject) {
                             // Go to that project's timeline instead
                             router.push(`/dashboard/propertyowner/timeline?project_id=${activeProject.project_id}`);
