@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { Search } from 'lucide-react';
 import { useAdminFeedback, useUpdateAdminFeedback } from '@/src/hooks/admin/useAdmin';
+import ConfirmHandledModal from '@/src/components/admin/ConfirmHandledModal';
 
 /** MySQL tinyint(1) arrives as 0/1 or "0"/"1". */
 const bool = v => v === true || v === 1 || v === '1';
@@ -19,6 +20,7 @@ export default function AdminFeedbackPage() {
     const updateFeedback = useUpdateAdminFeedback();
     const [search, setSearch] = useState('');
     const [searchBy, setSearchBy] = useState('subject');
+    const [itemToToggle, setItemToToggle] = useState(null);
 
     const feedback = data?.feedback ?? [];
 
@@ -27,10 +29,13 @@ export default function AdminFeedbackPage() {
         return !q || item[searchBy]?.toLowerCase().includes(q);
     });
 
-    const toggleHandled = async (id, current) => {
-        const next = !bool(current);
+    const confirmToggle = async () => {
         try {
-            await updateFeedback.mutateAsync({ id, payload: { is_handled: next } });
+            await updateFeedback.mutateAsync({
+                id: itemToToggle.id,
+                payload: { is_handled: itemToToggle.next },
+            });
+            setItemToToggle(null);
         } catch (e) {
             console.error(e);
         }
@@ -76,6 +81,16 @@ export default function AdminFeedbackPage() {
                 </select>
             </div>
 
+            {itemToToggle && (
+                <ConfirmHandledModal
+                    subject={itemToToggle.subject}
+                    willBeHandled={itemToToggle.next}
+                    isSaving={updateFeedback.isPending}
+                    onCancel={() => setItemToToggle(null)}
+                    onConfirm={confirmToggle}
+                />
+            )}
+
             {/* Table */}
             <div className="bg-white border border-border rounded-xl overflow-x-auto">
                 <table className="w-full text-xs">
@@ -102,7 +117,11 @@ export default function AdminFeedbackPage() {
                                     <input
                                         type="checkbox"
                                         checked={bool(item.is_handled)}
-                                        onChange={() => toggleHandled(item.feedback_id, item.is_handled)}
+                                        onChange={() => setItemToToggle({
+                                            id: item.feedback_id,
+                                            subject: item.subject,
+                                            next: !bool(item.is_handled),
+                                        })}
                                         className="w-4 h-4 cursor-pointer accent-amber"
                                     />
                                 </td>
