@@ -6,8 +6,8 @@ export default function ProductCard({ product, onEdit, onRemove, isDeleting = fa
 
   return (
     <div className="bg-white border border-black/10 rounded-2xl p-4.5 shadow-sm hover:shadow-md hover:-translate-y-0.5 transition-all duration-150">
-      <div className="w-full h-[88px] bg-gradient-to-br from-crewSurface2 to-crewSurface rounded-lg flex items-center justify-center mb-3.5 overflow-hidden">
-        <img src={`/materials/${product.material_id || 9}.jpg`} alt={title} className="w-14 h-14 object-contain" />
+      <div className="w-full h-[140px] rounded-xl flex items-center justify-center mb-3.5 overflow-hidden bg-gradient-to-br from-orange-50 to-amber-50/50">
+        <img src={`/materials/${product.material_id || 9}.jpg`} alt={title} className="w-full h-full object-cover" />
       </div>
 
       <div className="text-[0.98rem] font-bold text-crewSlate mb-1 leading-snug">{title}</div>
