@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
 import StatusPill from '@/src/components/ui/StatusPill';
+import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
 import { useMaterialSuppliers, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
@@ -20,12 +20,19 @@ const rating = value => {
     return Number.isFinite(n) ? n.toFixed(1) : null;
 };
 
+const SEARCH_CATEGORIES = [
+    { value: 'supplier_id', label: 'Supplier ID' },
+    { value: 'user_id', label: 'User ID' },
+    { value: 'business_name', label: 'Business Name' },
+];
+
 export default function AdminMaterialSuppliersPage() {
     const router = useRouter();
 
     const { data, isPending: loading, error } = useMaterialSuppliers();
     const updateUser = useUpdateAdminUser();
     const [search, setSearch] = useState('');
+    const [searchCategory, setSearchCategory] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
 
     const suppliers = data?.suppliers ?? [];
@@ -33,11 +40,21 @@ export default function AdminMaterialSuppliersPage() {
     const filtered = suppliers.filter(s => {
         const q = search.trim().toLowerCase();
         const fullName = `${s.fname ?? ''} ${s.lname ?? ''}`.toLowerCase();
-        const matchSearch =
-            !q ||
-            fullName.includes(q) ||
-            s.district?.toLowerCase().includes(q) ||
-            s.business_name?.toLowerCase().includes(q);
+
+        const matchSearch = !q ? true : !searchCategory
+            ? (
+                fullName.includes(q) ||
+                s.district?.toLowerCase().includes(q) ||
+                s.business_name?.toLowerCase().includes(q)
+            )
+            : searchCategory === 'supplier_id'
+                ? String(s.supplier_id ?? '').toLowerCase().includes(q)
+                : searchCategory === 'user_id'
+                    ? String(s.user_id ?? '').toLowerCase().includes(q)
+                    : searchCategory === 'business_name'
+                        ? s.business_name?.toLowerCase().includes(q)
+                        : true;
+
         const matchDistrict = !districtFilter || s.district === districtFilter;
         return matchSearch && matchDistrict;
     });
@@ -70,30 +87,20 @@ export default function AdminMaterialSuppliersPage() {
                 </div>
             )}
 
-            {/* Search + Filter */}
-            <div className="flex gap-2 mb-4 flex-wrap">
-                <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, business, or district…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2.5 border border-border rounded-lg text-xs text-slate
-                            bg-white focus:outline-none focus:border-amber placeholder:text-muted"
-                    />
-                </div>
-                <select
-                    value={districtFilter}
-                    onChange={e => setDistrictFilter(e.target.value)}
-                    className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
-                >
-                    <option value="">All Districts</option>
-                    {DISTRICTS.map(d => (
-                        <option key={d} value={d}>{d}</option>
-                    ))}
-                </select>
-            </div>
+            <AdminSearchBar
+                search={search}
+                onSearchChange={setSearch}
+                searchCategory={searchCategory}
+                onCategoryChange={setSearchCategory}
+                categories={SEARCH_CATEGORIES}
+                placeholder="Search by name, business, or district…"
+                secondaryFilter={{
+                    value: districtFilter,
+                    onChange: setDistrictFilter,
+                    options: DISTRICTS,
+                    allLabel: 'All Districts',
+                }}
+            />
 
             {/* Table */}
             <div className="bg-white border border-border rounded-xl overflow-x-auto">
