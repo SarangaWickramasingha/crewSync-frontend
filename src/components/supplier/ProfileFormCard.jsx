@@ -1,4 +1,5 @@
 'use client';
+import { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import FormField from '@/src/components/supplier/FormField';
@@ -8,11 +9,18 @@ export default function ProfileFormCard({ title, schema, defaultValues, fields, 
   const {
     register,
     handleSubmit,
+    reset,
     formState: { errors },
   } = useForm({
     resolver: zodResolver(schema),
-    defaultValues,
+    values: defaultValues,
   });
+
+  useEffect(() => {
+    if (defaultValues) {
+      reset(defaultValues);
+    }
+  }, [defaultValues, reset]);
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="bg-white border border-black/10 rounded-xl p-6 shadow-sm">
