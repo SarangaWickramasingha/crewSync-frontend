@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { adminCreateUserSchema } from '@/src/lib/validators/auth';
 import { useCreateAdminUser } from '@/src/hooks/admin/useAdmin';
+import PasswordInput from '@/src/components/ui/PasswordInput';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kalutara', 'Kandy', 'Matale', 'Nuwara Eliya',
@@ -72,17 +73,21 @@ export default function AdminAddUserPage() {
         { id: 'material_supplier', label: 'Supplier' },
     ];
 
+
+    const ROLE_THEME = {
+        property_owner: { bg: 'bg-owner', hoverBg: 'hover:bg-owner-dark' },
+        service_provider: { bg: 'bg-provider', hoverBg: 'hover:bg-provider-dark' },
+        material_supplier: { bg: 'bg-supplier', hoverBg: 'hover:bg-supplier-dark' },
+    };
+
+    const theme = ROLE_THEME[role];
+
     return (
         <div className="max-w-2xl mx-auto">
 
             {/* Header */}
             <div className="flex items-center gap-3 mb-6">
-                <button
-                    onClick={() => router.back()}
-                    className="p-2 rounded-lg border border-border hover:bg-surface transition-all"
-                >
-                    <ArrowLeft className="w-4 h-4 text-slate" />
-                </button>
+
                 <div>
                     <h2 className="font-syne text-xl font-bold text-slate">Add New User</h2>
                     <p className="text-xs text-muted mt-0.5">Create a new user account</p>
@@ -115,8 +120,8 @@ export default function AdminAddUserPage() {
                                 type="button"
                                 onClick={() => setValue('role', r.id)}
                                 className={`flex-1 py-2 rounded-lg text-xs font-semibold transition-all
-                                    ${role === r.id
-                                        ? 'bg-amber text-white shadow-sm'
+            ${role === r.id
+                                        ? `${ROLE_THEME[r.id].bg} text-white shadow-sm`
                                         : 'text-white/50 hover:text-white/80'
                                     }`}
                             >
@@ -166,15 +171,28 @@ export default function AdminAddUserPage() {
                             {fieldError('district')}
                         </div>
                         {/* Password */}
+                        {/* Password */}
                         <div>
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Password <span className="text-red-500">*</span></label>
-                            <input {...register('password')} type="password" placeholder="Min. 8 characters" className={inputCls} />
+                            <PasswordInput
+                                id="password"
+                                placeholder="Min. 8 characters"
+                                value={watch('password')}
+                                onChange={(e) => setValue('password', e.target.value, { shouldValidate: true, shouldDirty: true })}
+                                showStrength
+                            />
                             {fieldError('password')}
                         </div>
+
                         {/* Confirm Password */}
                         <div className="col-span-2">
                             <label className="block text-[11px] font-semibold text-slate-light mb-1">Confirm Password <span className="text-red-500">*</span></label>
-                            <input {...register('confirmPassword')} type="password" placeholder="Re-enter password" className={inputCls} />
+                            <PasswordInput
+                                id="confirmPassword"
+                                placeholder="Re-enter password"
+                                value={watch('confirmPassword')}
+                                onChange={(e) => setValue('confirmPassword', e.target.value, { shouldValidate: true, shouldDirty: true })}
+                            />
                             {fieldError('confirmPassword')}
                         </div>
                     </div>
@@ -262,7 +280,7 @@ export default function AdminAddUserPage() {
                     <button
                         type="submit"
                         disabled={isSubmitting}
-                        className="px-6 py-2.5 bg-amber text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm disabled:opacity-50 disabled:hover:translate-y-0"
+                        className={`px-6 py-2.5 ${theme.bg} ${theme.hoverBg} text-white rounded-lg text-xs font-semibold hover:-translate-y-px transition-all shadow-sm disabled:opacity-50 disabled:hover:translate-y-0`}
                     >
                         {isSubmitting ? 'Creating…' : 'Create User'}
                     </button>
