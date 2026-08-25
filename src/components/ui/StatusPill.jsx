@@ -31,6 +31,11 @@ const STATUS_META = {
   New: { label: 'New', variant: 'amber' },
   Processing: { label: 'Processing', variant: 'blue' },
   Delivered: { label: 'Delivered', variant: 'green' },
+  Rejected: { label: 'Rejected', variant: 'red' },
+  pending: { label: 'New', variant: 'amber' },
+  accepted: { label: 'Processing', variant: 'blue' },
+  delivered: { label: 'Delivered', variant: 'green' },
+  rejected: { label: 'Rejected', variant: 'red' },
 };
 
 export default function StatusPill({ status, variant, note, withDot = false, children, className = '' }) {

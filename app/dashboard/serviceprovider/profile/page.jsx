@@ -21,10 +21,9 @@ const ID_TO_SKILL_NAME = Object.fromEntries(
 );
 
 const C = {
-  amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
+  blue: '#2563eb', blueLight: '#dbeafe', blueDark: '#1d4ed8',
   slate: '#1A1D23', slateLight: '#4A5068', muted: '#8A8FA8',
   surface: '#F7F6F2', surface2: '#EEECEA', white: '#FFFFFF',
-  green: '#1B6E3A', greenLight: '#E6F4EC',
   border: 'rgba(26,29,35,0.1)', radius: '12px', radiusSm: '8px',
 };
 
@@ -194,7 +193,7 @@ export default function ServiceProviderProfilePage() {
                 type="checkbox"
                 id="outRegion"
                 {...registerProfile('out_region')}
-                style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: C.amber, cursor: 'pointer' }}
+                style={{ marginTop: '3px', width: '16px', height: '16px', accentColor: C.blue, cursor: 'pointer' }}
               />
               <div>
                 <label htmlFor="outRegion" style={{ fontSize: '0.85rem', fontWeight: 600, cursor: 'pointer' }}>Willing to work outside my region</label>
@@ -207,7 +206,7 @@ export default function ServiceProviderProfilePage() {
                 type="submit"
                 disabled={!isDirty || updateProfile.isPending}
                 style={{
-                  background: (isDirty && !updateProfile.isPending) ? C.amber : '#CBD5E1',
+                  background: (isDirty && !updateProfile.isPending) ? C.blue : '#CBD5E1',
                   color: '#fff', border: 'none', padding: '9px 20px', borderRadius: C.radiusSm,
                   fontSize: '0.82rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif",
                   cursor: (isDirty && !updateProfile.isPending) ? 'pointer' : 'not-allowed',
@@ -230,7 +229,7 @@ export default function ServiceProviderProfilePage() {
               <div key={skill.skill_id} style={{ display: 'flex', flexDirection: 'column', gap: '8px', padding: '12px 14px', background: C.surface, borderRadius: C.radiusSm, border: `1px solid ${C.border}` }}>
                 <div>
                   <span style={{ fontSize: '0.88rem', fontWeight: 700, color: C.slate }}>{skill.name}</span>
-                  <span style={{ fontSize: '0.75rem', color: C.amberDark, fontWeight: 600, marginLeft: '8px' }}>
+                  <span style={{ fontSize: '0.75rem', color: C.blueDark, fontWeight: 600, marginLeft: '8px' }}>
                     ({skill.years ? `${skill.years} Year${skill.years > 1 ? 's' : ''} Experience` : 'No experience specified'})
                   </span>
                 </div>
@@ -257,7 +256,7 @@ export default function ServiceProviderProfilePage() {
                     </div>
                   ) : (
                     <button onClick={() => setEditingExpSkill(skill.skill_id)}
-                      style={{ background: C.amberLight, color: C.amberDark, border: `1px solid ${C.amber}`, padding: '5px 10px', borderRadius: C.radiusSm, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
+                      style={{ background: C.blueLight, color: C.blueDark, border: `1px solid ${C.blue}`, padding: '5px 10px', borderRadius: C.radiusSm, fontSize: '0.74rem', fontWeight: 600, cursor: 'pointer', fontFamily: "'DM Sans', sans-serif" }}>
                       Edit Experience
                     </button>
                   )}
@@ -308,7 +307,7 @@ export default function ServiceProviderProfilePage() {
                   disabled={saveSkill.isPending}
                   style={{
                     alignSelf: 'flex-start',
-                    background: saveSkill.isPending ? '#CBD5E1' : C.amber,
+                    background: saveSkill.isPending ? '#CBD5E1' : C.blue,
                     color: '#fff', border: 'none', padding: '8px 16px', borderRadius: C.radiusSm,
                     fontSize: '0.82rem', fontWeight: 600,
                     cursor: saveSkill.isPending ? 'not-allowed' : 'pointer',

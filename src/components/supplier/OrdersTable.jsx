@@ -5,6 +5,7 @@ import EmptyState from '@/src/components/supplier/EmptyState';
 const ACTION_LABEL = {
   Processing: { text: 'In Progress', className: 'text-crewBlue' },
   Delivered: { text: 'Delivered', className: 'text-crewGreen' },
+  Rejected: { text: 'Rejected', className: 'text-[#C0392B]' },
 };
 
 export default function OrdersTable({ orders, onAccept, onReject, hasActiveFilter = false }) {

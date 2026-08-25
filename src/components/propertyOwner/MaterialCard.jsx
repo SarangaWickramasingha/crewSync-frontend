@@ -48,7 +48,7 @@ export default function MaterialCard({ product, onRequest }) {
   } = product;
 
   const materialId = getMaterialIconId(product);
-  const iconPath = `/materials/${materialId}.svg`;
+  const iconPath = `/materials/${materialId}.jpg`;
   const stockStyle = STOCK_STYLES[stockVariant] || STOCK_STYLES.green;
 
   const handleCopyContact = (e) => {

@@ -37,12 +37,12 @@ const NAV = {
         {
             section: 'Dashboard',
             items: [
-                { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
-                { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
-                { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
-                { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-purple-50', iconColor: 'text-purple-600', label: 'Forum' },
-                { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
-                { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
+                { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Overview' },
+                { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Job Requests' },
+                { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Timeline' },
+                { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Forum' },
+                { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Reviews' },
+                { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Profile' },
             ],
         },
     ],
@@ -52,13 +52,13 @@ const NAV = {
             section: 'Store',
             items: [
                 { href: '/dashboard/supplier/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
-                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
+                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Orders' },
             ],
         },
         {
             section: 'Account',
             items: [
-                { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
+                { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Profile' },
             ],
         },
     ],
@@ -99,15 +99,15 @@ const ROLE_LABEL = {
 
 const ROLE_AVATAR = {
     PROPERTY_OWNER: 'bg-orange-100 text-orange-700',
-    SERVICE_PROVIDER: 'bg-green-100 text-green-700',
-    MATERIAL_SUPPLIER: 'bg-blue-100 text-blue-700',
+    SERVICE_PROVIDER: 'bg-blue-100 text-blue-700',
+    MATERIAL_SUPPLIER: 'bg-orange-100 text-orange-700',
     ADMIN: 'bg-purple-100 text-purple-700',
 };
 
 const ROLE_DOT = {
     PROPERTY_OWNER: 'bg-orange-500',
-    SERVICE_PROVIDER: 'bg-green-500',
-    MATERIAL_SUPPLIER: 'bg-blue-500',
+    SERVICE_PROVIDER: 'bg-blue-500',
+    MATERIAL_SUPPLIER: 'bg-orange-500',
     ADMIN: 'bg-purple-500',
 };
 
@@ -133,9 +133,9 @@ export default function DashboardLayout({ children }) {
     const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col bg-surface">
             <Navbar />
-            <div className="flex h-full">
+            <div className="flex flex-1 min-h-[calc(100vh-60px)]">
 
                 {/* Mobile overlay */}
                 {sidebarOpen && (
@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }) {
                 fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[230px] bg-white border-r border-border
                 flex flex-col p-4 z-40 transition-transform duration-200 overflow-y-auto
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                md:translate-x-0 md:static md:h-auto md:z-auto
+                md:translate-x-0 md:sticky md:top-[60px] md:h-[calc(100vh-60px)] md:z-auto
             `}>
 
                     {/* User card */}
@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }) {
                 </aside>
 
                 {/* ── Main ── */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col min-h-full bg-surface">
                     {/* Mobile top bar */}
                     <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-border">
                         <button onClick={() => setSidebarOpen(v => !v)} className="text-slate">
@@ -218,12 +218,12 @@ export default function DashboardLayout({ children }) {
                         <span className="font-syne font-bold text-slate text-sm">Dashboard</span>
                     </div>
 
-                    <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface">
+                    <main className="flex-1 p-6 md:p-8 bg-surface">
                         {children}
                     </main>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
