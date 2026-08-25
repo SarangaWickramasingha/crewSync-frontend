@@ -146,15 +146,23 @@ export default function ProviderDashboard() {
           ) : recentReviewsList.length === 0 ? (
             <p className="text-[0.8rem] text-crewMuted">No reviews yet.</p>
           ) : (
-            <div className="flex flex-col gap-2.5">
-              {recentReviewsList.map((r, i) => (
-                <div key={i}>
-                  <div className="text-[0.83rem] font-semibold">
-                    {r.name} <span className="text-crewAmber">{'★'.repeat(r.rating)}</span>
+            <div className="flex flex-col gap-3">
+              {recentReviewsList.map((r, i) => {
+                const name = r.name || r.reviewer_name || r.author || 'Property Owner';
+                const stars = Math.max(1, Math.min(5, Number(r.rating || r.stars || 5)));
+                const comment = r.comment || r.text || r.content || '';
+                return (
+                  <div key={r.id || i} className="border-b border-crewSlate/5 pb-2.5 last:border-none last:pb-0">
+                    <div className="text-[0.83rem] font-semibold flex items-center justify-between">
+                      <span>{name}</span>
+                      <span className="text-crewAmber text-[0.85rem]">{'★'.repeat(stars)}</span>
+                    </div>
+                    {comment && (
+                      <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">&ldquo;{comment}&rdquo;</div>
+                    )}
                   </div>
-                  <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">&ldquo;{r.comment}&rdquo;</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 

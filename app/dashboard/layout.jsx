@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }) {
                 fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[230px] bg-white border-r border-border
                 flex flex-col p-4 z-40 transition-transform duration-200 overflow-y-auto
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                md:translate-x-0 md:static md:h-auto md:min-h-full md:z-auto
+                md:translate-x-0 md:sticky md:top-[60px] md:h-[calc(100vh-60px)] md:z-auto
             `}>
 
                     {/* User card */}
