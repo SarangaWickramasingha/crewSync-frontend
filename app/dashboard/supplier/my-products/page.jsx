@@ -10,6 +10,7 @@ import PageHeader from '@/src/components/supplier/PageHeader';
 import ProductCard from '@/src/components/supplier/ProductCard';
 import ProductFormModal from '@/src/components/supplier/ProductFormModal';
 import EmptyState from '@/src/components/supplier/EmptyState';
+import DeleteConfirmModal from '@/src/components/admin/DeleteConfirmModal';
 import { primaryBtnClass } from '@/src/components/supplier/formStyles';
 
 const EMPTY_FORM = { material: MATERIAL_TITLES[0], description: '', price: '', stockType: 'in', stockNote: '' };
@@ -20,6 +21,7 @@ export default function MyProductsPage() {
   const deleteProduct = useDeleteProduct();
 
   const [modal, setModal] = useState(null);
+  const [productToRemove, setProductToRemove] = useState(null);
 
   function handleSubmit(values) {
     saveProduct.mutate(toProductPayload(values), {
@@ -28,9 +30,9 @@ export default function MyProductsPage() {
     });
   }
 
-  function handleRemove(id) {
-    if (!window.confirm('Remove this product?')) return;
-    deleteProduct.mutate(id, {
+  function confirmRemove() {
+    deleteProduct.mutate(productToRemove.id, {
+      onSuccess: () => setProductToRemove(null),
       onError: (err) => alert(err.message),
     });
   }
@@ -59,8 +61,8 @@ export default function MyProductsPage() {
             key={p.id}
             product={p}
             onEdit={(product) => setModal({ mode: 'edit', product })}
-            onRemove={handleRemove}
-            isDeleting={deleteProduct.isPending}
+            onRemove={() => setProductToRemove(p)}
+            isDeleting={deleteProduct.isPending && deleteProduct.variables === p.id}
           />
         ))}
       </div>
@@ -76,6 +78,23 @@ export default function MyProductsPage() {
         submitLabel={modal?.mode === 'edit' ? 'Save Changes' : 'Add Product'}
         isSubmitting={saveProduct.isPending}
       />
+
+      {productToRemove && (
+        <DeleteConfirmModal
+          title="Remove this product?"
+          message={
+            <>
+              <span className="font-medium text-slate">{productToRemove.title ?? productToRemove.name ?? 'This product'}</span> will be
+              permanently removed. This can&apos;t be undone.
+            </>
+          }
+          confirmLabel="Remove product"
+          confirmingLabel="Removing…"
+          isDeleting={deleteProduct.isPending}
+          onCancel={() => setProductToRemove(null)}
+          onConfirm={confirmRemove}
+        />
+      )}
     </div>
   );
 }
