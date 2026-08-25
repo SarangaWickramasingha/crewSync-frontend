@@ -9,7 +9,7 @@ const ROLE_ICONS = {
 };
 const ROLE_LABELS = { owner: 'Property Owner', provider: 'Service Provider', supplier: 'Supplier' };
 
-export default function StepCredentials({ role, register, errors, watch }) {
+export default function StepCredentials({ role, register, errors, watch, setValue }) {
     return (
         <div className="max-w-md mx-auto">
             {/* Welcome block */}
@@ -42,12 +42,14 @@ export default function StepCredentials({ role, register, errors, watch }) {
                 <label className="text-[11px] font-semibold text-slate-light uppercase tracking-wide">
                     Password <span className="text-red-500">*</span>
                 </label>
+                {/* Password */}
                 <PasswordInput
                     id="password"
                     value={watch('password')}
-                    onChange={(e) => register('password').onChange(e)}
+                    onChange={(e) => setValue('password', e.target.value, { shouldValidate: true, shouldDirty: true })}
                     showStrength
                 />
+
                 {errors.password && (
                     <p className="text-[11px] text-red-500">{errors.password.message}</p>
                 )}
@@ -58,11 +60,12 @@ export default function StepCredentials({ role, register, errors, watch }) {
                 <label className="text-[11px] font-semibold text-slate-light uppercase tracking-wide">
                     Confirm Password <span className="text-red-500">*</span>
                 </label>
+                {/* Confirm Password */}
                 <PasswordInput
                     id="confirmPassword"
                     placeholder="Re-enter password"
                     value={watch('confirmPassword')}
-                    onChange={(e) => register('confirmPassword').onChange(e)}
+                    onChange={(e) => setValue('confirmPassword', e.target.value, { shouldValidate: true, shouldDirty: true })}
                 />
                 {errors.confirmPassword && (
                     <p className="text-[11px] text-red-500">{errors.confirmPassword.message}</p>
