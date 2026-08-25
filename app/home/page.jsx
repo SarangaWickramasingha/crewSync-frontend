@@ -177,7 +177,7 @@ export default function HomePage() {
                     : router.push("/project-form")
                 }
               >
-                Start a Project →
+                Start a Project
               </button>
             )}
           </div>
