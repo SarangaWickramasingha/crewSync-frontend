@@ -133,9 +133,9 @@ export default function DashboardLayout({ children }) {
     const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     return (
-        <>
+        <div className="min-h-screen flex flex-col bg-surface">
             <Navbar />
-            <div className="flex h-full">
+            <div className="flex flex-1 min-h-[calc(100vh-60px)]">
 
                 {/* Mobile overlay */}
                 {sidebarOpen && (
@@ -147,7 +147,7 @@ export default function DashboardLayout({ children }) {
                 fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[230px] bg-white border-r border-border
                 flex flex-col p-4 z-40 transition-transform duration-200 overflow-y-auto
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                md:translate-x-0 md:static md:h-auto md:z-auto
+                md:translate-x-0 md:static md:h-auto md:min-h-full md:z-auto
             `}>
 
                     {/* User card */}
@@ -209,7 +209,7 @@ export default function DashboardLayout({ children }) {
                 </aside>
 
                 {/* ── Main ── */}
-                <div className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex flex-col min-h-full bg-surface">
                     {/* Mobile top bar */}
                     <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-border">
                         <button onClick={() => setSidebarOpen(v => !v)} className="text-slate">
@@ -218,12 +218,12 @@ export default function DashboardLayout({ children }) {
                         <span className="font-syne font-bold text-slate text-sm">Dashboard</span>
                     </div>
 
-                    <main className="flex-1 overflow-y-auto p-6 md:p-8 bg-surface">
+                    <main className="flex-1 p-6 md:p-8 bg-surface">
                         {children}
                     </main>
                 </div>
             </div>
-        </>
+        </div>
     );
 }
 
