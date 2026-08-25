@@ -70,6 +70,8 @@ export const API_PROVIDER_SKILL_DELETE = (skillId) => `${API_BASE}/api/provider/
 // ── MATERIAL SUPPLIER ───────────────────────────────────────────────────────────
 export const API_SUPPLIER_PRODUCTS = `${API_BASE}/api/supplier/products`;
 export const API_SUPPLIER_PRODUCT_DELETE = (id) => `${API_BASE}/api/supplier/products/${id}`;
+export const API_SUPPLIER_ORDERS = `${API_BASE}/api/supplier/orders`;
+export const API_SUPPLIER_ORDER_STATUS = (id) => `${API_BASE}/api/supplier/orders/${id}/status`;
 
 
 // ── REPORTS ───────────────────────────────────────────────────────────────────

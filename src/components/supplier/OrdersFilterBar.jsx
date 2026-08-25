@@ -79,7 +79,7 @@ export default function OrdersFilterPanel({
         <div className="flex flex-col gap-1 min-w-[140px]">
           <label className={label}>Status</label>
           <div className="flex gap-1.5 flex-wrap">
-            {['', 'New', 'Processing', 'Delivered'].map((s) => (
+            {['', 'New', 'Processing', 'Delivered', 'Rejected'].map((s) => (
               <button
                 key={s}
                 onClick={() => onSetStatus(s)}
