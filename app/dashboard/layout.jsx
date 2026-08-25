@@ -52,13 +52,13 @@ const NAV = {
             section: 'Store',
             items: [
                 { href: '/dashboard/supplier/my-products', icon: ShoppingBag, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'My Products' },
-                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Orders', badge: '3' },
+                { href: '/dashboard/supplier/orders', icon: ClipboardList, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Orders' },
             ],
         },
         {
             section: 'Account',
             items: [
-                { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-slate-100', iconColor: 'text-slate-600', label: 'Profile' },
+                { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Profile' },
             ],
         },
     ],
@@ -100,14 +100,14 @@ const ROLE_LABEL = {
 const ROLE_AVATAR = {
     PROPERTY_OWNER: 'bg-orange-100 text-orange-700',
     SERVICE_PROVIDER: 'bg-blue-100 text-blue-700',
-    MATERIAL_SUPPLIER: 'bg-blue-100 text-blue-700',
+    MATERIAL_SUPPLIER: 'bg-orange-100 text-orange-700',
     ADMIN: 'bg-purple-100 text-purple-700',
 };
 
 const ROLE_DOT = {
     PROPERTY_OWNER: 'bg-orange-500',
     SERVICE_PROVIDER: 'bg-blue-500',
-    MATERIAL_SUPPLIER: 'bg-blue-500',
+    MATERIAL_SUPPLIER: 'bg-orange-500',
     ADMIN: 'bg-purple-500',
 };
 
