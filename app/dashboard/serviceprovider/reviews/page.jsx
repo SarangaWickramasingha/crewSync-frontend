@@ -5,19 +5,19 @@ import {
   useUploadReviewPhotos,
   useDeleteReviewPhoto,
 } from "@/src/hooks/provider/useProvider";
+import PhotoDeleteModal from "@/src/components/serviceProvider/PhotoDeleteModal";
 
 const C = {
-  amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
+  blue: '#2563eb', blueLight: '#dbeafe', blueDark: '#1d4ed8',
   slate: '#1A1D23', slateLight: '#4A5068', muted: '#8A8FA8',
   surface: '#F7F6F2', white: '#FFFFFF',
-  green: '#1B6E3A', greenLight: '#E6F4EC',
   border: 'rgba(26,29,35,0.1)', radius: '12px', radiusSm: '8px',
 };
 
 const AVATAR_STYLES = [
-  { bg: '#FFF3E0', color: '#B85A00' },
-  { bg: '#E8F0FB', color: '#1A56A0' },
+  { bg: '#dbeafe', color: '#1d4ed8' },
   { bg: '#E6F4EC', color: '#1B6E3A' },
+  { bg: '#FFF3E0', color: '#B85A00' },
 ];
 
 function initialsOf(name) {
@@ -244,7 +244,7 @@ export default function ReviewsPage() {
               </div>
               <div>
                 <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>{r.name}</div>
-                <div style={{ color: C.amber, fontSize: '0.85rem' }}>{'★'.repeat(r.stars)}</div>
+                <div style={{ color: C.blue, fontSize: '0.85rem' }}>{'★'.repeat(r.stars)}</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: C.muted }}>{r.date}</div>
             </div>
@@ -268,7 +268,7 @@ export default function ReviewsPage() {
                     <img src={photo.url} alt="Project" onClick={() => setLightbox(photo.url)}
                       style={{ width: '64px', height: '64px', borderRadius: '8px', border: `1px solid ${C.border}`, objectFit: 'cover', cursor: 'pointer', display: 'block' }} />
                     <button
-                      onClick={() => setConfirmDelete({ reviewId: r.id, photoId: photo.photo_id, photoUrl: photo.url })}
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete({ reviewId: r.id, photoId: photo.photo_id, photoUrl: photo.url }); }}
                       title="Remove photo"
                       style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#B3261E', color: '#fff', border: '2px solid #fff', fontSize: '0.65rem', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
@@ -281,7 +281,7 @@ export default function ReviewsPage() {
                 {staged.map((item, i) => (
                   <div key={item.id || i} style={{ position: 'relative', width: '64px', height: '64px' }}>
                     <img src={item.previewUrl} alt="Pending upload"
-                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: `2px dashed ${C.amber}`, objectFit: 'cover', display: 'block' }} />
+                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: `2px dashed ${C.blue}`, objectFit: 'cover', display: 'block' }} />
                     <button onClick={() => removePendingPhoto(r.id, i)} title="Remove"
                       style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#B3261E', color: '#fff', border: '2px solid #fff', fontSize: '0.65rem', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       ×
@@ -298,7 +298,7 @@ export default function ReviewsPage() {
                 </label>
               </div>
               {staged.length > 0 && (
-                <div style={{ fontSize: '0.72rem', color: C.amberDark, marginTop: '6px' }}>
+                <div style={{ fontSize: '0.72rem', color: C.blueDark, marginTop: '6px' }}>
                   {staged.length} photo{staged.length > 1 ? 's' : ''} staged — click <strong>Update</strong> below to save.
                 </div>
               )}
@@ -308,7 +308,7 @@ export default function ReviewsPage() {
               <button
                 onClick={() => handleUpdate(r.id)}
                 disabled={staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)}
-                style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                style={{ background: C.blue, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
                 {uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id ? 'Saving…' : 'Update'}
               </button>
               {!reportedIds[r.id] && (
@@ -343,102 +343,15 @@ export default function ReviewsPage() {
 
       {/* Confirmation Modal Before Removing Photo */}
       {confirmDelete && (
-        <div
-          onClick={() => setConfirmDelete(null)}
-          style={{
-            position: 'fixed',
-            inset: 0,
-            background: 'rgba(26,29,35,0.65)',
-            backdropFilter: 'blur(3px)',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 400,
-            padding: '1rem',
+        <PhotoDeleteModal
+          photoUrl={confirmDelete.photoUrl}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            const { reviewId, photoId } = confirmDelete;
+            setConfirmDelete(null);
+            await removeSavedPhoto(reviewId, photoId);
           }}
-        >
-          <div
-            onClick={e => e.stopPropagation()}
-            style={{
-              background: '#FFFFFF',
-              borderRadius: '16px',
-              maxWidth: '380px',
-              width: '100%',
-              padding: '24px',
-              boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-              textAlign: 'center',
-              fontFamily: "'DM Sans', sans-serif",
-            }}
-          >
-            <h3
-              style={{
-                fontFamily: "'Syne', sans-serif",
-                fontSize: '1.15rem',
-                fontWeight: 700,
-                color: '#1A1D23',
-                marginBottom: '8px',
-              }}
-            >
-              Remove Photo?
-            </h3>
-            <p style={{ fontSize: '0.84rem', color: '#64748b', lineHeight: 1.5, marginBottom: '18px' }}>
-              Are you sure you want to remove this project photo? This action cannot be undone.
-            </p>
-            {confirmDelete.photoUrl && (
-              <div style={{ marginBottom: '20px', display: 'flex', justifyContent: 'center' }}>
-                <img
-                  src={confirmDelete.photoUrl}
-                  alt="To be deleted"
-                  style={{
-                    width: '80px',
-                    height: '80px',
-                    borderRadius: '8px',
-                    objectFit: 'cover',
-                    border: '1px solid rgba(26,29,35,0.12)',
-                  }}
-                />
-              </div>
-            )}
-            <div style={{ display: 'flex', gap: '10px', justifyContent: 'center' }}>
-              <button
-                onClick={() => setConfirmDelete(null)}
-                style={{
-                  flex: 1,
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  border: '1px solid rgba(26,29,35,0.15)',
-                  background: '#fff',
-                  color: '#4A5068',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  const { reviewId, photoId } = confirmDelete;
-                  setConfirmDelete(null);
-                  await removeSavedPhoto(reviewId, photoId);
-                }}
-                style={{
-                  flex: 1,
-                  padding: '10px 16px',
-                  borderRadius: '8px',
-                  border: 'none',
-                  background: '#B3261E',
-                  color: '#fff',
-                  fontSize: '0.84rem',
-                  fontWeight: 600,
-                  cursor: 'pointer',
-                }}
-              >
-                Yes, Remove
-              </button>
-            </div>
-          </div>
-        </div>
+        />
       )}
 
       {/* Lightbox Modal */}

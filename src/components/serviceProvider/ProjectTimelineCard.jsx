@@ -1,10 +1,8 @@
 "use client";
 
 const C = {
-  amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
+  blue: '#2563eb', blueLight: '#dbeafe', blueDark: '#1d4ed8',
   slate: '#1A1D23', muted: '#8A8FA8', surface2: '#EEECEA', white: '#FFFFFF',
-  green: '#1B6E3A', greenLight: '#E6F4EC',
-  blue: '#1A56A0', blueLight: '#E8F0FB',
   border: 'rgba(26,29,35,0.1)', radius: '12px',
 };
 
@@ -18,8 +16,8 @@ export default function ProjectTimelineCard({ projectName, projectStatus, tasks,
         <h3 style={{ fontFamily: "'Syne', sans-serif", fontSize: '1rem', fontWeight: 700 }}>{projectName}</h3>
         <span style={{
           fontSize: '0.7rem', fontWeight: 600, padding: '2px 9px', borderRadius: '12px',
-          background: projectStatus === 'Completed' ? C.greenLight : C.amberLight,
-          color: projectStatus === 'Completed' ? C.green : C.amberDark,
+          background: projectStatus === 'Completed' ? '#dbeafe' : '#dbeafe',
+          color: projectStatus === 'Completed' ? '#2563eb' : '#1d4ed8',
         }}>
           {projectStatus}
         </span>
@@ -41,7 +39,7 @@ export default function ProjectTimelineCard({ projectName, projectStatus, tasks,
       </ul>
 
       {assignedTaskNames && assignedTaskNames.length > 0 && (
-        <div style={{ background: C.blueLight, border: '1px solid rgba(26,86,160,0.25)', borderRadius: C.radius, padding: '1rem 1.5rem', marginTop: '1rem' }}>
+        <div style={{ background: C.blueLight, border: '1px solid rgba(37,99,235,0.25)', borderRadius: C.radius, padding: '1rem 1.5rem', marginTop: '1rem' }}>
           <div style={{ fontSize: '0.85rem', color: C.blue }}>
             <strong>Your assigned task{assignedTaskNames.length > 1 ? 's' : ''}:</strong> {assignedTaskNames.join(', ')}. You are responsible for {assignedTaskNames.length > 1 ? 'these tasks' : 'this task'}.
           </div>

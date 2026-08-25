@@ -28,7 +28,7 @@ export default function ServiceProviderForumPage() {
               : 'No specific task assigned'}
             statusLabel={proj.project_status}
             statusVariant={proj.project_status === 'Completed' ? 'green' : 'amber'}
-            mineBubbleColor="#FFF3E0"
+            mineBubbleColor="#dbeafe"
           />
         ))
       )}

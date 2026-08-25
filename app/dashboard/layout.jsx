@@ -37,12 +37,12 @@ const NAV = {
         {
             section: 'Dashboard',
             items: [
-                { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-indigo-50', iconColor: 'text-indigo-600', label: 'Overview' },
-                { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-green-50', iconColor: 'text-green-600', label: 'Job Requests', badge: '4' },
-                { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-amber-50', iconColor: 'text-amber-600', label: 'Timeline' },
-                { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-purple-50', iconColor: 'text-purple-600', label: 'Forum' },
-                { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-yellow-50', iconColor: 'text-yellow-600', label: 'Reviews' },
-                { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-sky-50', iconColor: 'text-sky-600', label: 'Profile' },
+                { href: '/dashboard/serviceprovider', icon: LayoutDashboard, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Overview' },
+                { href: '/dashboard/serviceprovider/job-requests', icon: Briefcase, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Job Requests' },
+                { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Timeline' },
+                { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Forum' },
+                { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Reviews' },
+                { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Profile' },
             ],
         },
     ],
@@ -99,14 +99,14 @@ const ROLE_LABEL = {
 
 const ROLE_AVATAR = {
     PROPERTY_OWNER: 'bg-orange-100 text-orange-700',
-    SERVICE_PROVIDER: 'bg-green-100 text-green-700',
+    SERVICE_PROVIDER: 'bg-blue-100 text-blue-700',
     MATERIAL_SUPPLIER: 'bg-blue-100 text-blue-700',
     ADMIN: 'bg-purple-100 text-purple-700',
 };
 
 const ROLE_DOT = {
     PROPERTY_OWNER: 'bg-orange-500',
-    SERVICE_PROVIDER: 'bg-green-500',
+    SERVICE_PROVIDER: 'bg-blue-500',
     MATERIAL_SUPPLIER: 'bg-blue-500',
     ADMIN: 'bg-purple-500',
 };
