@@ -3,7 +3,6 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { productSchema, MATERIAL_TITLES } from '@/src/lib/validators/supplier';
 import FormField from '@/src/components/supplier/FormField';
-import { fieldClass, selectClass, primaryBtnClass, ghostBtnClass } from '@/src/components/supplier/formStyles';
 
 const STOCK_OPTIONS = [
   { value: 'in', label: 'In Stock' },
@@ -11,7 +10,13 @@ const STOCK_OPTIONS = [
   { value: 'out', label: 'Out of Stock' },
 ];
 
-export default function ProductForm({ defaultValues, onSubmit, onCancel, submitLabel = 'Save', isSubmitting }) {
+const inputClass =
+  'w-full border border-border rounded-lg px-3 py-2 text-xs text-slate bg-white outline-none ' +
+  'focus:border-supplier focus:ring-1 focus:ring-supplier/20 transition-all';
+
+const selectClass = `${inputClass} cursor-pointer`;
+
+export default function ProductForm({ defaultValues, onSubmit, onCancel, submitLabel = 'Add Product', isSubmitting }) {
   const {
     register,
     handleSubmit,
@@ -22,7 +27,7 @@ export default function ProductForm({ defaultValues, onSubmit, onCancel, submitL
   });
 
   return (
-    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-3">
+    <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-3 text-left w-full">
       <FormField label="Product Title" error={errors.material?.message}>
         <select {...register('material')} className={selectClass}>
           {MATERIAL_TITLES.map((title) => (
@@ -32,7 +37,7 @@ export default function ProductForm({ defaultValues, onSubmit, onCancel, submitL
       </FormField>
 
       <FormField label="Unit Price" error={errors.price?.message}>
-        <input type="text" placeholder="e.g. 1500" {...register('price')} className={fieldClass} />
+        <input type="text" placeholder="e.g. 1500" {...register('price')} className={inputClass} />
       </FormField>
 
       <FormField label="Stock Status" error={errors.stockType?.message}>
@@ -44,18 +49,28 @@ export default function ProductForm({ defaultValues, onSubmit, onCancel, submitL
       </FormField>
 
       <FormField label="Available Quantity" error={errors.stockNote?.message}>
-        <input type="text" placeholder="e.g. 100" {...register('stockNote')} className={fieldClass} />
+        <input type="text" placeholder="e.g. 100" {...register('stockNote')} className={inputClass} />
       </FormField>
 
       <FormField label="Description" error={errors.description?.message} className="col-span-2">
-        <textarea rows={2} placeholder="e.g. Durable weather-resistant material" {...register('description')} className={fieldClass} />
+        <textarea rows={2} placeholder="e.g. Durable weather-resistant material" {...register('description')} className={inputClass} />
       </FormField>
 
-      <div className="col-span-2 flex justify-end gap-2 pt-1">
+      <div className="col-span-2 flex gap-2.5 justify-center w-full pt-2">
         {onCancel && (
-          <button type="button" onClick={onCancel} className={ghostBtnClass}>Cancel</button>
+          <button
+            type="button"
+            onClick={onCancel}
+            className="flex-1 py-2.5 px-4 rounded-lg border border-border bg-white text-crewSlate-light text-[0.84rem] font-semibold hover:bg-surface transition-colors cursor-pointer text-center"
+          >
+            Cancel
+          </button>
         )}
-        <button type="submit" disabled={isSubmitting} className={primaryBtnClass}>
+        <button
+          type="submit"
+          disabled={isSubmitting}
+          className="flex-1 py-2.5 px-4 rounded-lg border-none bg-supplier hover:bg-supplier-dark text-white text-[0.84rem] font-semibold transition-colors cursor-pointer text-center disabled:opacity-60 disabled:cursor-wait"
+        >
           {isSubmitting ? 'Saving…' : submitLabel}
         </button>
       </div>

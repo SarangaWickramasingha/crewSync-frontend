@@ -13,11 +13,21 @@ export function parseDateParts(dateStr) {
 
 export { MONTHS };
 
-export default function useOrdersFilters(orders) {
-  const [year, setYear] = useState('');
-  const [month, setMonth] = useState('');
-  const [item, setItem] = useState('');
-  const [status, setStatus] = useState('');
+export default function useOrdersFilters(orders = []) {
+  // Draft filter selections (changed by UI inputs before clicking Filter)
+  const [draftYear, setDraftYear] = useState('');
+  const [draftMonth, setDraftMonth] = useState('');
+  const [draftItem, setDraftItem] = useState('');
+  const [draftStatus, setDraftStatus] = useState('');
+
+  // Applied filter state (only updated when clicking the Filter button)
+  const [appliedFilters, setAppliedFilters] = useState({
+    year: '',
+    month: '',
+    item: '',
+    status: '',
+  });
+
   const [open, setOpen] = useState(false);
 
   const years = useMemo(() => {
@@ -33,35 +43,61 @@ export default function useOrdersFilters(orders) {
   const filtered = useMemo(
     () =>
       orders.filter((o) => {
+        const { year, month, item, status } = appliedFilters;
         const { month: m, year: y } = parseDateParts(o.date);
-        if (year && month && (y !== year || m !== month)) return false;
+        if (year && y !== year) return false;
+        if (month && m !== month) return false;
         if (item && o.items.split('×')[0].trim() !== item) return false;
         if (status && o.status !== status) return false;
         return true;
       }),
-    [orders, year, month, item, status]
+    [orders, appliedFilters]
   );
 
-  const hasActiveFilter = Boolean(year || month || item || status);
+  const hasActiveFilter = Boolean(
+    appliedFilters.year || appliedFilters.month || appliedFilters.item || appliedFilters.status
+  );
+
+  function applyFilters() {
+    setAppliedFilters({
+      year: draftYear,
+      month: draftMonth,
+      item: draftItem,
+      status: draftStatus,
+    });
+  }
 
   function clear() {
-    setYear('');
-    setMonth('');
-    setItem('');
-    setStatus('');
+    setDraftYear('');
+    setDraftMonth('');
+    setDraftItem('');
+    setDraftStatus('');
+    setAppliedFilters({
+      year: '',
+      month: '',
+      item: '',
+      status: '',
+    });
   }
 
   function selectYear(value) {
-    setYear(value);
-    if (!value) setMonth('');
+    setDraftYear(value);
+    if (!value) setDraftMonth('');
   }
 
   return {
-    filters: { year, month, item, status },
-    setMonth,
-    setItem,
-    setStatus,
+    filters: {
+      year: draftYear,
+      month: draftMonth,
+      item: draftItem,
+      status: draftStatus,
+    },
+    appliedFilters,
+    setMonth: setDraftMonth,
+    setItem: setDraftItem,
+    setStatus: setDraftStatus,
     selectYear,
+    applyFilters,
     clear,
     open,
     setOpen,
