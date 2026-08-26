@@ -16,6 +16,7 @@ import {
   API_PROVIDER_SKILLS,
   API_PROVIDER_SKILL_DELETE,
   API_PROVIDER_PUBLIC,
+  API_FEEDBACK_SUBMIT,
 } from '@/config/api';
 
 export async function fetchPublicProvider(id) {
@@ -68,6 +69,17 @@ export async function uploadReviewPhotos(reviewId, formData) {
 export async function deleteReviewPhoto(photoId) {
   const res = await request.delete(API_REVIEW_PHOTO_DELETE(photoId));
   return unwrap(res);
+}
+
+export async function reportReview({ reviewId, message, reviewerName }) {
+  const payload = {
+    message_type: 'Report Review',
+    subject: `Report on Review #${reviewId}`,
+    message: reviewerName
+      ? `[Report on Review #${reviewId} by ${reviewerName}]: ${message}`
+      : `[Report on Review #${reviewId}]: ${message}`,
+  };
+  return unwrap(await request.post(API_FEEDBACK_SUBMIT, payload));
 }
 
 export async function fetchProfile() {
