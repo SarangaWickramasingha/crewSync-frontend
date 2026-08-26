@@ -140,7 +140,7 @@ export default function ProviderDashboard() {
           <div className="flex justify-between items-center mb-5">
             <h3 className="font-syne text-base font-bold">Recent Reviews</h3>
             <Link href="/dashboard/serviceprovider/reviews" className="text-[0.78rem] text-provider-dark no-underline font-medium">
-              All Reviews →
+              All Reviews
             </Link>
           </div>
 
