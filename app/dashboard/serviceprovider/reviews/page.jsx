@@ -68,7 +68,7 @@ export default function ReviewsPage() {
     }
   }, []);
 
-  const { data, isLoading } = useAllReviews();
+  const { data, isLoading, isError, error } = useAllReviews();
   const uploadPhotos = useUploadReviewPhotos();
   const deletePhoto = useDeleteReviewPhoto();
 
@@ -213,6 +213,10 @@ export default function ReviewsPage() {
 
   if (isLoading) {
     return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading reviews…</div>;
+  }
+
+  if (isError) {
+    return <div style={{ padding: '3rem', textAlign: 'center', color: '#B3261E', fontFamily: "'DM Sans', sans-serif" }}>Failed to load reviews: {error?.message || 'Unknown error'}</div>;
   }
 
   return (
