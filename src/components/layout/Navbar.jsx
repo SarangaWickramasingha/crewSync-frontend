@@ -1,34 +1,121 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useRouter } from "next/navigation";
 
 import { useAuth } from "@/context/AuthContext";
 
-export default function Navbar({ variant = "default", activeTab = "Home" }) {
+export default function Navbar({ variant = "default", activeTab = "Home", onHamburger }) {
   const router = useRouter();
-  const [navOpen, setNavOpen] = useState(false);
-  const { isGuest, isOwner, isProvider, isSupplier, isAdmin, logout } = useAuth();
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef(null);
+  const { user, isGuest, isOwner, isProvider, isSupplier, isAdmin, logout } = useAuth();
 
-  const Logo = () => (
+  useEffect(() => {
+    function handleClickOutside(e) {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  const ROLE_COLORS = {
+    owner:    { color: '#16a34a', hover: '#15803d' },
+    provider: { color: '#2563eb', hover: '#1d4ed8' },
+    supplier: { color: '#f97316', hover: '#ea580c' },
+  };
+
+  const roleKey = isOwner ? 'owner' : isProvider ? 'provider' : isSupplier ? 'supplier' : null;
+  const activeColor = roleKey ? ROLE_COLORS[roleKey].color : '#e8820c';
+  const activeHover  = roleKey ? ROLE_COLORS[roleKey].hover  : '#b85a00';
+
+  const Logo = ({ color }) => (
     <div
       onClick={() => router.push("/home")}
-      className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
+      className="cursor-pointer font-syne text-xl font-extrabold tracking-tight select-none"
+      style={{ color: color || activeColor }}
     >
       Crew<span className="text-white">Sync</span>
     </div>
   );
 
+  /* ── Shared profile dropdown ── */
+  const ProfileDropdown = ({ dashboardRoute }) => (
+    <div className="relative" ref={profileRef}>
+      <button
+        onClick={() => setProfileOpen((v) => !v)}
+        className="flex h-8 w-8 items-center justify-center rounded-full text-xs font-bold text-white transition-all cursor-pointer border-2"
+        style={{ backgroundColor: activeColor, borderColor: 'rgba(255,255,255,0.2)' }}
+      >
+        {user?.avatar || 'U'}
+      </button>
+      {profileOpen && (
+        <div className="absolute right-0 top-[calc(100%+8px)] z-[300] w-[200px] rounded-xl border border-white/10 bg-[#2e3340] py-1.5 shadow-[0_8px_32px_rgba(0,0,0,0.3)]">
+          <div className="px-4 py-2.5 border-b border-white/10">
+            <p className="text-sm font-semibold text-white truncate">{user?.name || 'User'}</p>
+            <p className="text-[0.65rem] text-white/40 capitalize">{user?.role?.replace('_', ' ') || 'User'}</p>
+          </div>
+          <button
+            onClick={() => { setProfileOpen(false); router.push('/home'); }}
+            className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-white/65 transition-all hover:bg-white/10 hover:text-white"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6" /></svg>
+            Home
+          </button>
+          <button
+            onClick={() => { setProfileOpen(false); router.push(dashboardRoute); }}
+            className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-white/65 transition-all hover:bg-white/10 hover:text-white"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" /></svg>
+            Dashboard
+          </button>
+          <div className="my-1.5 border-t border-white/10" />
+          <button
+            onClick={() => { setProfileOpen(false); logout(); router.push('/home'); }}
+            className="flex w-full items-center gap-2.5 px-4 py-2 text-sm text-white/65 transition-all hover:bg-white/10 hover:text-[#ef4444]"
+          >
+            <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" /></svg>
+            Log Out
+          </button>
+        </div>
+      )}
+    </div>
+  );
+
+  /* ── Shared guest buttons ── */
+  const GuestButtons = () => (
+    <>
+      <button
+        onClick={() => router.push("/login")}
+        className="hidden rounded-lg border border-white/30 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10 sm:block"
+      >
+        Log In
+      </button>
+      <button
+        onClick={() => router.push("/register")}
+        className="rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-all"
+        style={{ backgroundColor: activeColor }}
+        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = activeHover}
+        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = activeColor}
+      >
+        Get Started
+      </button>
+    </>
+  );
+
   /* ── AUTH variant ── */
   if (variant === "auth") {
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
         <Logo />
-        <div className="flex items-center text-[0.85rem] text-white/60">
+        <div className="flex items-center text-sm text-white/60">
           New to CrewSync?&nbsp;
           <button
             onClick={() => router.push("/register")}
-            className="cursor-pointer border-none bg-transparent p-0 text-[0.85rem] font-semibold text-[#e8820c] transition-opacity hover:opacity-80"
+            className="cursor-pointer border-none bg-transparent p-0 text-sm font-semibold transition-opacity hover:opacity-80"
+            style={{ color: activeColor }}
           >
             Get Started
           </button>
@@ -40,13 +127,13 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   /* ── REGISTER variant ── */
   if (variant === "register") {
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
         <Logo />
         <div className="flex items-center gap-2.5">
-          <span className="text-[0.82rem] text-white/55">Already have an account?</span>
+          <span className="text-sm text-white/55">Already have an account?</span>
           <button
             onClick={() => router.push("/login")}
-            className="rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10"
+            className="rounded-lg border border-white/30 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10"
           >
             Log In
           </button>
@@ -68,49 +155,21 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
       : "/dashboard/propertyowner";
 
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
-        <Logo />
-        <div className="hidden items-center gap-1 sm:flex">
-          <button
-            onClick={() => router.push("/home")}
-            className="rounded-md px-3 py-1.5 text-[0.8rem] font-medium text-white/55 transition-all hover:bg-white/10 hover:text-white"
-          >
-            Home
-          </button>
-          <button
-            onClick={() => router.push(isGuest ? "/dashboard/propertyowner/timeline" : dashboardRoute)}
-            className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
-          >
-            Dashboard
-          </button>
-        </div>
-        <div className="flex items-center gap-2">
-          {isGuest ? (
-            <>
-              <button
-                onClick={() => router.push("/login")}
-                className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
-              >
-                Log In
-              </button>
-              <button
-                onClick={() => router.push("/register")}
-                className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
-              >
-                Get Started
-              </button>
-            </>
-          ) : (
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
+        <div className="flex items-center gap-3">
+          {onHamburger && (
             <button
-              onClick={() => {
-                logout();
-                router.push("/home");
-              }}
-              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
+              onClick={onHamburger}
+              className="md:hidden w-9 h-9 rounded-lg text-white text-lg flex items-center justify-center shadow-md flex-shrink-0"
+              style={{ backgroundColor: activeColor }}
             >
-              Log Out
+              ☰
             </button>
           )}
+          <Logo />
+        </div>
+        <div className="flex items-center gap-2">
+          {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardRoute} />}
         </div>
       </nav>
     );
@@ -119,16 +178,11 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   /* ── PROJECT FORM variant ── */
   if (variant === "projectForm") {
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] border-b border-white/[0.06]">
-        <div
-          onClick={() => router.push("/home")}
-          className="cursor-pointer font-['Syne'] text-[1.4rem] font-extrabold tracking-tight text-[#e8820c]"
-        >
-          Create <span className="text-white">Project</span>
-        </div>
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.06]">
+        <Logo color={activeColor} />
         <button
           onClick={() => window.history.back()}
-          className="flex items-center gap-[6px] text-white/50 text-[0.82rem] font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none font-['DM_Sans']"
+          className="flex items-center gap-1.5 text-white/50 text-sm font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none"
         >
           Back
         </button>
@@ -137,7 +191,6 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
   }
 
   /* ── DEFAULT variant ── */
-  // Dynamically attach the accurate dashboard path into your primary tabs array
   const dashboardHref = isOwner
     ? "/dashboard/propertyowner"
     : isProvider
@@ -148,86 +201,12 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     ? "/dashboard/admin"
     : "/dashboard/propertyowner/timeline";
 
-  const tabs = [
-    { label: "Home", href: "/home" },
-    { label: "Dashboard", href: dashboardHref },
-  ];
-
   return (
-    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans'] relative">
+    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
       <Logo />
-
-      <div className="hidden items-center gap-1 sm:flex absolute left-1/2 -translate-x-1/2">
-        {tabs.map(({ label, href }) => {
-          const isActive = activeTab === label;
-          return (
-            <button
-              key={label}
-              onClick={() => router.push(href)}
-              className={`rounded-md px-3 py-1.5 text-[0.8rem] font-medium transition-all
-                ${isActive
-                  ? "bg-white/10 text-[#e8820c]"
-                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
-                }`}
-            >
-              {label}
-            </button>
-          );
-        })}
-      </div>
-
       <div className="flex items-center gap-2">
-        {isGuest ? (
-          <>
-            <button
-              onClick={() => router.push("/login")}
-              className="hidden rounded-md border border-white/30 bg-transparent px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-white/10 sm:block"
-            >
-              Log In
-            </button>
-            <button
-              onClick={() => router.push("/register")}
-              className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00]"
-            >
-              Get Started
-            </button>
-          </>
-        ) : (
-          <button
-            onClick={() => {
-              logout();
-              router.push("/home");
-            }}
-            className="rounded-md bg-[#e8820c] px-3.5 py-1.5 text-[0.8rem] font-medium text-white transition-all hover:bg-[#b85a00] cursor-pointer"
-          >
-            Log Out
-          </button>
-        )}
-        <button
-          onClick={() => setNavOpen((v) => !v)}
-          className="border-none bg-transparent text-[1.3rem] text-white sm:hidden"
-        >
-          ☰
-        </button>
+        {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardHref} />}
       </div>
-
-      {navOpen && (
-        <div className="absolute left-0 right-0 top-[60px] z-[200] flex flex-col border-b border-white/10 bg-[#2e3340] p-2 sm:hidden">
-          {tabs.map(({ label, href }) => (
-            <button
-              key={label}
-              onClick={() => { router.push(href); setNavOpen(false); }}
-              className={`w-full rounded-md px-3.5 py-2.5 text-left text-[0.8rem] font-medium transition-all
-                ${activeTab === label
-                  ? "bg-white/10 text-[#e8820c]"
-                  : "bg-transparent text-white/55 hover:bg-white/10 hover:text-white"
-                }`}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
-      )}
     </nav>
   );
 }
