@@ -35,7 +35,7 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-lg bg-white rounded-2xl p-6 font-sans"
+        className="w-full max-w-[390px] bg-white rounded-2xl p-6 font-sans"
         style={{
           boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
           opacity: animating ? 1 : 0,
@@ -43,12 +43,9 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
           transition: 'opacity 200ms ease-out, transform 200ms ease-out',
         }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-syne text-[1.15rem] font-bold text-crewSlate">{title}</h3>
-          <button onClick={onClose} className="text-crewMuted hover:text-crewSlate text-lg leading-none cursor-pointer bg-transparent border-none">
-            ✕
-          </button>
-        </div>
+        <h3 className="font-syne text-[1.15rem] font-bold text-crewSlate text-center mb-4">
+          {title}
+        </h3>
         <ProductForm
           defaultValues={defaultValues}
           onSubmit={onSubmit}
