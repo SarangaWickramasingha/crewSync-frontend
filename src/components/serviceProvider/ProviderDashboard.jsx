@@ -25,6 +25,7 @@ export default function ProviderDashboard() {
   const reviewsLoading = recentReviews.isPending;
   const recentReviewsList = recentReviews.data?.reviews ?? [];
 
+  const pendingCount = statsData.pending_requests ?? 0;
   const metrics = [
     { val: statsLoading ? '…' : `${statsData.total_reviews ?? 0}`, label: 'Total Reviews', change: statsLoading ? null : `★ ${statsData.avg_rating ?? 0} avg`, up: true },
     { val: statsLoading ? '…' : `${statsData.active_projects ?? 0}`, label: 'Active Projects', change: null },
@@ -51,7 +52,9 @@ export default function ProviderDashboard() {
           <h2 className="font-syne text-[1.3rem] font-bold text-crewSlate">
             Welcome, Sunil 👋
           </h2>
-          <p className="text-[0.82rem] text-crewMuted mt-0.5">You have 4 new job requests this week</p>
+          <p className="text-[0.82rem] text-crewMuted mt-0.5">
+            {statsLoading ? 'Loading…' : pendingCount > 0 ? `You have ${pendingCount} new job request${pendingCount !== 1 ? 's' : ''} this week` : 'No new job requests this week'}
+          </p>
         </div>
         <button
           onClick={handleToggleAvailability}
@@ -128,7 +131,7 @@ export default function ProviderDashboard() {
             href="/dashboard/serviceprovider/job-requests"
             className="block mt-4 text-center bg-provider text-white py-2 rounded-lg text-[0.82rem] font-semibold no-underline"
           >
-            View Job Requests (4)
+            View Job Requests {pendingCount > 0 ? `(${pendingCount})` : ''}
           </Link>
         </div>
 
