@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import useProjectTimelineData from './useProjectTimelineData';
 import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
@@ -110,12 +111,31 @@ function AddTaskModal({ onSave, onClose }) {
   );
 }
 
-export default function TaskCalendarGrid({ projectId = null }) {
-  const {
-    tasks, isLoaded, addTask, deleteTask, updateTask, toggleTaskCompleted,
-    estimatedBudget, totalCost, remainingBudget, totalAllocatedBudget,
-    projectCompleted, finishProject, unlockProject, addNotification,
-  } = useProjectTimelineData(projectId);
+export default function TaskCalendarGrid({ projectId = null, guestMode = false, demoTasks = null }) {
+  const hookResult = useProjectTimelineData(projectId);
+  const router = useRouter();
+
+  const [demoTasksState, setDemoTasksState] = useState(demoTasks);
+  const tasks = demoTasksState ?? hookResult.tasks;
+  const isLoaded = demoTasks ? true : hookResult.isLoaded;
+  const addTask = hookResult.addTask;
+  const deleteTask = hookResult.deleteTask;
+  const updateTask = hookResult.updateTask;
+  const toggleTaskCompleted = hookResult.toggleTaskCompleted;
+  const estimatedBudget = demoTasksState ? 1500000 : hookResult.estimatedBudget;
+  const totalCost = useMemo(
+    () => demoTasksState ? demoTasksState.reduce((s, t) => s + (Number(t.cost) || 0), 0) : hookResult.totalCost,
+    [demoTasksState, hookResult.totalCost]
+  );
+  const totalAllocatedBudget = useMemo(
+    () => demoTasksState ? demoTasksState.reduce((s, t) => s + (Number(t.budget) || 0), 0) : hookResult.totalAllocatedBudget,
+    [demoTasksState, hookResult.totalAllocatedBudget]
+  );
+  const remainingBudget = estimatedBudget - totalCost;
+  const projectCompleted = demoTasks ? false : hookResult.projectCompleted;
+  const finishProject = hookResult.finishProject;
+  const unlockProject = hookResult.unlockProject;
+  const addNotification = hookResult.addNotification;
 
   const today = useMemo(() => new Date(), []);
   const [baseDate, setBaseDate] = useState(() => new Date());
@@ -135,7 +155,29 @@ export default function TaskCalendarGrid({ projectId = null }) {
     const task = tasks.find((t) => t.id === taskId);
     if (task?.completed) return;
     const k = dayKey(day);
-    updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
+    if (demoTasks) {
+      setDemoTasksState((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, days: { ...t.days, [k]: cycleStatus(t.days[k] ?? 0) } }
+            : t
+        )
+      );
+    } else {
+      updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
+    }
+  }
+
+  function demoUpdateTask(taskId, updates) {
+    setDemoTasksState((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+    );
+  }
+
+  function demoToggleTaskCompleted(taskId) {
+    setDemoTasksState((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t))
+    );
   }
 
   function statusToEnum(st) {
@@ -143,6 +185,11 @@ export default function TaskCalendarGrid({ projectId = null }) {
   }
 
   async function handleSave() {
+    if (guestMode) {
+      router.push('/register');
+      return;
+    }
+
     const dirtyTasks = tasks.filter((t) => Object.keys(t.days || {}).length > 0);
     if (!dirtyTasks.length) return;
 
@@ -164,7 +211,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
 
   return (
     <>
-      {showAdd && (
+      {showAdd && !guestMode && (
         <AddTaskModal
           onSave={(name, color, budget) => { addTask(name, color, budget); setShowAdd(false); }}
           onClose={() => setShowAdd(false)}
@@ -174,7 +221,14 @@ export default function TaskCalendarGrid({ projectId = null }) {
         <EditTaskModal
           task={editingTask}
           onClose={() => setEditingTask(null)}
-          onSave={(updates) => { updateTask(editingTask.id, updates); setEditingTask(null); }}
+          onSave={(updates) => {
+            if (demoTasks) {
+              demoUpdateTask(editingTask.id, updates);
+            } else {
+              updateTask(editingTask.id, updates);
+            }
+            setEditingTask(null);
+          }}
         />
       )}
 
@@ -186,6 +240,15 @@ export default function TaskCalendarGrid({ projectId = null }) {
 
       {isLoaded && (
         <>
+      {guestMode && (
+        <div className="mb-3.5 rounded-lg border border-[rgba(26,153,230,0.3)] bg-[#EBF5FB] px-4 py-2.5 text-[13px] text-[#1A56A0] flex items-center gap-2">
+          <svg className="w-4 h-4 text-[#1A56A0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Guest Preview — click cells to try it out, then sign up to save your project timeline.</span>
+        </div>
+      )}
+
       <div className="mb-3.5 flex flex-wrap items-center gap-6 rounded-xl border border-[rgba(26,29,35,0.1)] bg-white px-[18px] py-3.5">
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Estimated Budget</span>
@@ -208,33 +271,35 @@ export default function TaskCalendarGrid({ projectId = null }) {
             LKR {fmtCompact(remainingBudget)}
           </span>
         </div>
-        <div className="ml-auto">
-          {projectCompleted ? (
-            <button
-              className="rounded-lg border border-[rgba(26,29,35,0.2)] bg-white px-4 py-2 font-sans text-[13px] font-semibold text-[#1A1D23] hover:bg-[#F7F6F2] flex items-center gap-1.5"
-              onClick={unlockProject}
-            >
-              <svg className="w-4 h-4 text-[#1A1D23]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-              </svg>
-              Unlock Project
-            </button>
-          ) : (
-            <button
-              className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
-              onClick={async () => {
-                if (window.confirm("Are you sure you want to finish this project? This will lock all edits.")) {
-                  await finishProject();
-                }
-              }}
-            >
-              ✓ Finish Project
-            </button>
-          )}
-        </div>
+        {!guestMode && (
+          <div className="ml-auto">
+            {projectCompleted ? (
+              <button
+                className="rounded-lg border border-[rgba(26,29,35,0.2)] bg-white px-4 py-2 font-sans text-[13px] font-semibold text-[#1A1D23] hover:bg-[#F7F6F2] flex items-center gap-1.5"
+                onClick={unlockProject}
+              >
+                <svg className="w-4 h-4 text-[#1A1D23]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                </svg>
+                Unlock Project
+              </button>
+            ) : (
+              <button
+                className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to finish this project? This will lock all edits.")) {
+                    await finishProject();
+                  }
+                }}
+              >
+                ✓ Finish Project
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {projectCompleted && (
+      {!guestMode && projectCompleted && (
         <div className="mb-3.5 rounded-lg border border-[rgba(232,130,12,0.3)] bg-[#FFF3E0] px-4 py-2.5 text-[13px] text-[#B85A00] flex items-center gap-2">
           <svg className="w-4 h-4 text-[#B85A00] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
@@ -268,13 +333,15 @@ export default function TaskCalendarGrid({ projectId = null }) {
               Next ›
             </button>
           </div>
-          <button
-            className="rounded-md bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={() => setShowAdd(true)}
-            disabled={projectCompleted}
-          >
-            + Add Task
-          </button>
+          {!guestMode && (
+            <button
+              className="rounded-md bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setShowAdd(true)}
+              disabled={projectCompleted}
+            >
+              + Add Task
+            </button>
+          )}
         </div>
 
         {/* TABLE */}
@@ -306,7 +373,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
               {tasks.length === 0 && (
                 <tr className="border-b border-[rgba(26,29,35,0.1)]">
                   <td colSpan={8} className="p-6 text-center text-[13px] text-[#8A8FA8]">
-                    No tasks yet — click &quot;+ Add Task&quot; to get started
+                    {guestMode ? 'No demo tasks available' : 'No tasks yet — click "+ Add Task" to get started'}
                   </td>
                 </tr>
               )}
@@ -324,7 +391,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                         >
                           {t.name}
                         </span>
-                        {!projectCompleted && !t.completed && (
+                        {!guestMode && !projectCompleted && !t.completed && (
                           <button
                             className="px-0.5 text-sm leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B]"
                             onClick={() => deleteTask(t.id)}
@@ -367,12 +434,24 @@ export default function TaskCalendarGrid({ projectId = null }) {
                             <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
                               ✓ Completed
                             </span>
-                            {!projectCompleted && (
+                            {!guestMode && !projectCompleted && (
                               <button
                                 className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
                                 onClick={() => {
                                   if (window.confirm("Are you sure you want to unfreeze this task?")) {
                                     toggleTaskCompleted(t.id);
+                                  }
+                                }}
+                              >
+                                Unfreeze
+                              </button>
+                            )}
+                            {guestMode && !projectCompleted && (
+                              <button
+                                className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
+                                onClick={() => {
+                                  if (window.confirm("Are you sure you want to unfreeze this task?")) {
+                                    demoToggleTaskCompleted(t.id);
                                   }
                                 }}
                               >
@@ -386,7 +465,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                               className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
                               onClick={() => {
                                 if (window.confirm("Are you sure you want to finish this task? This will freeze the task.")) {
-                                  toggleTaskCompleted(t.id);
+                                  guestMode ? demoToggleTaskCompleted(t.id) : toggleTaskCompleted(t.id);
                                 }
                               }}
                             >
@@ -407,7 +486,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                         key={i}
                         className={`h-16 border-r border-[rgba(26,29,35,0.1)] p-0 text-center last:border-r-0 ${
                           isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
-                        } ${projectCompleted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                        } ${projectCompleted && !guestMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                         onClick={() => toggleCell(t.id, d)}
                         title={`Click to cycle status: ${cfg.label}`}
                       >
@@ -454,11 +533,13 @@ export default function TaskCalendarGrid({ projectId = null }) {
       {/* SAVE */}
       <div className="mt-4 flex justify-end">
         <button
-          className="rounded-lg bg-[#E8820C] px-6 py-2 font-sans text-[13px] font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+          className={`rounded-lg px-6 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+            guestMode ? 'bg-[#1A56A0] hover:bg-[#144480]' : 'bg-[#E8820C] hover:bg-[#B85A00]'
+          }`}
           onClick={handleSave}
-          disabled={saving || projectCompleted}
+          disabled={saving || (!guestMode && projectCompleted)}
         >
-          {saving ? 'Saving…' : 'Save'}
+          {guestMode ? 'Sign Up to Save' : saving ? 'Saving…' : 'Save'}
         </button>
       </div>
         </>

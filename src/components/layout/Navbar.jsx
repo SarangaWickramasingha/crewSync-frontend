@@ -8,7 +8,7 @@ import { useAuth } from "@/context/AuthContext";
 export default function Navbar({ variant = "default", activeTab = "Home" }) {
   const router = useRouter();
   const [navOpen, setNavOpen] = useState(false);
-  const { isGuest, logout } = useAuth();
+  const { isGuest, isOwner, isProvider, isSupplier, isAdmin, logout } = useAuth();
 
   const Logo = () => (
     <div
@@ -55,8 +55,18 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
     );
   }
 
-  /* ── PROPERTY OWNER DASHBOARD variant ── */
-  if (variant === "propertyOwnerDashboard") {
+  /* ── DASHBOARD variant ── */
+  if (variant === "propertyOwnerDashboard" || variant === "dashboard") {
+    const dashboardRoute = isOwner
+      ? "/dashboard/propertyowner"
+      : isProvider
+      ? "/dashboard/serviceprovider"
+      : isSupplier
+      ? "/dashboard/supplier"
+      : isAdmin
+      ? "/dashboard/admin"
+      : "/dashboard/propertyowner";
+
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-['DM_Sans']">
         <Logo />
@@ -68,16 +78,10 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
             Home
           </button>
           <button
-            onClick={() => {
-              if (isGuest) {
-                router.push("/dashboard/propertyowner/timeline");
-              } else {
-                router.push("/dashboard/propertyowner");
-              }
-            }}
+            onClick={() => router.push(isGuest ? "/dashboard/propertyowner/timeline" : dashboardRoute)}
             className="rounded-md bg-white/10 px-3 py-1.5 text-[0.8rem] font-medium text-[#e8820c] transition-all"
           >
-            {isGuest ? "Guest Property Owner Dashboard" : "Property Owner Dashboard"}
+            Dashboard
           </button>
         </div>
         <div className="flex items-center gap-2">
@@ -126,7 +130,7 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
           onClick={() => window.history.back()}
           className="flex items-center gap-[6px] text-white/50 text-[0.82rem] font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none font-['DM_Sans']"
         >
-          ← Back
+          Back
         </button>
       </nav>
     );
@@ -134,8 +138,19 @@ export default function Navbar({ variant = "default", activeTab = "Home" }) {
 
   /* ── DEFAULT variant ── */
   // Dynamically attach the accurate dashboard path into your primary tabs array
+  const dashboardHref = isOwner
+    ? "/dashboard/propertyowner"
+    : isProvider
+    ? "/dashboard/serviceprovider"
+    : isSupplier
+    ? "/dashboard/supplier"
+    : isAdmin
+    ? "/dashboard/admin"
+    : "/dashboard/propertyowner/timeline";
+
   const tabs = [
     { label: "Home", href: "/home" },
+    { label: "Dashboard", href: dashboardHref },
   ];
 
   return (

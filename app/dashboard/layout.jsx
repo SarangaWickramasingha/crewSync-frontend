@@ -134,7 +134,7 @@ export default function DashboardLayout({ children }) {
 
     return (
         <div className="min-h-screen flex flex-col bg-surface">
-            <Navbar />
+            <Navbar variant="dashboard" />
             <div className="flex flex-1 min-h-[calc(100vh-60px)]">
 
                 {/* Mobile overlay */}
