@@ -1,43 +1,29 @@
 'use client';
 import { MONTHS } from '@/src/hooks/supplier/useOrdersFilters';
 import StatusPill from '@/src/components/ui/StatusPill';
-import { selectClass } from '@/src/components/supplier/formStyles';
 
-export function OrdersFilterToggle({ open, hasActiveFilter, onClick }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`inline-flex items-center gap-2 text-[0.78rem] font-semibold px-3.5 py-2 rounded-lg border transition-all cursor-pointer
-        ${open
-          ? 'bg-crewAmber-light text-crewAmber-dark border-crewAmber/30'
-          : 'bg-white text-crewSlate border-black/10 hover:border-crewAmber/40 hover:text-crewAmber-dark'
-        }`}
-    >
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-        <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-      </svg>
-      Filter
-      {hasActiveFilter && <span className="w-1.5 h-1.5 rounded-full bg-crewAmber" />}
-    </button>
-  );
-}
+const selectClass =
+  'w-full border border-border rounded-lg px-3 py-2 text-xs text-slate bg-white outline-none ' +
+  'focus:border-supplier focus:ring-1 focus:ring-supplier/20 transition-all cursor-pointer';
 
 export default function OrdersFilterPanel({
   filters,
+  appliedFilters,
   years,
   items,
   onSelectYear,
   onSetMonth,
   onSetItem,
   onSetStatus,
+  onApply,
   onClear,
   hasActiveFilter,
 }) {
   const { year, month, item, status } = filters;
-  const label = 'text-[0.7rem] font-semibold text-crewMuted uppercase tracking-wide';
+  const label = 'text-[0.7rem] font-semibold text-muted uppercase tracking-wide';
 
   return (
-    <div className="bg-white border border-black/10 rounded-xl px-5 py-4 mb-4 shadow-sm">
+    <div className="bg-white border border-border rounded-xl px-5 py-4 mb-4 shadow-sm">
       <div className="flex flex-wrap gap-x-6 gap-y-3 items-end">
         <div className="flex flex-col gap-1 min-w-[110px]">
           <label className={label}>Year</label>
@@ -52,7 +38,7 @@ export default function OrdersFilterPanel({
         </div>
 
         <div className="flex flex-col gap-1 min-w-[120px]">
-          <label className={`${label} ${year ? 'text-crewMuted' : 'text-black/25'}`}>
+          <label className={`${label} ${year ? 'text-muted' : 'text-slate/30'}`}>
             Month{!year && <span className="ml-1 normal-case font-normal">(select year first)</span>}
           </label>
           <select
@@ -66,7 +52,7 @@ export default function OrdersFilterPanel({
           </select>
         </div>
 
-        <div className="self-stretch w-px bg-black/8 hidden sm:block" />
+        <div className="self-stretch w-px bg-border hidden sm:block" />
 
         <div className="flex flex-col gap-1 min-w-[150px]">
           <label className={label}>Item</label>
@@ -82,13 +68,14 @@ export default function OrdersFilterPanel({
             {['', 'New', 'Processing', 'Delivered', 'Rejected'].map((s) => (
               <button
                 key={s}
+                type="button"
                 onClick={() => onSetStatus(s)}
                 className={`text-[0.7rem] font-semibold px-3 py-1.5 rounded-full border transition-all cursor-pointer
                   ${status === s
                     ? s === ''
-                      ? 'bg-crewSlate text-white border-crewSlate'
-                      : 'bg-crewAmber-light text-crewAmber-dark border-transparent'
-                    : 'bg-white text-crewMuted border-black/10 hover:border-black/20'
+                      ? 'bg-supplier text-white border-supplier'
+                      : 'bg-supplier-light text-supplier-dark border-supplier/30'
+                    : 'bg-white text-muted border-border hover:border-slate/30'
                   }`}
               >
                 {s === '' ? 'All' : s}
@@ -97,34 +84,49 @@ export default function OrdersFilterPanel({
           </div>
         </div>
 
-        {hasActiveFilter && (
+        <div className="flex items-center gap-2 self-end ml-auto">
           <button
-            onClick={onClear}
-            className="self-end text-[0.72rem] font-medium text-crewMuted hover:text-[#C0392B] transition-colors cursor-pointer underline underline-offset-2 bg-transparent border-none"
+            type="button"
+            onClick={onApply}
+            className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-supplier hover:bg-supplier-dark text-white text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-sm"
           >
-            Clear filters
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
+            </svg>
+            Filter
           </button>
-        )}
+
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="text-[0.72rem] font-medium text-muted hover:text-supplier-dark transition-colors cursor-pointer underline underline-offset-2 bg-transparent border-none px-2 py-2"
+            >
+              Clear filters
+            </button>
+          )}
+        </div>
       </div>
 
       {hasActiveFilter && (
-        <div className="flex flex-wrap gap-1.5 mt-3 pt-3 border-t border-black/6">
-          {year && month && (
-            <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-semibold bg-crewSurface text-crewSlate px-2.5 py-1 rounded-full">
-              📅 {month} {year}
+        <div className="flex flex-wrap items-center gap-1.5 mt-3 pt-3 border-t border-border">
+          <span className="text-[0.68rem] text-muted font-medium mr-1">Active filters:</span>
+          {appliedFilters?.year && appliedFilters?.month && (
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold bg-supplier-light text-supplier-dark border border-supplier/20 px-2.5 py-1 rounded-full">
+              📅 {appliedFilters.month} {appliedFilters.year}
             </span>
           )}
-          {year && !month && (
-            <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-semibold bg-crewSurface text-crewSlate px-2.5 py-1 rounded-full">
-              📅 {year} (select month to filter)
+          {appliedFilters?.year && !appliedFilters?.month && (
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold bg-supplier-light text-supplier-dark border border-supplier/20 px-2.5 py-1 rounded-full">
+              📅 {appliedFilters.year}
             </span>
           )}
-          {item && (
-            <span className="inline-flex items-center gap-1.5 text-[0.68rem] font-semibold bg-crewSurface text-crewSlate px-2.5 py-1 rounded-full">
-              📦 {item}
+          {appliedFilters?.item && (
+            <span className="inline-flex items-center gap-1 text-[0.68rem] font-semibold bg-supplier-light text-supplier-dark border border-supplier/20 px-2.5 py-1 rounded-full">
+              📦 {appliedFilters.item}
             </span>
           )}
-          {status && <StatusPill status={status} withDot />}
+          {appliedFilters?.status && <StatusPill status={appliedFilters.status} />}
         </div>
       )}
     </div>
