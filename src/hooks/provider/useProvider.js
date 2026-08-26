@@ -73,6 +73,12 @@ export function useDeleteReviewPhoto() {
   });
 }
 
+export function useReportReview() {
+  return useMutation({
+    mutationFn: providerApi.reportReview,
+  });
+}
+
 export function useProfile() {
   return useQuery({ queryKey: PROFILE_KEY, queryFn: providerApi.fetchProfile });
 }

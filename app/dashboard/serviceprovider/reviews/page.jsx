@@ -4,6 +4,7 @@ import {
   useAllReviews,
   useUploadReviewPhotos,
   useDeleteReviewPhoto,
+  useReportReview,
 } from "@/src/hooks/provider/useProvider";
 import PhotoDeleteModal from "@/src/components/serviceProvider/PhotoDeleteModal";
 
@@ -65,12 +66,17 @@ export default function ReviewsPage() {
         const saved = localStorage.getItem('crewsync_provider_review_photos');
         if (saved) setLocalAddedPhotos(JSON.parse(saved));
       } catch (e) {}
+      try {
+        const savedReports = localStorage.getItem('crewsync_reported_reviews');
+        if (savedReports) setReportedIds(JSON.parse(savedReports));
+      } catch (e) {}
     }
   }, []);
 
   const { data, isLoading, isError, error } = useAllReviews();
   const uploadPhotos = useUploadReviewPhotos();
   const deletePhoto = useDeleteReviewPhoto();
+  const reportReviewMutation = useReportReview();
 
   const rawReviews = data?.reviews || (Array.isArray(data) ? data : []);
   const reviews = rawReviews.map((r, i) => {
@@ -202,13 +208,33 @@ export default function ReviewsPage() {
     setReportOpen(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
-  function submitReport(id) {
-    // TODO: wire to backend endpoint once report feature is built
+  async function submitReport(id) {
     const txt = (reportText[id] || '').trim();
     if (!txt) return;
-    setReportedIds(prev => ({ ...prev, [id]: true }));
-    setReportText(prev => ({ ...prev, [id]: '' }));
-    setReportOpen(prev => ({ ...prev, [id]: false }));
+
+    const reviewObj = reviews.find(r => r.id === id);
+    try {
+      await reportReviewMutation.mutateAsync({
+        reviewId: id,
+        message: txt,
+        reviewerName: reviewObj?.name,
+      });
+
+      setReportedIds(prev => {
+        const next = { ...prev, [id]: true };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('crewsync_reported_reviews', JSON.stringify(next));
+          } catch (e) {}
+        }
+        return next;
+      });
+      setReportText(prev => ({ ...prev, [id]: '' }));
+      setReportOpen(prev => ({ ...prev, [id]: false }));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to submit report.');
+    }
   }
 
   if (isLoading) {
@@ -315,11 +341,15 @@ export default function ReviewsPage() {
                 style={{ background: C.blue, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
                 {uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id ? 'Saving…' : 'Update'}
               </button>
-              {!reportedIds[r.id] && (
+              {!reportedIds[r.id] ? (
                 <button onClick={() => toggleReport(r.id)}
                   style={{ background: 'none', color: '#B3261E', border: '1px solid rgba(179,38,30,0.35)', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   🚩 Report
                 </button>
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: '#B3261E', fontWeight: 600, display: 'inline-flex', alignItems: 'center', padding: '8px 4px', gap: '4px' }}>
+                  ✓ Reported to Admin
+                </span>
               )}
             </div>
 
@@ -330,9 +360,11 @@ export default function ReviewsPage() {
                   placeholder="Explain why you're reporting this review…" rows={2}
                   style={{ width: '100%', border: `1px solid ${C.border}`, borderRadius: C.radiusSm, padding: '8px 12px', fontSize: '0.8rem', fontFamily: "'DM Sans', sans-serif", outline: 'none', color: C.slate, resize: 'vertical' }} />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                  <button onClick={() => submitReport(r.id)}
-                    style={{ background: '#B3261E', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}>
-                    Submit Report
+                  <button
+                    onClick={() => submitReport(r.id)}
+                    disabled={reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id}
+                    style={{ background: '#B3261E', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id) ? 'wait' : 'pointer', opacity: (reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id) ? 0.6 : 1 }}>
+                    {reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id ? 'Submitting…' : 'Submit Report'}
                   </button>
                   <button onClick={() => toggleReport(r.id)}
                     style={{ background: 'none', color: C.muted, border: `1px solid ${C.border}`, padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 500, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}>
