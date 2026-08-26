@@ -5,7 +5,7 @@ import Link from 'next/link';
 import {
     LayoutDashboard, Users, Wrench, Star, MessageSquare,
     CalendarDays, FileText, Search, Package, ShoppingCart,
-    UserCircle, Bell, Briefcase, Menu, X, Home,
+    UserCircle, Bell, Briefcase, Home,
     FolderOpen, ShoppingBag, ClipboardList, BarChart3,
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
@@ -98,17 +98,24 @@ const ROLE_LABEL = {
 };
 
 const ROLE_AVATAR = {
-    PROPERTY_OWNER: 'bg-orange-100 text-orange-700',
-    SERVICE_PROVIDER: 'bg-blue-100 text-blue-700',
-    MATERIAL_SUPPLIER: 'bg-orange-100 text-orange-700',
+    PROPERTY_OWNER: 'bg-[var(--color-owner-light)] text-[var(--color-owner-dark)]',
+    SERVICE_PROVIDER: 'bg-[var(--color-provider-light)] text-[var(--color-provider-dark)]',
+    MATERIAL_SUPPLIER: 'bg-[var(--color-supplier-light)] text-[var(--color-supplier-dark)]',
     ADMIN: 'bg-purple-100 text-purple-700',
 };
 
 const ROLE_DOT = {
-    PROPERTY_OWNER: 'bg-orange-500',
-    SERVICE_PROVIDER: 'bg-blue-500',
-    MATERIAL_SUPPLIER: 'bg-orange-500',
+    PROPERTY_OWNER: 'bg-[var(--color-owner)]',
+    SERVICE_PROVIDER: 'bg-[var(--color-provider)]',
+    MATERIAL_SUPPLIER: 'bg-[var(--color-supplier)]',
     ADMIN: 'bg-purple-500',
+};
+
+const ROLE_SIDEBAR_ACTIVE = {
+    PROPERTY_OWNER: { bg: 'bg-[var(--color-owner-light)]', text: 'text-[var(--color-owner)]' },
+    SERVICE_PROVIDER: { bg: 'bg-[var(--color-provider-light)]', text: 'text-[var(--color-provider)]' },
+    MATERIAL_SUPPLIER: { bg: 'bg-[var(--color-supplier-light)]', text: 'text-[var(--color-supplier)]' },
+    ADMIN: { bg: 'bg-amber-50', text: 'text-amber-600' },
 };
 
 export default function DashboardLayout({ children }) {
@@ -128,13 +135,14 @@ export default function DashboardLayout({ children }) {
 
     const roleKey = (role ?? '').toUpperCase();
     const sections = NAV[roleKey] ?? NAV.PROPERTY_OWNER;
+    const sidebarColors = ROLE_SIDEBAR_ACTIVE[roleKey] ?? ROLE_SIDEBAR_ACTIVE.ADMIN;
 
     const displayName = user?.name ?? user?.fname ?? 'User';
     const initials = displayName.split(' ').map(n => n[0]).join('').slice(0, 2).toUpperCase();
 
     return (
         <div className="min-h-screen flex flex-col bg-surface">
-            <Navbar variant="dashboard" />
+            <Navbar variant="dashboard" onHamburger={() => setSidebarOpen(v => !v)} />
             <div className="flex flex-1 min-h-[calc(100vh-60px)]">
 
                 {/* Mobile overlay */}
@@ -144,14 +152,14 @@ export default function DashboardLayout({ children }) {
 
                 {/* ── Sidebar ── */}
                 <aside className={`
-                fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[230px] bg-white border-r border-border
+                fixed top-[60px] left-0 h-[calc(100vh-60px)] w-60 bg-white border-r border-black/10
                 flex flex-col p-4 z-40 transition-transform duration-200 overflow-y-auto
                 ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
                 md:translate-x-0 md:sticky md:top-[60px] md:h-[calc(100vh-60px)] md:z-auto
             `}>
 
                     {/* User card */}
-                    <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-border">
+                    <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-black/10">
                         <div className={`w-9 h-9 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${ROLE_AVATAR[roleKey] ?? 'bg-gray-100 text-gray-600'}`}>
                             {initials}
                         </div>
@@ -159,7 +167,7 @@ export default function DashboardLayout({ children }) {
                             <p className="text-sm font-semibold text-slate truncate">{displayName}</p>
                             <div className="flex items-center gap-1.5 mt-0.5">
                                 <span className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${ROLE_DOT[roleKey] ?? 'bg-gray-400'}`} />
-                                <p className="text-[11px] text-muted truncate">{ROLE_LABEL[roleKey] ?? 'User'}</p>
+                                <p className="text-[0.65rem] text-muted truncate">{ROLE_LABEL[roleKey] ?? 'User'}</p>
                             </div>
                         </div>
                     </div>
@@ -168,7 +176,7 @@ export default function DashboardLayout({ children }) {
                     <nav className="flex flex-col gap-4 flex-1">
                         {sections.map(({ section, items }) => (
                             <div key={section}>
-                                <p className="text-[10px] font-semibold text-muted uppercase tracking-widest mb-1.5 px-2">
+                                <p className="text-[0.65rem] font-semibold text-muted uppercase tracking-widest mb-2 px-2">
                                     {section}
                                 </p>
                                 <div className="flex flex-col gap-0.5">
@@ -181,19 +189,18 @@ export default function DashboardLayout({ children }) {
                                                 key={item.href}
                                                 href={item.href}
                                                 onClick={() => setSidebarOpen(false)}
-                                                className={`flex items-center gap-3 px-2 py-2 rounded-xl text-sm transition-all
+                                                className={`flex items-center gap-3 px-2 py-2 rounded-lg text-sm transition-all
                                                 ${active
-                                                        ? 'bg-orange-50 text-orange-600 font-semibold'
+                                                        ? `${sidebarColors.bg} ${sidebarColors.text} font-medium`
                                                         : 'text-slate-light hover:bg-surface hover:text-slate'
                                                     }`}
                                             >
-                                                {/* Icon box */}
                                                 <div className={`w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 ${item.iconBg}`}>
                                                     <Icon size={16} className={item.iconColor} strokeWidth={2.2} />
                                                 </div>
                                                 <span className="flex-1">{item.label}</span>
                                                 {item.badge && (
-                                                    <span className="bg-orange-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full">
+                                                    <span className={`${sidebarColors.bg} ${sidebarColors.text} text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full`}>
                                                         {item.badge}
                                                     </span>
                                                 )}
@@ -205,19 +212,10 @@ export default function DashboardLayout({ children }) {
                         ))}
                     </nav>
 
-
                 </aside>
 
                 {/* ── Main ── */}
                 <div className="flex-1 flex flex-col min-h-full bg-surface">
-                    {/* Mobile top bar */}
-                    <div className="md:hidden flex items-center gap-3 px-4 py-3 bg-white border-b border-border">
-                        <button onClick={() => setSidebarOpen(v => !v)} className="text-slate">
-                            {sidebarOpen ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}
-                        </button>
-                        <span className="font-syne font-bold text-slate text-sm">Dashboard</span>
-                    </div>
-
                     <main className="flex-1 p-6 md:p-8 bg-surface">
                         {children}
                     </main>
