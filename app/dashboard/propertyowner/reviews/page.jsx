@@ -97,7 +97,7 @@ export default function PropertyOwnerReviewsPage() {
         action={
           <button
             onClick={() => setIsWriteOpen(true)}
-            className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors cursor-pointer"
+            className="bg-[#16a34a] hover:bg-[#15803d] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors cursor-pointer"
           >
             + Write Review
           </button>

@@ -11,7 +11,7 @@ const COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E'
 const STATUS_CFG = {
   0: { label: 'Empty', bg: 'transparent', dot: '#ccc' },
   1: { label: 'Done', bg: '#E6F4EC', dot: '#1B6E3A' },
-  2: { label: 'In Progress', bg: '#FFF3E0', dot: '#E8820C' },
+  2: { label: 'In Progress', bg: '#dcfce7', dot: '#16a34a' },
   3: { label: 'Blocked', bg: '#FDECEA', dot: '#C0392B' },
 };
 
@@ -61,7 +61,7 @@ function AddTaskModal({ onSave, onClose }) {
 
         <div className="text-[11px] font-medium text-[#8A8FA8]">Task name</div>
         <input
-          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#16a34a]"
           placeholder="e.g. Roofing Task 2"
           value={name}
           autoFocus
@@ -72,7 +72,7 @@ function AddTaskModal({ onSave, onClose }) {
         <div className="text-[11px] font-medium text-[#8A8FA8]">Estimated Budget (LKR)</div>
         <input
           type="number"
-          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#16a34a]"
           placeholder="e.g. 250000"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
@@ -100,7 +100,7 @@ function AddTaskModal({ onSave, onClose }) {
             Cancel
           </button>
           <button
-            className="rounded-md border-none bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white"
+            className="rounded-md border-none bg-[#16a34a] px-3 py-[5px] font-sans text-xs font-semibold text-white"
             onClick={submit}
           >
             Add Task
@@ -260,7 +260,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Total Cost</span>
-          <span className="font-syne text-base font-bold text-[#B85A00]">LKR {fmtCompact(totalCost)}</span>
+          <span className="font-syne text-base font-bold text-[#15803d]">LKR {fmtCompact(totalCost)}</span>
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Remaining</span>
@@ -300,8 +300,8 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
       </div>
 
       {!guestMode && projectCompleted && (
-        <div className="mb-3.5 rounded-lg border border-[rgba(232,130,12,0.3)] bg-[#FFF3E0] px-4 py-2.5 text-[13px] text-[#B85A00] flex items-center gap-2">
-          <svg className="w-4 h-4 text-[#B85A00] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+        <div className="mb-3.5 rounded-lg border border-[rgba(22,163,74,0.3)] bg-[#dcfce7] px-4 py-2.5 text-[13px] text-[#15803d] flex items-center gap-2">
+          <svg className="w-4 h-4 text-[#15803d] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
           <span>Project marked as completed — editing is locked. Click &quot;Unlock Project&quot; to make changes.</span>
@@ -335,7 +335,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
           </div>
           {!guestMode && (
             <button
-              className="rounded-md bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+              className="rounded-md bg-[#16a34a] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#15803d] disabled:cursor-not-allowed disabled:opacity-50"
               onClick={() => setShowAdd(true)}
               disabled={projectCompleted}
             >
@@ -358,10 +358,10 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                     <th
                       key={i}
                       className={`sticky top-0 z-[2] whitespace-nowrap border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-2.5 py-[7px] text-center font-sans text-[11px] font-semibold text-[#8A8FA8] last:border-r-0 ${
-                        isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
+                        isT ? 'bg-[rgba(22,163,74,0.05)]' : ''
                       }`}
                     >
-                      <span className={isT ? '!font-bold !text-[#B85A00]' : ''}>
+                      <span className={isT ? '!font-bold !text-[#15803d]' : ''}>
                         {DOW[d.getDay()]} {d.getDate()}
                       </span>
                     </th>
@@ -407,7 +407,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                             Budget: LKR {(t.budget || 0).toLocaleString()}
                           </span>
                         )}
-                        <span className="text-[11px] font-semibold text-[#B85A00]">
+                        <span className="text-[11px] font-semibold text-[#15803d]">
                           Cost: LKR {(t.cost || 0).toLocaleString()}
                         </span>
                         {t.assignedSP && (
@@ -436,7 +436,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                             </span>
                             {!guestMode && !projectCompleted && (
                               <button
-                                className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
+                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
                                 onClick={() => {
                                   if (window.confirm("Are you sure you want to unfreeze this task?")) {
                                     toggleTaskCompleted(t.id);
@@ -448,7 +448,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                             )}
                             {guestMode && !projectCompleted && (
                               <button
-                                className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
+                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
                                 onClick={() => {
                                   if (window.confirm("Are you sure you want to unfreeze this task?")) {
                                     demoToggleTaskCompleted(t.id);
@@ -485,7 +485,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                       <td
                         key={i}
                         className={`h-16 border-r border-[rgba(26,29,35,0.1)] p-0 text-center last:border-r-0 ${
-                          isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
+                          isT ? 'bg-[rgba(22,163,74,0.05)]' : ''
                         } ${projectCompleted && !guestMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                         onClick={() => toggleCell(t.id, d)}
                         title={`Click to cycle status: ${cfg.label}`}
@@ -534,7 +534,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
       <div className="mt-4 flex justify-end">
         <button
           className={`rounded-lg px-6 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
-            guestMode ? 'bg-[#1A56A0] hover:bg-[#144480]' : 'bg-[#E8820C] hover:bg-[#B85A00]'
+            guestMode ? 'bg-[#1A56A0] hover:bg-[#144480]' : 'bg-[#16a34a] hover:bg-[#15803d]'
           }`}
           onClick={handleSave}
           disabled={saving || (!guestMode && projectCompleted)}
