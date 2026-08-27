@@ -8,8 +8,7 @@ export default function RegisterPage() {
     return (
         <>
             <Navbar variant="register" />
-            <div className="flex-1 flex items-start justify-center px-4 py-8 bg-surface relative overflow-hidden">
-                {/* Subtle radial glow — top-right */}
+            <div className="flex-1 flex items-start justify-center px-4 pt-8 relative overflow-hidden">                {/* Subtle radial glow — top-right */}
                 <div
                     aria-hidden
                     className="pointer-events-none absolute -top-20 -right-20 w-[450px] h-[450px]
