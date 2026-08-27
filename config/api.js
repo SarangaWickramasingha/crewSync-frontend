@@ -34,6 +34,11 @@ export const API_FEEDBACK_SUBMIT = `${API_BASE}/api/feedback/submit`;
 // 
 export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
 
+//OTP verification
+
+export const API_AUTH_SEND_OTP = `${API_BASE}/api/auth/send-otp`;
+export const API_AUTH_VERIFY_OTP = `${API_BASE}/api/auth/verify-otp`;
+
 
 
 // ── SEARCH ────────────────────────────────────────────────────────────────────
