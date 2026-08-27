@@ -1,5 +1,6 @@
 'use client';
 import { useState } from 'react';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 import { Search } from 'lucide-react';
 import { useAdminFeedback, useUpdateAdminFeedback } from '@/src/hooks/admin/useAdmin';
 import ConfirmHandledModal from '@/src/components/admin/ConfirmHandledModal';
@@ -21,6 +22,7 @@ export default function AdminFeedbackPage() {
     const [search, setSearch] = useState('');
     const [searchBy, setSearchBy] = useState('subject');
     const [itemToToggle, setItemToToggle] = useState(null);
+    const [page, setPage] = useState(1);
 
     const feedback = data?.feedback ?? [];
 
@@ -28,6 +30,8 @@ export default function AdminFeedbackPage() {
         const q = search.trim().toLowerCase();
         return !q || item[searchBy]?.toLowerCase().includes(q);
     });
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const confirmToggle = async () => {
         try {
@@ -64,14 +68,14 @@ export default function AdminFeedbackPage() {
                         type="text"
                         placeholder={`Search by ${searchBy}…`}
                         value={search}
-                        onChange={e => setSearch(e.target.value)}
+                        onChange={e => { setSearch(e.target.value); setPage(1); }}
                         className="w-full pl-8 pr-3 py-2.5 border border-border rounded-lg text-xs text-slate
                             bg-white focus:outline-none focus:border-amber placeholder:text-muted"
                     />
                 </div>
                 <select
                     value={searchBy}
-                    onChange={e => setSearchBy(e.target.value)}
+                    onChange={e => { setSearchBy(e.target.value); setPage(1); }}
                     className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
                 >
                     <option value="subject">Search By: Subject</option>
@@ -106,7 +110,7 @@ export default function AdminFeedbackPage() {
                             <tr><td colSpan={6} className="px-4 py-5 text-muted">Loading feedback…</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={6} className="px-4 py-5 text-muted">No feedback found.</td></tr>
-                        ) : filtered.map(item => (
+                        ) : paginated.map(item => (
                             <tr key={item.feedback_id} className={`hover:bg-surface transition-all ${bool(item.is_handled) ? 'opacity-50' : ''}`}>
                                 <td className="px-4 py-3 font-medium text-slate">{item.name}</td>
                                 <td className="px-4 py-3 text-muted">{item.email}</td>
@@ -129,6 +133,11 @@ export default function AdminFeedbackPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );
