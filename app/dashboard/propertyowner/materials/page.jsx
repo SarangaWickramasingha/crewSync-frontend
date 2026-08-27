@@ -83,7 +83,7 @@ export default function PropertyOwnerMaterialsPage() {
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E8820C] text-slate-800"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a] text-slate-800"
           >
             <option value={ALL_MATERIALS}>All Materials</option>
             {FILTER_CATEGORIES.map((mat) => (
@@ -101,7 +101,7 @@ export default function PropertyOwnerMaterialsPage() {
           <select
             value={region}
             onChange={(e) => setRegion(e.target.value)}
-            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E8820C] text-slate-800"
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a] text-slate-800"
           >
             <option value="All Regions">All Regions</option>
             {DISTRICTS.map((dist) => (
@@ -115,7 +115,7 @@ export default function PropertyOwnerMaterialsPage() {
         <div className="self-end">
           <button
             type="submit"
-            className="bg-[#E8820C] hover:bg-[#d67305] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 h-[38px]"
+            className="bg-[#16a34a] hover:bg-[#15803d] text-white text-sm font-semibold px-5 py-2 rounded-lg transition-colors cursor-pointer flex items-center gap-1.5 h-[38px]"
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />

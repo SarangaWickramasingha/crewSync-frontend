@@ -124,7 +124,7 @@ export default function PropertyOwnerTimelinePage() {
           </p>
           <Link
             href="/project-form"
-            className="mt-4 rounded-lg bg-[#E8820C] px-5 py-2 text-[13px] font-semibold text-white hover:bg-[#B85A00]"
+            className="mt-4 rounded-lg bg-[#16a34a] px-5 py-2 text-[13px] font-semibold text-white hover:bg-[#15803d]"
           >
             + Start a New Project
           </Link>
@@ -134,7 +134,7 @@ export default function PropertyOwnerTimelinePage() {
           <div key={p.project_id} className="mb-10">
             <div className="mb-3 flex items-center gap-2.5">
               <h2 className="font-syne text-lg font-bold text-[#1A1D23]">{p.project_name}</h2>
-              <span className="rounded-full bg-[#FFF3E0] px-2.5 py-0.5 text-[11px] font-semibold text-[#B85A00]">
+              <span className="rounded-full bg-[#dcfce7] px-2.5 py-0.5 text-[11px] font-semibold text-[#15803d]">
                 In Progress
               </span>
             </div>

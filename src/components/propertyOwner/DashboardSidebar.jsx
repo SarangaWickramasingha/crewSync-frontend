@@ -5,6 +5,17 @@ import { usePathname } from 'next/navigation';
 import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 import { useAuth } from '@/context/AuthContext';
 
+import {
+  LayoutDashboard,
+  CalendarDays,
+  MessageSquare,
+  BarChart3,
+  Search,
+  Package,
+  Star,
+  Bell
+} from 'lucide-react';
+
 export default function DashboardSidebar({
   userName = 'Nimal Kumarasinghe',
   userRole = 'Property Owner',
@@ -22,14 +33,14 @@ export default function DashboardSidebar({
   const activeName = user?.name || userName;
   const activeInitials = user?.avatar || userInitials;
 
-  const navSections = isGuest
+    const navSections = isGuest
     ? [
         {
           label: 'Explore',
           items: [
-            { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline' },
-            { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
-            { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
+            { icon: CalendarDays, text: 'Timeline', href: '/dashboard/propertyowner/timeline' },
+            { icon: Search, text: 'Find Services', href: '/dashboard/propertyowner/services' },
+            { icon: Package, text: 'Materials', href: '/dashboard/propertyowner/materials' },
           ],
         },
       ]
@@ -37,24 +48,24 @@ export default function DashboardSidebar({
         {
           label: 'Project',
           items: [
-            { icon: '/icons/propertyowner/overview.png', text: 'Overview', href: '/dashboard/propertyowner' },
-            { icon: '/icons/propertyowner/timeline.png', text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: pendingCount > 0 ? pendingCount : null },
-            { icon: '/icons/propertyowner/forum.png', text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
-            { icon: '/icons/propertyowner/reports.png', text: 'Reports', href: '/dashboard/propertyowner/reports' },
+            { icon: LayoutDashboard, text: 'Overview', href: '/dashboard/propertyowner' },
+            { icon: CalendarDays, text: 'Timeline', href: '/dashboard/propertyowner/timeline', badge: pendingCount > 0 ? pendingCount : null },
+            { icon: MessageSquare, text: 'Project Forum', href: '/dashboard/propertyowner/forum', badge: 2 },
+            { icon: BarChart3, text: 'Reports', href: '/dashboard/propertyowner/reports' },
           ],
         },
         {
           label: 'Find & Hire',
           items: [
-            { icon: '/icons/propertyowner/services.png', text: 'Find Services', href: '/dashboard/propertyowner/services' },
-            { icon: '/icons/propertyowner/materials.png', text: 'Materials', href: '/dashboard/propertyowner/materials' },
+            { icon: Search, text: 'Find Services', href: '/dashboard/propertyowner/services' },
+            { icon: Package, text: 'Materials', href: '/dashboard/propertyowner/materials' },
           ],
         },
         {
           label: 'Account',
           items: [
-            { icon: '/icons/propertyowner/reviews.png', text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
-            { icon: '/icons/propertyowner/notifications.png', text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: unreadCount > 0 ? unreadCount : null },
+            { icon: Star, text: 'Reviews', href: '/dashboard/propertyowner/reviews' },
+            { icon: Bell, text: 'Notifications', href: '/dashboard/propertyowner/notifications', badge: unreadCount > 0 ? unreadCount : null },
           ],
         },
       ];
@@ -95,31 +106,38 @@ export default function DashboardSidebar({
             <div className="text-[0.65rem] font-semibold uppercase tracking-widest text-[#8A8FA8] mb-2 px-2">
               {section.label}
             </div>
-            <div className="flex flex-col gap-0.5">
-              {section.items.map((item) => {
-                const active = pathname === item.href;
-                return (
-                  <Link
-                    key={item.href}
-                    href={item.href}
-                    onClick={() => setOpen(false)}
-                    className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
-                      active
-                        ? 'bg-[var(--color-owner-light)] text-[var(--color-owner)] font-medium'
-                        : 'text-[#4A5068] hover:bg-[#F7F6F2] hover:text-[#1A1D23]'
-                    }`}
-                  >
-                    <span className="flex-1">{item.text}</span>
-                    {item.badge != null && (
-                      <span className="ml-auto bg-[var(--color-owner)] text-white text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">
-                        {item.badge}
-                      </span>
-                    )}
-                  </Link>
-                );
-              })}
+              <div className="flex flex-col gap-0.5">
+                {section.items.map((item) => {
+                  const active = pathname === item.href;
+                  const Icon = item.icon; // Get the Lucide icon component
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setOpen(false)}
+                      className={`flex items-center gap-2.5 px-2.5 py-2 rounded-lg text-sm transition-colors ${
+                        active
+                          ? 'bg-[var(--color-owner-light)] text-[var(--color-owner)] font-medium'
+                          : 'text-[#4A5068] hover:bg-[#F7F6F2] hover:text-[#1A1D23]'
+                      }`}
+                    >
+                      {/* Render the icon inside a rounded wrapper with the owner's light-green background */}
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center flex-shrink-0 bg-[var(--color-owner-light)]">
+                        <Icon size={16} className="text-[var(--color-owner-dark)]" strokeWidth={2.2} />
+                      </div>
+                    
+                      <span className="flex-1">{item.text}</span>
+                    
+                      {item.badge != null && (
+                        <span className="ml-auto bg-[var(--color-owner)] text-white text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full">
+                         {item.badge}
+                        </span>
+                     )}
+                   </Link>
+                  );
+                })}
+              </div>
             </div>
-          </div>
         ))}
       </div>
     </>
