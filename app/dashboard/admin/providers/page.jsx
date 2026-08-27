@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatusPill from '@/src/components/ui/StatusPill';
 import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 import { useServiceProviders, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
@@ -40,6 +41,7 @@ export default function AdminProvidersPage() {
     const [search, setSearch] = useState('');
     const [searchCategory, setSearchCategory] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
+    const [page, setPage] = useState(1);
 
     const providers = data?.providers ?? [];
 
@@ -64,6 +66,12 @@ export default function AdminProvidersPage() {
         const matchDistrict = !districtFilter || p.district === districtFilter;
         return matchSearch && matchDistrict;
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, searchCategory, districtFilter]);
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const handleSuspend = async (userId, currentStatus) => {
         const next = currentStatus === 'suspended' ? 'active' : 'suspended';
@@ -123,7 +131,7 @@ export default function AdminProvidersPage() {
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">Loading service providers…</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">No service providers found.</td></tr>
-                        ) : filtered.map(p => (
+                        ) : paginated.map(p => (
                             <tr key={p.provider_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{p.provider_id}</td>
                                 <td className="px-4 py-3 text-muted">{p.user_id}</td>
@@ -154,6 +162,11 @@ export default function AdminProvidersPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );
