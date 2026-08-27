@@ -1,8 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState, useMemo, useEffect } from 'react';
-import { projectApi, taskApi } from '@/src/api';
-
+import { projectApi, taskApi, notificationApi } from '@/src/api';
 const TasksContext = createContext(null);
 
 const INIT_TASKS = [];
@@ -30,6 +29,16 @@ export function TasksProvider({ children }) {
 
     async function init() {
       try {
+        // Load notifications from the database
+        try {
+          const notifsData = await notificationApi.fetchNotifications();
+          if (notifsData.notifications) {
+            setNotifications(notifsData.notifications);
+          }
+        } catch (notifErr) {
+           console.error('Failed to load user notifications:', notifErr);
+        }
+ 
         // If the URL already has a project_id parameter (e.g. from redirect),
         // let ProjectLoader load that specific project instead of overriding it here.
         if (typeof window !== 'undefined') {
@@ -65,19 +74,40 @@ export function TasksProvider({ children }) {
     init();
   }, []);
 
-  function addNotification(text) {
-    const now = new Date();
-    const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
-    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-    setNotifications((prev) => [{ id: uniqueId, text, time, read: false }, ...prev]);
-  }
+      async function addNotification(text) {
+        const now = new Date();
+        const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+        const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+        
+        // Add locally immediately for instant UI response
+        setNotifications((prev) => [{ id: uniqueId, text, time, read: false }, ...prev]);
+    
+        // Save to database asynchronously
+        try {
+          const data = await notificationApi.createNotification({ text, type: 'system' });
+          // Update the local notification with the real database ID
+          setNotifications((prev) => 
+            prev.map(n => n.id === uniqueId ? { ...n, id: data.notif_id } : n)
+          );
+        } catch (err) {
+          console.error("Failed to save notification:", err);
+        }
+      }   
 
   function markAllNotificationsRead() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
+    notificationApi.markRead().catch(err => console.error(err));
   }
 
   function toggleNotificationRead(id) {
-    setNotifications((prev) => prev.map((n) => (n.id === id ? { ...n, read: !n.read } : n)));
+    const n = notifications.find(notif => notif.id === id);
+    if (!n) return;
+    setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, read: !item.read } : item)));
+  
+    // Toggle status on database (send ID to mark it read, or implement toggle endpoint if needed)
+    if (!n.read) {
+      notificationApi.markRead(id).catch(err => console.error(err));
+    }
   }
 
   // ── LOAD PROJECT + TASKS FROM BACKEND ────────────────────────────────────────
@@ -119,6 +149,7 @@ export function TasksProvider({ children }) {
 
   function deleteNotification(id) {
     setNotifications((prev) => prev.filter((n) => n.id !== id));
+    notificationApi.deleteNotification(id).catch(err => console.error(err));
   }
 
   // ── ADD TASK ──────────────────────────────────────────────────────────────────
