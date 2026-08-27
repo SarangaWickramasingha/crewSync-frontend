@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import StatusPill from '@/src/components/ui/StatusPill';
 import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
 import { useMaterialSuppliers, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 
 const DISTRICTS = [
     'Colombo', 'Gampaha', 'Kandy', 'Matale', 'Galle', 'Matara', 'Nuwara Eliya',
@@ -37,6 +38,8 @@ export default function AdminMaterialSuppliersPage() {
 
     const suppliers = data?.suppliers ?? [];
 
+    const [page, setPage] = useState(1);
+
     const filtered = suppliers.filter(s => {
         const q = search.trim().toLowerCase();
         const fullName = `${s.fname ?? ''} ${s.lname ?? ''}`.toLowerCase();
@@ -58,6 +61,12 @@ export default function AdminMaterialSuppliersPage() {
         const matchDistrict = !districtFilter || s.district === districtFilter;
         return matchSearch && matchDistrict;
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, searchCategory, districtFilter]);
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const handleSuspend = async (userId, currentStatus) => {
         const next = currentStatus === 'suspended' ? 'active' : 'suspended';
@@ -117,7 +126,7 @@ export default function AdminMaterialSuppliersPage() {
                             <tr><td colSpan={8} className="px-4 py-5 text-muted">Loading suppliers…</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={8} className="px-4 py-5 text-muted">No suppliers found.</td></tr>
-                        ) : filtered.map(s => (
+                        ) : paginated.map(s => (
                             <tr key={s.supplier_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{s.supplier_id}</td>
                                 <td className="px-4 py-3 text-muted">{s.user_id}</td>
@@ -147,6 +156,11 @@ export default function AdminMaterialSuppliersPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );
