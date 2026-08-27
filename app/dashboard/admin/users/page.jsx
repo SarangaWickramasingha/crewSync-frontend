@@ -1,9 +1,10 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAdminUsers, useDeleteAdminUser } from '@/src/hooks/admin/useAdmin';
 import DeleteConfirmModal from '@/src/components/admin/DeleteConfirmModal';
 import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 
 const ROLE_LABEL = {
     property_owner: 'Property Owner',
@@ -35,6 +36,7 @@ export default function AdminUsersPage() {
     const [searchCategory, setSearchCategory] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
     const [userToDelete, setUserToDelete] = useState(null);
+    const [page, setPage] = useState(1);
 
     const users = data?.users ?? [];
 
@@ -61,6 +63,12 @@ export default function AdminUsersPage() {
         const matchDistrict = !districtFilter || u.district === districtFilter;
         return matchSearch && matchDistrict;
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, searchCategory, districtFilter]);
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const confirmDelete = async () => {
         try {
@@ -130,7 +138,7 @@ export default function AdminUsersPage() {
                             <tr><td colSpan={8} className="px-4 py-5 text-muted">Loading users…</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={8} className="px-4 py-5 text-muted">No users found.</td></tr>
-                        ) : filtered.map(u => (
+                        ) : paginated.map(u => (
                             <tr key={u.user_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{u.user_id}</td>
                                 <td className="px-4 py-3 font-medium text-slate">{u.fname} {u.lname}</td>
@@ -163,6 +171,11 @@ export default function AdminUsersPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );
