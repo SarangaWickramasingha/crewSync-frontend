@@ -61,7 +61,7 @@ export default function PropertyOwnerOverviewPage() {
                         router.push('/project-form');
                     }
                 }}
-                className="bg-[#E8820C] hover:bg-[#B85A00] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
+                className="bg-[#16a34a] hover:bg-[#15803d] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors">
                 + New Project
             </button>
         }
@@ -78,7 +78,7 @@ export default function PropertyOwnerOverviewPage() {
         <Card>
           <div className="flex justify-between items-center mb-5">
             <h3 className="font-syne text-base font-bold">Project Progress</h3>
-            <StatusPill variant={projectCompleted ? 'green' : 'amber'}>
+            <StatusPill variant="green">
               {projectCompleted ? 'Completed' : 'In Progress'}
             </StatusPill>
           </div>
@@ -86,7 +86,7 @@ export default function PropertyOwnerOverviewPage() {
             <svg width="90" height="90" viewBox="0 0 90 90" className="flex-shrink-0">
               <circle cx="45" cy="45" r="36" fill="none" stroke="#EEECEA" strokeWidth="10" />
               <circle
-                cx="45" cy="45" r="36" fill="none" stroke="#E8820C" strokeWidth="10"
+                cx="45" cy="45" r="36" fill="none" stroke="#16a34a" strokeWidth="10"
                 strokeDasharray={circumference} strokeDashoffset={dashOffset} strokeLinecap="round"
                 transform="rotate(-90 45 45)"
               />

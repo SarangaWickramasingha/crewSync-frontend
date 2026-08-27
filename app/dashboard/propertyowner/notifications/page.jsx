@@ -20,7 +20,7 @@ export default function PropertyOwnerNotificationsPage() {
         action={
           <button
             onClick={markAllNotificationsRead}
-            className="border border-black/10 rounded-md px-3.5 py-1.5 text-sm bg-transparent hover:bg-[#dcfce7] hover:text-[#15803d] transition-colors cursor-pointer"
+            className="border border-[#16a34a] text-[#16a34a] rounded-md px-3.5 py-1.5 text-sm bg-transparent hover:bg-[#dcfce7] transition-colors cursor-pointer"
           >
             Mark all read
           </button>
