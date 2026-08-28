@@ -85,9 +85,9 @@ export default function ForgotPasswordPage() {
 
                         {/* Header */}
                         <div className="bg-[#1A1D23] px-8 py-6 text-center">
-                            <p className="font-climate text-[1.6rem] text-[#E8820C]">
+                            <div className="font-syne text-xl font-extrabold tracking-tight select-none" style={{ color: '#E8820C' }}>
                                 Crew<span className="text-white">Sync</span>
-                            </p>
+                            </div>
                             <p className="text-white/55 text-sm mt-1">
                                 {step === 1 && 'Reset your password'}
                                 {step === 2 && 'Enter verification code'}
