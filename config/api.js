@@ -1,6 +1,6 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
 // Change this one line when deploying to production
-export const API_BASE = 'http://localhost/CrewSync/backend/index.php';
+export const API_BASE = 'http://localhost:8080/CrewSync-backend/backend/index.php';
 
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────

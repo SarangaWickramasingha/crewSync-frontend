@@ -42,32 +42,34 @@ export default function MyProductsPage() {
   }
 
   return (
-    <div className="animate-fadeIn">
-      <PageHeader
-        title="My Products"
-        subtitle={`Manage inventory and listings · ${products.length} product${products.length !== 1 ? 's' : ''}`}
-        action={
-          <button onClick={() => setModal({ mode: 'add' })} className={primaryBtnClass}>
-            + Add Product
-          </button>
-        }
-      />
+    <>
+      <div className="animate-fadeIn">
+        <PageHeader
+          title="My Products"
+          subtitle={`Manage inventory and listings · ${products.length} product${products.length !== 1 ? 's' : ''}`}
+          action={
+            <button onClick={() => setModal({ mode: 'add' })} className={primaryBtnClass}>
+              + Add Product
+            </button>
+          }
+        />
 
-      {isError && <EmptyState message={error?.message || 'Failed to load products.'} />}
+        {isError && <EmptyState message={error?.message || 'Failed to load products.'} />}
 
-      <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
-        {products.map((p) => (
-          <ProductCard
-            key={p.id}
-            product={p}
-            onEdit={(product) => setModal({ mode: 'edit', product })}
-            onRemove={() => setProductToRemove(p)}
-            isDeleting={deleteProduct.isPending && deleteProduct.variables === p.id}
-          />
-        ))}
+        <div className="grid grid-cols-[repeat(auto-fill,minmax(230px,1fr))] gap-4">
+          {products.map((p) => (
+            <ProductCard
+              key={p.id}
+              product={p}
+              onEdit={(product) => setModal({ mode: 'edit', product })}
+              onRemove={() => setProductToRemove(p)}
+              isDeleting={deleteProduct.isPending && deleteProduct.variables === p.id}
+            />
+          ))}
+        </div>
+
+        {!isError && products.length === 0 && <EmptyState message="No products yet — add your first one." />}
       </div>
-
-      {!isError && products.length === 0 && <EmptyState message="No products yet — add your first one." />}
 
       <ProductFormModal
         open={modal !== null}
@@ -95,6 +97,6 @@ export default function MyProductsPage() {
           onConfirm={confirmRemove}
         />
       )}
-    </div>
+    </>
   );
 }

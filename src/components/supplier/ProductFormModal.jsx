@@ -1,47 +1,25 @@
 'use client';
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import ProductForm from '@/src/components/supplier/ProductForm';
 
 export default function ProductFormModal({ open, title, defaultValues, onSubmit, onClose, submitLabel, isSubmitting }) {
-  const [visible, setVisible] = useState(false);
-  const [animating, setAnimating] = useState(false);
-  const backdropRef = useRef(null);
+  const [mounted, setMounted] = useState(false);
 
   useEffect(() => {
-    if (open) {
-      setVisible(true);
-      requestAnimationFrame(() => {
-        requestAnimationFrame(() => setAnimating(true));
-      });
-    } else {
-      setAnimating(false);
-      const t = setTimeout(() => setVisible(false), 200);
-      return () => clearTimeout(t);
-    }
-  }, [open]);
+    setMounted(true);
+  }, []);
 
-  if (!visible) return null;
+  if (!open || !mounted) return null;
 
-  return (
+  return createPortal(
     <div
-      ref={backdropRef}
       onClick={onClose}
-      className="fixed inset-0 z-[400] flex items-center justify-center p-4 transition-all duration-200 ease-out"
-      style={{
-        background: animating ? 'rgba(26,29,35,0.65)' : 'rgba(26,29,35,0)',
-        backdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
-        WebkitBackdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
-      }}
+      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-sm p-4"
     >
       <div
         onClick={(e) => e.stopPropagation()}
-        className="w-full max-w-[390px] bg-white rounded-2xl p-6 font-sans"
-        style={{
-          boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
-          opacity: animating ? 1 : 0,
-          transform: animating ? 'scale(1) translateY(0)' : 'scale(0.92) translateY(12px)',
-          transition: 'opacity 200ms ease-out, transform 200ms ease-out',
-        }}
+        className="w-full max-w-[390px] bg-white rounded-2xl p-6 font-sans shadow-2xl"
       >
         <h3 className="font-syne text-[1.15rem] font-bold text-crewSlate text-center mb-4">
           {title}
@@ -54,6 +32,9 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
           isSubmitting={isSubmitting}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
+
+
