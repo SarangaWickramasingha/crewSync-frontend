@@ -84,3 +84,6 @@ export const API_REPORTS_PROJECT = (projectId) => `${API_BASE}/api/reports/proje
 export const API_REPORT_TASK_GENERATE = (taskId) => `${API_BASE}/api/reports/task/${taskId}/generate`;
 export const API_REPORT_PROJECT_GENERATE = (projectId) => `${API_BASE}/api/reports/project/${projectId}/generate`;
 export const REPORTS_BASE_URL = process.env.NEXT_PUBLIC_REPORTS_BASE_URL || 'http://127.0.0.1/crewsync/reports/';
+
+export const API_AUTH_FORGOT_PASSWORD_SEND_OTP = `${API_BASE}/api/auth/forgot-password/send-otp`;
+export const API_AUTH_FORGOT_PASSWORD_RESET = `${API_BASE}/api/auth/forgot-password/reset`;
