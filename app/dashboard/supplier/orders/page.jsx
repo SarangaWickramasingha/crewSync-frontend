@@ -1,73 +1,85 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import useOrdersFilters from '@/src/hooks/supplier/useOrdersFilters';
+import { useOrders, useUpdateOrderStatus } from '@/src/hooks/supplier/useSupplierOrders';
 import PageHeader from '@/src/components/supplier/PageHeader';
 import OrdersTable from '@/src/components/supplier/OrdersTable';
-import OrdersFilterPanel, { OrdersFilterToggle } from '@/src/components/supplier/OrdersFilterBar';
-
-const INITIAL_ORDERS = [
-  { id: '#ORD-041', customer: 'Nimal Kumarasinghe', items: 'Cement × 20 bags', amount: 'LKR 57,000', date: 'Jul 4, 2026', status: 'New' },
-  { id: '#ORD-040', customer: 'Chamari Perera', items: 'Steel Rod × 50m', amount: 'LKR 44,500', date: 'Jul 2, 2026', status: 'Processing' },
-  { id: '#ORD-039', customer: 'Lasith Fernando', items: 'Sand × 2 cubes', amount: 'LKR 24,000', date: 'Jun 28, 2026', status: 'Delivered' },
-];
+import OrdersFilterPanel from '@/src/components/supplier/OrdersFilterBar';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 
 export default function SupplierOrdersPage() {
-  const [orders, setOrders] = useState(INITIAL_ORDERS);
+  const { data: orders = [], isLoading } = useOrders();
+  const updateStatus = useUpdateOrderStatus();
 
   const {
     filters,
+    appliedFilters,
     setMonth,
     setItem,
     setStatus,
     selectYear,
+    applyFilters,
     clear,
-    open,
-    setOpen,
     years,
     items,
     filtered,
     hasActiveFilter,
   } = useOrdersFilters(orders);
 
-  const acceptOrder = (id) =>
-    setOrders((prev) => prev.map((o) => (o.id === id ? { ...o, status: 'Processing' } : o)));
+  const [page, setPage] = useState(1);
 
-  const rejectOrder = (id) =>
-    setOrders((prev) => prev.filter((o) => o.id !== id));
+  useEffect(() => {
+    setPage(1);
+  }, [appliedFilters]);
+
+  const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+  function acceptOrder(id) {
+    const orderId = orders.find(o => o.id === id)?.orderId;
+    if (orderId) updateStatus.mutate({ orderId, status: 'accepted' });
+  }
+
+  function rejectOrder(id) {
+    const orderId = orders.find(o => o.id === id)?.orderId;
+    if (orderId) updateStatus.mutate({ orderId, status: 'rejected' });
+  }
+
+  if (isLoading) {
+    return <div className="p-10 text-center text-crewMuted text-sm">Loading orders…</div>;
+  }
 
   return (
     <div className="font-dmSans max-w-7xl mx-auto animate-fadeIn">
       <PageHeader
         title="Orders"
-        subtitle="Manage incoming material orders"
-        action={
-          <OrdersFilterToggle
-            open={open}
-            hasActiveFilter={hasActiveFilter}
-            onClick={() => setOpen((v) => !v)}
-          />
-        }
+        subtitle={`Manage incoming material orders · ${orders.length} order${orders.length !== 1 ? 's' : ''}`}
       />
 
-      {open && (
-        <OrdersFilterPanel
-          filters={filters}
-          years={years}
-          items={items}
-          onSelectYear={selectYear}
-          onSetMonth={setMonth}
-          onSetItem={setItem}
-          onSetStatus={setStatus}
-          onClear={clear}
-          hasActiveFilter={hasActiveFilter}
-        />
-      )}
+      <OrdersFilterPanel
+        filters={filters}
+        appliedFilters={appliedFilters}
+        years={years}
+        items={items}
+        onSelectYear={selectYear}
+        onSetMonth={setMonth}
+        onSetItem={setItem}
+        onSetStatus={setStatus}
+        onApply={applyFilters}
+        onClear={clear}
+        hasActiveFilter={hasActiveFilter}
+      />
 
       <OrdersTable
-        orders={filtered}
+        orders={paginated}
         onAccept={acceptOrder}
         onReject={rejectOrder}
         hasActiveFilter={hasActiveFilter}
+      />
+
+      <Pagination
+        currentPage={page}
+        totalItems={filtered.length}
+        onPageChange={setPage}
       />
     </div>
   );

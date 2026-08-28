@@ -1,8 +1,8 @@
 'use client';
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
 import StatusPill from '@/src/components/ui/StatusPill';
+import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
 import { usePropertyOwners, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
@@ -12,12 +12,18 @@ const DISTRICTS = [
     'Kalutara', 'Puttalam',
 ];
 
+const SEARCH_CATEGORIES = [
+    { value: 'owner_id', label: 'Owner ID' },
+    { value: 'user_id', label: 'User ID' },
+];
+
 export default function AdminPropertyOwnersPage() {
     const router = useRouter();
 
     const { data, isPending: loading, error } = usePropertyOwners();
     const updateUser = useUpdateAdminUser();
     const [search, setSearch] = useState('');
+    const [searchCategory, setSearchCategory] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
 
     const owners = data?.owners ?? [];
@@ -25,12 +31,20 @@ export default function AdminPropertyOwnersPage() {
     const filtered = owners.filter(o => {
         const q = search.trim().toLowerCase();
         const fullName = `${o.fname ?? ''} ${o.lname ?? ''}`.toLowerCase();
-        const matchSearch =
-            !q ||
-            fullName.includes(q) ||
-            o.email?.toLowerCase().includes(q) ||
-            o.address?.toLowerCase().includes(q) ||
-            o.district?.toLowerCase().includes(q);
+
+        const matchSearch = !q ? true : !searchCategory
+            ? (
+                fullName.includes(q) ||
+                o.email?.toLowerCase().includes(q) ||
+                o.address?.toLowerCase().includes(q) ||
+                o.district?.toLowerCase().includes(q)
+            )
+            : searchCategory === 'owner_id'
+                ? String(o.owner_id ?? '').toLowerCase().includes(q)
+                : searchCategory === 'user_id'
+                    ? String(o.user_id ?? '').toLowerCase().includes(q)
+                    : true;
+
         const matchDistrict = !districtFilter || o.district === districtFilter;
         return matchSearch && matchDistrict;
     });
@@ -63,30 +77,20 @@ export default function AdminPropertyOwnersPage() {
                 </div>
             )}
 
-            {/* Search + Filter */}
-            <div className="flex gap-2 mb-4 flex-wrap">
-                <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, email, or address…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2.5 border border-border rounded-lg text-xs text-slate
-                            bg-white focus:outline-none focus:border-amber placeholder:text-muted"
-                    />
-                </div>
-                <select
-                    value={districtFilter}
-                    onChange={e => setDistrictFilter(e.target.value)}
-                    className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
-                >
-                    <option value="">All Districts</option>
-                    {DISTRICTS.map(d => (
-                        <option key={d} value={d}>{d}</option>
-                    ))}
-                </select>
-            </div>
+            <AdminSearchBar
+                search={search}
+                onSearchChange={setSearch}
+                searchCategory={searchCategory}
+                onCategoryChange={setSearchCategory}
+                categories={SEARCH_CATEGORIES}
+                placeholder="Search by name, email, or address…"
+                secondaryFilter={{
+                    value: districtFilter,
+                    onChange: setDistrictFilter,
+                    options: DISTRICTS,
+                    allLabel: 'All Districts',
+                }}
+            />
 
             {/* Table */}
             <div className="bg-white border border-border rounded-xl overflow-x-auto">

@@ -25,6 +25,7 @@ export default function ProviderDashboard() {
   const reviewsLoading = recentReviews.isPending;
   const recentReviewsList = recentReviews.data?.reviews ?? [];
 
+  const pendingCount = statsData.pending_requests ?? 0;
   const metrics = [
     { val: statsLoading ? '…' : `${statsData.total_reviews ?? 0}`, label: 'Total Reviews', change: statsLoading ? null : `★ ${statsData.avg_rating ?? 0} avg`, up: true },
     { val: statsLoading ? '…' : `${statsData.active_projects ?? 0}`, label: 'Active Projects', change: null },
@@ -51,7 +52,9 @@ export default function ProviderDashboard() {
           <h2 className="font-syne text-[1.3rem] font-bold text-crewSlate">
             Welcome, Sunil 👋
           </h2>
-          <p className="text-[0.82rem] text-crewMuted mt-0.5">You have 4 new job requests this week</p>
+          <p className="text-[0.82rem] text-crewMuted mt-0.5">
+            {statsLoading ? 'Loading…' : pendingCount > 0 ? `You have ${pendingCount} new job request${pendingCount !== 1 ? 's' : ''} this week` : 'No new job requests this week'}
+          </p>
         </div>
         <button
           onClick={handleToggleAvailability}
@@ -59,8 +62,8 @@ export default function ProviderDashboard() {
           title="Click to toggle your availability"
           className="text-[0.8rem] font-semibold px-3 py-1.5 rounded-xl border-none cursor-pointer font-sans disabled:opacity-60 disabled:cursor-wait"
           style={{
-            background: available ? '#E6F4EC' : '#FDECEC',
-            color: available ? '#1B6E3A' : '#B3261E',
+            background: available ? '#dbeafe' : '#FDECEC',
+            color: available ? '#2563eb' : '#B3261E',
           }}
         >
           ● {loadingAvailability ? 'Loading…' : toggling ? 'Updating…' : available ? 'Available for Work' : 'Not Available'}
@@ -87,7 +90,7 @@ export default function ProviderDashboard() {
         <div className="bg-white border border-crewSlate/10 rounded-xl p-6">
           <div className="flex justify-between items-center mb-5">
             <h3 className="font-syne text-base font-bold">Current Work</h3>
-            <Link href="/dashboard/serviceprovider/timeline" className="text-[0.78rem] text-crewAmber-dark no-underline font-medium">
+            <Link href="/dashboard/serviceprovider/timeline" className="text-[0.78rem] text-provider-dark no-underline font-medium">
               View Timeline
             </Link>
           </div>
@@ -104,7 +107,7 @@ export default function ProviderDashboard() {
                   className={`flex items-start gap-3 py-2.5 ${i < currentWorkList.length - 1 ? 'border-b border-crewSlate/10' : ''
                     }`}
                 >
-                  <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${item.status === 'Active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                  <div className={`w-7 h-7 rounded-full flex-shrink-0 flex items-center justify-center text-[0.7rem] font-bold mt-0.5 ${item.status === 'Active' ? 'bg-provider-light text-provider-dark' : 'bg-crewSurface2 text-crewMuted'
                     }`}>
                     {i + 1}
                   </div>
@@ -115,7 +118,7 @@ export default function ProviderDashboard() {
                       {item.status === 'Upcoming' ? `Starts ${item.start_date}` : `${item.start_date} – ${item.end_date ?? 'ongoing'}`}
                     </div>
                   </div>
-                  <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${item.status === 'Active' ? 'bg-crewAmber-light text-crewAmber-dark' : 'bg-crewSurface2 text-crewMuted'
+                  <span className={`text-[0.72rem] font-semibold px-2 py-0.5 rounded-full flex-shrink-0 mt-1 ${item.status === 'Active' ? 'bg-provider-light text-provider-dark' : 'bg-crewSurface2 text-crewMuted'
                     }`}>
                     {item.status}
                   </span>
@@ -126,9 +129,9 @@ export default function ProviderDashboard() {
 
           <Link
             href="/dashboard/serviceprovider/job-requests"
-            className="block mt-4 text-center bg-crewAmber text-white py-2 rounded-lg text-[0.82rem] font-semibold no-underline"
+            className="block mt-4 text-center bg-provider text-white py-2 rounded-lg text-[0.82rem] font-semibold no-underline"
           >
-            View Job Requests (4)
+            View Job Requests {pendingCount > 0 ? `(${pendingCount})` : ''}
           </Link>
         </div>
 
@@ -136,8 +139,8 @@ export default function ProviderDashboard() {
         <div className="bg-white border border-crewSlate/10 rounded-xl p-6">
           <div className="flex justify-between items-center mb-5">
             <h3 className="font-syne text-base font-bold">Recent Reviews</h3>
-            <Link href="/dashboard/serviceprovider/reviews" className="text-[0.78rem] text-crewAmber-dark no-underline font-medium">
-              All Reviews →
+            <Link href="/dashboard/serviceprovider/reviews" className="text-[0.78rem] text-provider-dark no-underline font-medium">
+              All Reviews
             </Link>
           </div>
 
@@ -146,23 +149,31 @@ export default function ProviderDashboard() {
           ) : recentReviewsList.length === 0 ? (
             <p className="text-[0.8rem] text-crewMuted">No reviews yet.</p>
           ) : (
-            <div className="flex flex-col gap-2.5">
-              {recentReviewsList.map((r, i) => (
-                <div key={i}>
-                  <div className="text-[0.83rem] font-semibold">
-                    {r.name} <span className="text-crewAmber">{'★'.repeat(r.rating)}</span>
+            <div className="flex flex-col gap-3">
+              {recentReviewsList.map((r, i) => {
+                const name = r.name || r.reviewer_name || r.author || 'Property Owner';
+                const stars = Math.max(1, Math.min(5, Number(r.rating || r.stars || 5)));
+                const comment = r.comment || r.text || r.content || '';
+                return (
+                  <div key={r.id || i} className="border-b border-crewSlate/5 pb-2.5 last:border-none last:pb-0">
+                    <div className="text-[0.83rem] font-semibold flex items-center justify-between">
+                      <span>{name}</span>
+                       <span className="text-provider text-[0.85rem]">{'★'.repeat(stars)}</span>
+                    </div>
+                    {comment && (
+                      <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">&ldquo;{comment}&rdquo;</div>
+                    )}
                   </div>
-                  <div className="text-[0.78rem] text-crewMuted mt-0.5 leading-relaxed">&ldquo;{r.comment}&rdquo;</div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
 
-          <div className="mt-5 p-3 bg-crewGreen-light rounded-lg border border-crewGreen/20">
-            <div className="text-[0.8rem] text-crewGreen font-semibold">
+          <div className="mt-5 p-3 bg-provider-light rounded-lg border border-provider/20">
+            <div className="text-[0.8rem] text-provider font-semibold">
               ★ {statsLoading ? '…' : statsData.avg_rating ?? 0} Average Rating
             </div>
-            <div className="text-[0.73rem] text-crewGreen mt-0.5">
+            <div className="text-[0.73rem] text-provider mt-0.5">
               Based on {statsLoading ? '…' : statsData.total_reviews ?? 0} verified reviews
             </div>
           </div>

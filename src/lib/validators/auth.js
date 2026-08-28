@@ -61,6 +61,7 @@ export const registerFormSchema = z
     email: z.string().min(1, 'Enter a valid email address').email('Enter a valid email address'),
     password: z.string().min(8, 'Password must be at least 8 characters'),
     confirmPassword: z.string(),
+    otp_token: z.string().min(1, 'Email verification required'),
     firstName: z.string(),
     lastName: z.string(),
     mobile: z.string(),
@@ -124,6 +125,7 @@ export const REGISTER_DEFAULT_VALUES = {
   email: '',
   password: '',
   confirmPassword: '',
+  otp_token: '',
   firstName: '',
   lastName: '',
   mobile: '',
@@ -155,6 +157,7 @@ export function toRegisterPayload(values) {
     lname: values.lastName.trim(),
     contact_no: values.mobile.trim(),
     district: values.district,
+    otp_token: values.otp_token,
   };
 
   if (values.role === 'owner') {

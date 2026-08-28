@@ -118,12 +118,12 @@ export default function PropertyOwnerServicesPage() {
           placeholder="Search by name or skill..."
           value={searchVal}
           onChange={(e) => setSearchVal(e.target.value)}
-          className="flex-1 min-w-[200px] bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#E8820C]"
+          className="flex-1 min-w-[200px] bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#16a34a]"
         />
         <select
           value={selectedDistrict}
           onChange={(e) => setSelectedDistrict(e.target.value)}
-          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#E8820C]"
+          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#16a34a]"
         >
           <option value="All Districts">All Districts</option>
           {DISTRICTS.map((district) => (
@@ -133,7 +133,7 @@ export default function PropertyOwnerServicesPage() {
         <select
           value={selectedSkillId || ''}
           onChange={(e) => setSelectedSkillId(e.target.value ? Number(e.target.value) : null)}
-          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#E8820C]"
+          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#16a34a]"
         >
           <option value="">All Skills</option>
           {Object.entries(SKILL_NAME_TO_ID).map(([skillName, skillId]) => (
@@ -142,7 +142,7 @@ export default function PropertyOwnerServicesPage() {
         </select>
         <button
           onClick={loadProviders}
-          className="bg-[#E8820C] hover:opacity-85 text-white text-sm font-semibold px-6 py-2 rounded-lg transition-colors cursor-pointer"
+          className="bg-[#16a34a] hover:opacity-85 text-white text-sm font-semibold px-6 py-2 rounded-lg transition-colors cursor-pointer"
         >
           Search
         </button>

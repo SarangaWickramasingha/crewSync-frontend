@@ -228,7 +228,7 @@ export default function LoginPage() {
                                     <p className="text-center text-[0.83rem] text-[#8A8FA8]">
                                         New here?{' '}
                                         <Link href="/register" className="font-semibold hover:underline text-[#E8820C]">
-                                            Create an account →
+                                            Create an account
                                         </Link>
                                     </p>
 

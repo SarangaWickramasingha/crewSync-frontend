@@ -5,9 +5,9 @@ import StatusPill from '@/src/components/ui/StatusPill';
 import { useComments, usePostComment } from '@/src/hooks/project/useProject';
 
 const AVATAR_STYLES = [
-  { bg: '#FFF3E0', color: '#B85A00' },
+  { bg: '#dbeafe', color: '#1d4ed8' },
   { bg: '#E6F4EC', color: '#1B6E3A' },
-  { bg: '#E8F0FB', color: '#1A56A0' },
+  { bg: '#FFF3E0', color: '#B85A00' },
   { bg: '#F3E8FB', color: '#6B3FA0' },
 ];
 
@@ -117,13 +117,13 @@ export default function ProjectForum({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
           placeholder="Add a comment to this project thread…"
-          className="flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E8820C]"
+          className="flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
           disabled={!projectId}
         />
         <button
           onClick={handlePostComment}
           disabled={posting || !projectId}
-          className="bg-[#E8820C] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
+          className="bg-[#2563eb] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
         >
           {posting ? 'Posting…' : 'Post'}
         </button>

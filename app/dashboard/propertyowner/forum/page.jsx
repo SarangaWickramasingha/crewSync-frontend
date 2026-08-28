@@ -65,8 +65,8 @@ export default function PropertyOwnerForumPage() {
             title={p.project_name}
             meta="All service providers on this project · Single shared thread"
             statusLabel="Active"
-            statusVariant="amber"
-            mineBubbleColor="#FFF3E0"
+            statusVariant="green"
+            mineBubbleColor="#dcfce7"
           />
         ))}
     </div>

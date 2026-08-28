@@ -66,6 +66,7 @@ export default function HomePage() {
       desc: "Plan, manage, and track your construction project from start to finish. Hire directly, save costs.",
       btnLabel: "Open Dashboard",
       route: "/dashboard/propertyowner",
+      guestRoute: "/dashboard/propertyowner/timeline",
       roleKey: "property_owner",
       registerRole: "owner",
       accent: "bg-owner",
@@ -99,9 +100,11 @@ export default function HomePage() {
   ];
 
   function handleRoleClick(r) {
-    if (loading) return; // auth check still in progress, ignore the click
+    if (loading) return;
     if (user && user.role === r.roleKey) {
       router.push(r.route);
+    } else if (!user && r.guestRoute) {
+      router.push(r.guestRoute);
     } else {
       router.push(`/register?role=${r.registerRole}`);
     }
@@ -177,7 +180,7 @@ export default function HomePage() {
                     : router.push("/project-form")
                 }
               >
-                Start a Project →
+                Start a Project
               </button>
             )}
           </div>

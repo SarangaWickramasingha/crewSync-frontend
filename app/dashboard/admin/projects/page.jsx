@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { Search } from 'lucide-react';
 import { useAdminProjects } from '@/src/hooks/admin/useAdmin';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 
 const STATUS_LABEL = {
     planning: 'Planning',
@@ -34,6 +35,7 @@ export default function AdminProjectsPage() {
     const { data, isPending: loading, error } = useAdminProjects();
     const [search, setSearch] = useState('');
     const [statusFilter, setStatusFilter] = useState('');
+    const [page, setPage] = useState(1);
 
     const projects = data?.projects ?? [];
 
@@ -47,6 +49,12 @@ export default function AdminProjectsPage() {
         const matchStatus = !statusFilter || p.status === statusFilter;
         return matchSearch && matchStatus;
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, statusFilter]);
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     return (
         <div>
@@ -99,7 +107,7 @@ export default function AdminProjectsPage() {
                             <tr><td colSpan={9} className="px-4 py-5 text-rose-600">{error.message}</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">No projects found.</td></tr>
-                        ) : filtered.map(p => (
+                        ) : paginated.map(p => (
                             <tr key={p.project_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{p.project_id}</td>
                                 <td className="px-4 py-3 font-medium text-slate">{p.project_name}</td>
@@ -124,6 +132,11 @@ export default function AdminProjectsPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );

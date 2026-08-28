@@ -12,3 +12,11 @@ export function useRegister() {
 export function useCheckEmail() {
   return useMutation({ mutationFn: ({ email }) => userApi.checkEmail(email) });
 }
+
+export function useSendOtp() {
+  return useMutation({ mutationFn: ({ email }) => userApi.sendOtp(email) });
+}
+
+export function useVerifyOtp() {
+  return useMutation({ mutationFn: ({ email, otp }) => userApi.verifyOtp({ email, otp }) });
+}

@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { Search } from 'lucide-react';
 import StatusPill from '@/src/components/ui/StatusPill';
+import AdminSearchBar from '@/src/components/admin/AdminSearchBar';
+import Pagination, { PAGE_SIZE } from '@/src/components/admin/Pagination';
 import { useServiceProviders, useUpdateAdminUser } from '@/src/hooks/admin/useAdmin';
 
 const DISTRICTS = [
@@ -26,36 +27,57 @@ const rating = value => {
     return Number.isFinite(n) ? n.toFixed(1) : null;
 };
 
+const SEARCH_CATEGORIES = [
+    { value: 'provider_id', label: 'Provider ID' },
+    { value: 'user_id', label: 'User ID' },
+    { value: 'experience_yr', label: 'Experience (years)' },
+];
+
 export default function AdminProvidersPage() {
     const router = useRouter();
 
     const { data, isPending: loading, error } = useServiceProviders();
     const updateUser = useUpdateAdminUser();
     const [search, setSearch] = useState('');
+    const [searchCategory, setSearchCategory] = useState('');
     const [districtFilter, setDistrictFilter] = useState('');
+    const [page, setPage] = useState(1);
 
     const providers = data?.providers ?? [];
 
     const filtered = providers.filter(p => {
         const q = search.trim().toLowerCase();
         const fullName = `${p.fname ?? ''} ${p.lname ?? ''}`.toLowerCase();
-        const matchSearch =
-            !q ||
-            fullName.includes(q) ||
-            p.bio?.toLowerCase().includes(q) ||
-            p.district?.toLowerCase().includes(q);
+
+        const matchSearch = !q ? true : !searchCategory
+            ? (
+                fullName.includes(q) ||
+                p.bio?.toLowerCase().includes(q) ||
+                p.district?.toLowerCase().includes(q)
+            )
+            : searchCategory === 'provider_id'
+                ? String(p.provider_id ?? '').toLowerCase().includes(q)
+                : searchCategory === 'user_id'
+                    ? String(p.user_id ?? '').toLowerCase().includes(q)
+                    : searchCategory === 'experience_yr'
+                        ? String(p.experience_yr ?? '').toLowerCase().includes(q)
+                        : true;
+
         const matchDistrict = !districtFilter || p.district === districtFilter;
         return matchSearch && matchDistrict;
     });
+
+    useEffect(() => {
+        setPage(1);
+    }, [search, searchCategory, districtFilter]);
+
+    const paginated = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
 
     const handleSuspend = async (userId, currentStatus) => {
         const next = currentStatus === 'suspended' ? 'active' : 'suspended';
         const verb = next === 'suspended' ? 'Suspend' : 'Reactivate';
 
         if (!window.confirm(`${verb} this user?`)) return;
-
-        setUpdatingId(userId);
-        setError('');
 
         try {
             await updateUser.mutateAsync({ id: userId, payload: { status: next } });
@@ -79,30 +101,20 @@ export default function AdminProvidersPage() {
                 </div>
             )}
 
-            {/* Search + Filter */}
-            <div className="flex gap-2 mb-4 flex-wrap">
-                <div className="relative flex-1 min-w-[200px]">
-                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted" />
-                    <input
-                        type="text"
-                        placeholder="Search by name, bio, or district…"
-                        value={search}
-                        onChange={e => setSearch(e.target.value)}
-                        className="w-full pl-8 pr-3 py-2.5 border border-border rounded-lg text-xs text-slate
-                            bg-white focus:outline-none focus:border-amber placeholder:text-muted"
-                    />
-                </div>
-                <select
-                    value={districtFilter}
-                    onChange={e => setDistrictFilter(e.target.value)}
-                    className="border border-border rounded-lg px-3 py-2.5 text-xs text-slate bg-white focus:outline-none focus:border-amber cursor-pointer"
-                >
-                    <option value="">All Districts</option>
-                    {DISTRICTS.map(d => (
-                        <option key={d} value={d}>{d}</option>
-                    ))}
-                </select>
-            </div>
+            <AdminSearchBar
+                search={search}
+                onSearchChange={setSearch}
+                searchCategory={searchCategory}
+                onCategoryChange={setSearchCategory}
+                categories={SEARCH_CATEGORIES}
+                placeholder="Search by name, bio, or district…"
+                secondaryFilter={{
+                    value: districtFilter,
+                    onChange: setDistrictFilter,
+                    options: DISTRICTS,
+                    allLabel: 'All Districts',
+                }}
+            />
 
             {/* Table */}
             <div className="bg-white border border-border rounded-xl overflow-x-auto">
@@ -119,7 +131,7 @@ export default function AdminProvidersPage() {
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">Loading service providers…</td></tr>
                         ) : filtered.length === 0 ? (
                             <tr><td colSpan={9} className="px-4 py-5 text-muted">No service providers found.</td></tr>
-                        ) : filtered.map(p => (
+                        ) : paginated.map(p => (
                             <tr key={p.provider_id} className="hover:bg-surface transition-all">
                                 <td className="px-4 py-3 text-muted">{p.provider_id}</td>
                                 <td className="px-4 py-3 text-muted">{p.user_id}</td>
@@ -150,6 +162,11 @@ export default function AdminProvidersPage() {
                         ))}
                     </tbody>
                 </table>
+                <Pagination
+                    currentPage={page}
+                    totalItems={filtered.length}
+                    onPageChange={setPage}
+                />
             </div>
         </div>
     );

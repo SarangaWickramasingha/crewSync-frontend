@@ -9,8 +9,9 @@ import StepPersonalInfo from './register-steps/StepPersonalInfo';
 import StepOwnerDetails from './register-steps/StepOwnerDetails';
 import StepProviderDetails from './register-steps/StepProviderDetails';
 import StepSupplierDetails from './register-steps/StepSupplierDetails';
+import StepOtpVerification from './register-steps/StepOtpVerification';
 import { registerFormSchema, REGISTER_DEFAULT_VALUES, toRegisterPayload } from '@/src/lib/validators/auth';
-import { useCheckEmail, useRegister } from '@/src/hooks/auth/useAuth';
+import { useCheckEmail, useRegister, useSendOtp } from '@/src/hooks/auth/useAuth';
 import { useAuth } from '@/context/AuthContext';
 
 const ROLE_THEME = {
@@ -25,7 +26,7 @@ const ROLE_TAGLINE = {
     supplier: { heading: 'Reach more buyers.', sub: 'Supply materials to active construction projects.' },
 };
 
-const STEP_LABELS = ['Account Setup', 'Your Details'];
+const STEP_LABELS = ['Account Setup', 'Verify Email', 'Your Details'];
 
 export default function RegisterForm() {
     const router = useRouter();
@@ -51,6 +52,7 @@ export default function RegisterForm() {
     const role = watch('role');
     const checkEmailMutation = useCheckEmail();
     const registerMutation = useRegister();
+    const sendOtpMutation = useSendOtp();
 
     useEffect(() => {
         const t = setTimeout(() => setMounted(true), 50);
@@ -76,24 +78,35 @@ export default function RegisterForm() {
             if (!valid) return;
 
             try {
-                const data = await checkEmailMutation.mutateAsync({
-                    email: watch('email').trim().toLowerCase(),
-                });
+                const emailValue = watch('email').trim().toLowerCase();
+                const data = await checkEmailMutation.mutateAsync({ email: emailValue });
                 if (data.exists) {
                     setError('This email is already registered. Please login instead.');
                     return;
                 }
+                await sendOtpMutation.mutateAsync({ email: emailValue });
             } catch (err) {
-                setError('Could not connect to the server. Make sure the backend is running.');
+                setError(err.message || 'Could not connect to the server. Make sure the backend is running.');
                 return;
             }
             fadeTo(1);
             return;
         }
 
+        if (step === 1) {
+            // Verification happens inside StepOtpVerification itself via onVerified.
+            // This step has no shared "Continue" button — nothing to do here.
+            return;
+        }
+
         const valid = await trigger();
         if (!valid) return;
         await handleSubmit(onSubmit)();
+    };
+
+    const handleOtpVerified = (otpToken) => {
+        setValue('otp_token', otpToken);
+        fadeTo(2);
     };
 
     const onSubmit = async (values) => {
@@ -124,7 +137,7 @@ export default function RegisterForm() {
 
     return (
         <div
-            className="flex w-full max-w-[1100px] items-stretch"
+            className="flex w-full max-w-[1100px] items-stretch mb-0"
             style={{
                 opacity: mounted ? 1 : 0,
                 transform: mounted ? 'translateY(0)' : 'translateY(24px)',
@@ -193,7 +206,7 @@ export default function RegisterForm() {
                         ))}
                     </div>
                     <span className={`${theme.badgeBg} ${theme.badgeText} text-[11px] font-bold px-2.5 py-1 rounded-full`}>
-                        Step {step + 1} of 2
+                        Step {step + 1} of {STEP_LABELS.length}
                     </span>
                 </div>
 
@@ -224,6 +237,14 @@ export default function RegisterForm() {
                     )}
 
                     {step === 1 && (
+                        <StepOtpVerification
+                            email={watch('email').trim().toLowerCase()}
+                            theme={theme}
+                            onVerified={handleOtpVerified}
+                        />
+                    )}
+
+                    {step === 2 && (
                         <>
                             {role !== 'supplier' && <StepPersonalInfo {...formProps} />}
                             {role === 'owner' && <StepOwnerDetails {...formProps} />}
@@ -242,23 +263,27 @@ export default function RegisterForm() {
                                 onClick={handleBack}
                                 className="px-4 py-2.5 border border-border rounded-lg text-sm text-slate-light font-medium hover:bg-white transition-all"
                             >
-                                ← Back
+                                Back
                             </button>
                         ) : (
                             <p className="text-xs text-muted max-w-xs">Your data is protected and never sold.</p>
                         )}
                     </div>
 
-                    <button
-                        type="button"
-                        onClick={handleNext}
-                        disabled={checkEmailMutation.isPending || registerMutation.isPending}
-                        className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold hover:-translate-y-px transition-all shadow-sm ${theme.bg} disabled:opacity-60`}
-                    >{ }
-                        {checkEmailMutation.isPending || registerMutation.isPending
-                            ? 'Checking…'
-                            : step === 0 ? 'Continue →' : 'Create Account →'}
-                    </button>
+                    {step !== 1 && (
+                        <button
+                            type="button"
+                            onClick={handleNext}
+                            disabled={checkEmailMutation.isPending || sendOtpMutation.isPending || registerMutation.isPending}
+                            className={`px-6 py-2.5 text-white rounded-lg text-sm font-semibold hover:-translate-y-px transition-all shadow-sm ${theme.bg} disabled:opacity-60`}
+                        >
+                            {checkEmailMutation.isPending || sendOtpMutation.isPending
+                                ? 'Sending code…'
+                                : registerMutation.isPending
+                                    ? 'Creating…'
+                                    : step === 2 ? 'Create Account ' : 'Continue'}
+                        </button>
+                    )}
                 </div>
             </div>
         </div>

@@ -1,21 +1,51 @@
 'use client';
+import { useEffect, useRef, useState } from 'react';
 import ProductForm from '@/src/components/supplier/ProductForm';
 
 export default function ProductFormModal({ open, title, defaultValues, onSubmit, onClose, submitLabel, isSubmitting }) {
-  if (!open) return null;
+  const [visible, setVisible] = useState(false);
+  const [animating, setAnimating] = useState(false);
+  const backdropRef = useRef(null);
+
+  useEffect(() => {
+    if (open) {
+      setVisible(true);
+      requestAnimationFrame(() => {
+        requestAnimationFrame(() => setAnimating(true));
+      });
+    } else {
+      setAnimating(false);
+      const t = setTimeout(() => setVisible(false), 200);
+      return () => clearTimeout(t);
+    }
+  }, [open]);
+
+  if (!visible) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/40" onClick={onClose}>
+    <div
+      ref={backdropRef}
+      onClick={onClose}
+      className="fixed inset-0 z-[400] flex items-center justify-center p-4 transition-all duration-200 ease-out"
+      style={{
+        background: animating ? 'rgba(26,29,35,0.65)' : 'rgba(26,29,35,0)',
+        backdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
+        WebkitBackdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
+      }}
+    >
       <div
-        className="w-full max-w-lg bg-white rounded-2xl p-6 shadow-xl animate-fadeIn"
         onClick={(e) => e.stopPropagation()}
+        className="w-full max-w-[390px] bg-white rounded-2xl p-6 font-sans"
+        style={{
+          boxShadow: '0 20px 40px rgba(0,0,0,0.2)',
+          opacity: animating ? 1 : 0,
+          transform: animating ? 'scale(1) translateY(0)' : 'scale(0.92) translateY(12px)',
+          transition: 'opacity 200ms ease-out, transform 200ms ease-out',
+        }}
       >
-        <div className="flex items-center justify-between mb-4">
-          <h3 className="font-syne font-bold text-crewSlate">{title}</h3>
-          <button onClick={onClose} className="text-crewMuted hover:text-crewSlate text-lg leading-none cursor-pointer bg-transparent border-none">
-            ✕
-          </button>
-        </div>
+        <h3 className="font-syne text-[1.15rem] font-bold text-crewSlate text-center mb-4">
+          {title}
+        </h3>
         <ProductForm
           defaultValues={defaultValues}
           onSubmit={onSubmit}

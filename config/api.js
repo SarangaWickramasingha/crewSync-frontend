@@ -1,6 +1,5 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
-// Change this one line when deploying to production
-export const API_BASE = 'http://localhost/CrewSync-backend/backend/index.php';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost/CrewSync-backend/backend/index.php';
 
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────
@@ -33,6 +32,11 @@ export const API_FEEDBACK_SUBMIT = `${API_BASE}/api/feedback/submit`;
 
 // 
 export const API_STATS_SUMMARY = `${API_BASE}/api/stats/summary`;
+
+//OTP verification
+
+export const API_AUTH_SEND_OTP = `${API_BASE}/api/auth/send-otp`;
+export const API_AUTH_VERIFY_OTP = `${API_BASE}/api/auth/verify-otp`;
 
 
 
@@ -70,10 +74,13 @@ export const API_PROVIDER_SKILL_DELETE = (skillId) => `${API_BASE}/api/provider/
 // ── MATERIAL SUPPLIER ───────────────────────────────────────────────────────────
 export const API_SUPPLIER_PRODUCTS = `${API_BASE}/api/supplier/products`;
 export const API_SUPPLIER_PRODUCT_DELETE = (id) => `${API_BASE}/api/supplier/products/${id}`;
+export const API_SUPPLIER_ORDERS = `${API_BASE}/api/supplier/orders`;
+export const API_SUPPLIER_ORDER_STATUS = (id) => `${API_BASE}/api/supplier/orders/${id}/status`;
+export const API_SUPPLIER_PROFILE = `${API_BASE}/api/supplier/profile`;
 
 
 // ── REPORTS ───────────────────────────────────────────────────────────────────
 export const API_REPORTS_PROJECT = (projectId) => `${API_BASE}/api/reports/project/${projectId}`;
 export const API_REPORT_TASK_GENERATE = (taskId) => `${API_BASE}/api/reports/task/${taskId}/generate`;
 export const API_REPORT_PROJECT_GENERATE = (projectId) => `${API_BASE}/api/reports/project/${projectId}/generate`;
-export const REPORTS_BASE_URL = 'http://127.0.0.1/crewsync/reports/';
+export const REPORTS_BASE_URL = process.env.NEXT_PUBLIC_REPORTS_BASE_URL || 'http://127.0.0.1/crewsync/reports/';

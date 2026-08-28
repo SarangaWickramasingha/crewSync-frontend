@@ -6,6 +6,8 @@ import {
   API_AUTH_LOGOUT,
   API_AUTH_REGISTER,
   API_AUTH_CHECK_EMAIL,
+  API_AUTH_SEND_OTP,
+  API_AUTH_VERIFY_OTP,
 } from '@/config/api';
 
 export async function login({ email, password }) {
@@ -29,4 +31,14 @@ export async function register(payload) {
 
 export async function checkEmail(email) {
   return request.post(API_AUTH_CHECK_EMAIL, { email });
+}
+
+export async function sendOtp(email) {
+  const data = await request.post(API_AUTH_SEND_OTP, { email });
+  return unwrap(data);
+}
+
+export async function verifyOtp({ email, otp }) {
+  const data = await request.post(API_AUTH_VERIFY_OTP, { email, otp });
+  return unwrap(data);
 }

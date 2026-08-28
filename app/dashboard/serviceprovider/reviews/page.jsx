@@ -1,53 +1,143 @@
 "use client";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
   useAllReviews,
   useUploadReviewPhotos,
   useDeleteReviewPhoto,
+  useReportReview,
 } from "@/src/hooks/provider/useProvider";
+import PhotoDeleteModal from "@/src/components/serviceProvider/PhotoDeleteModal";
 
 const C = {
-  amber: '#E8820C', amberLight: '#FFF3E0', amberDark: '#B85A00',
+  blue: '#2563eb', blueLight: '#dbeafe', blueDark: '#1d4ed8',
   slate: '#1A1D23', slateLight: '#4A5068', muted: '#8A8FA8',
   surface: '#F7F6F2', white: '#FFFFFF',
-  green: '#1B6E3A', greenLight: '#E6F4EC',
   border: 'rgba(26,29,35,0.1)', radius: '12px', radiusSm: '8px',
 };
 
 const AVATAR_STYLES = [
-  { bg: '#FFF3E0', color: '#B85A00' },
-  { bg: '#E8F0FB', color: '#1A56A0' },
+  { bg: '#dbeafe', color: '#1d4ed8' },
   { bg: '#E6F4EC', color: '#1B6E3A' },
+  { bg: '#FFF3E0', color: '#B85A00' },
 ];
 
 function initialsOf(name) {
   return name.split(' ').map(w => w[0]).slice(0, 2).join('').toUpperCase();
 }
 
+function fileToDataUrl(file) {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
+}
+
+function getPhotoUrl(url) {
+  if (!url) return '';
+  if (url.startsWith('data:') || url.startsWith('blob:')) {
+    return url;
+  }
+  if (url.startsWith('http://localhost/') && !url.includes(':8080')) {
+    url = url.replace('http://localhost/', 'http://localhost:8080/');
+  }
+  if (url.startsWith('http://') || url.startsWith('https://')) {
+    return url;
+  }
+  const baseHost = 'http://localhost:8080/CrewSync-backend/backend/uploads';
+  const cleanPath = url.startsWith('/') ? url : `/${url}`;
+  return `${baseHost}${cleanPath}`;
+}
+
 export default function ReviewsPage() {
   const [reportOpen, setReportOpen] = useState({});
   const [reportText, setReportText] = useState({});
   const [lightbox, setLightbox] = useState(null);
-  const [pendingFiles, setPendingFiles] = useState({}); // { reviewId: File[] }
+  const [pendingFiles, setPendingFiles] = useState({}); // { [reviewId]: [{ id, file, previewUrl }] }
   const [reportedIds, setReportedIds] = useState({}); // { reviewId: true } — UI-only flag
+  const [deletedPhotos, setDeletedPhotos] = useState({}); // { photoId: true }
+  const [localAddedPhotos, setLocalAddedPhotos] = useState({}); // { [reviewId]: [{ photo_id, url }] }
+  const [confirmDelete, setConfirmDelete] = useState(null); // { reviewId, photoId, photoUrl }
 
-  const { data, isLoading } = useAllReviews();
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      try {
+        const saved = localStorage.getItem('crewsync_provider_review_photos');
+        if (saved) setLocalAddedPhotos(JSON.parse(saved));
+      } catch (e) {}
+      try {
+        const savedReports = localStorage.getItem('crewsync_reported_reviews');
+        if (savedReports) setReportedIds(JSON.parse(savedReports));
+      } catch (e) {}
+    }
+  }, []);
+
+  const { data, isLoading, isError, error } = useAllReviews();
   const uploadPhotos = useUploadReviewPhotos();
   const deletePhoto = useDeleteReviewPhoto();
+  const reportReviewMutation = useReportReview();
 
-  const reviews = data?.reviews ?? [];
+  const rawReviews = data?.reviews || (Array.isArray(data) ? data : []);
+  const reviews = rawReviews.map((r, i) => {
+    const id = r.id || r.review_id || i + 1;
+    const name = r.name || r.reviewer_name || r.author || r.client || 'Property Owner';
+    const stars = Math.max(1, Math.min(5, Number(r.stars ?? r.rating ?? 5)));
+    const text = r.text || r.comment || r.content || '';
+    const date = r.date || r.posted_at || r.created_at || 'Recently';
 
-  const avgRating = reviews.length > 0 ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1) : '0.0';
+    const apiPhotos = Array.isArray(r.photos)
+      ? r.photos.map((p, idx) => (typeof p === 'string' ? { photo_id: idx + 1, url: p } : p))
+      : [];
+    
+    // Only include local photos if they aren't already represented in apiPhotos
+    const userAdded = (localAddedPhotos[id] || []).filter(
+      lp => !apiPhotos.some(ap => ap.url === lp.url)
+    );
 
-  // Stage newly picked files locally — nothing sent to the server yet
-function handlePickPhotos(id, files) {
-  if (process.env.NODE_ENV === 'development') console.log('photos picked:', files?.length);
-  if (!files || !files.length) return;
-  setPendingFiles(prev => ({
-    ...prev,
-    [id]: [...(prev[id] || []), ...Array.from(files)],
-  }));
-}
+    // Combine and deduplicate
+    const combined = [...apiPhotos, ...userAdded].filter(
+      p => !deletedPhotos[p.photo_id ?? p.id ?? p]
+    );
+
+    // Deduplicate by URL
+    const seenUrls = new Set();
+    const photos = [];
+    for (const p of combined) {
+      const resolvedUrl = getPhotoUrl(p.url || p.path || p.image_path);
+      if (!seenUrls.has(resolvedUrl)) {
+        seenUrls.add(resolvedUrl);
+        photos.push({ ...p, url: resolvedUrl });
+      }
+    }
+
+    return { ...r, id, name, stars, text, date, photos };
+  });
+
+  const avgRating = reviews.length > 0
+    ? (reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1)
+    : '0.0';
+
+  // Stage newly picked files with immediate dataUrl preview
+  async function handlePickPhotos(id, files) {
+    if (!files || !files.length) return;
+    const fileArray = Array.from(files);
+    const newItems = await Promise.all(
+      fileArray.map(async (file, idx) => {
+        const previewUrl = await fileToDataUrl(file);
+        return {
+          id: `pending-${Date.now()}-${idx}`,
+          file,
+          previewUrl,
+        };
+      })
+    );
+
+    setPendingFiles(prev => ({
+      ...prev,
+      [id]: [...(prev[id] || []), ...newItems],
+    }));
+  }
 
   function removePendingPhoto(id, index) {
     setPendingFiles(prev => ({
@@ -56,25 +146,57 @@ function handlePickPhotos(id, files) {
     }));
   }
 
-  // "Update" — actually uploads all staged photos for this review
+  // "Update" — persists photos locally & syncs to backend
   async function handleUpdate(id) {
-    const files = pendingFiles[id] || [];
-    if (files.length === 0) return;
+    const staged = pendingFiles[id] || [];
+    if (staged.length === 0) return;
 
     try {
+      // Clear staged files immediately
+      setPendingFiles(prev => ({ ...prev, [id]: [] }));
+
+      // Send multipart form data to PHP backend
       const formData = new FormData();
-      files.forEach(file => formData.append('photos[]', file));
+      staged.forEach(item => {
+        formData.append('photos[]', item.file);
+        formData.append('images[]', item.file);
+      });
+      formData.append('review_id', id);
 
       await uploadPhotos.mutateAsync({ reviewId: id, formData });
-      setPendingFiles(prev => ({ ...prev, [id]: [] }));
+
+      // Clean local cache for this review since server is now updated
+      setLocalAddedPhotos(prev => {
+        const updated = { ...prev };
+        delete updated[id];
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('crewsync_provider_review_photos', JSON.stringify(updated));
+          } catch (e) {}
+        }
+        return updated;
+      });
     } catch (err) {
       console.error(err);
-      alert(err.message);
+      alert(err.message || 'Failed to save photos.');
     }
   }
 
-  // Removing an already-saved photo still deletes immediately
+  // Removing an already-saved photo
   async function removeSavedPhoto(reviewId, photoId) {
+    setDeletedPhotos(prev => ({ ...prev, [photoId]: true }));
+    setLocalAddedPhotos(prev => {
+      if (!prev[reviewId]) return prev;
+      const filtered = prev[reviewId].filter(p => p.photo_id !== photoId);
+      const updated = { ...prev, [reviewId]: filtered };
+      if (typeof window !== 'undefined') {
+        try {
+          localStorage.setItem('crewsync_provider_review_photos', JSON.stringify(updated));
+        } catch (e) {}
+      }
+      return updated;
+    });
+
     try {
       await deletePhoto.mutateAsync(photoId);
     } catch (err) {
@@ -86,17 +208,41 @@ function handlePickPhotos(id, files) {
     setReportOpen(prev => ({ ...prev, [id]: !prev[id] }));
   }
 
-  function submitReport(id) {
-    // TODO: wire to backend endpoint once report feature is built
+  async function submitReport(id) {
     const txt = (reportText[id] || '').trim();
     if (!txt) return;
-    setReportedIds(prev => ({ ...prev, [id]: true }));
-    setReportText(prev => ({ ...prev, [id]: '' }));
-    setReportOpen(prev => ({ ...prev, [id]: false }));
+
+    const reviewObj = reviews.find(r => r.id === id);
+    try {
+      await reportReviewMutation.mutateAsync({
+        reviewId: id,
+        message: txt,
+        reviewerName: reviewObj?.name,
+      });
+
+      setReportedIds(prev => {
+        const next = { ...prev, [id]: true };
+        if (typeof window !== 'undefined') {
+          try {
+            localStorage.setItem('crewsync_reported_reviews', JSON.stringify(next));
+          } catch (e) {}
+        }
+        return next;
+      });
+      setReportText(prev => ({ ...prev, [id]: '' }));
+      setReportOpen(prev => ({ ...prev, [id]: false }));
+    } catch (err) {
+      console.error(err);
+      alert(err.message || 'Failed to submit report.');
+    }
   }
 
   if (isLoading) {
     return <div style={{ padding: '3rem', textAlign: 'center', color: C.muted, fontFamily: "'DM Sans', sans-serif" }}>Loading reviews…</div>;
+  }
+
+  if (isError) {
+    return <div style={{ padding: '3rem', textAlign: 'center', color: '#B3261E', fontFamily: "'DM Sans', sans-serif" }}>Failed to load reviews: {error?.message || 'Unknown error'}</div>;
   }
 
   return (
@@ -119,6 +265,7 @@ function handlePickPhotos(id, files) {
       {reviews.map((r, idx) => {
         const avatar = AVATAR_STYLES[idx % AVATAR_STYLES.length];
         const staged = pendingFiles[r.id] || [];
+        const savedPhotos = Array.isArray(r.photos) ? r.photos : [];
         return (
           <div key={r.id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: C.radius, padding: '1.2rem', marginBottom: '12px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '0.6rem' }}>
@@ -127,7 +274,7 @@ function handlePickPhotos(id, files) {
               </div>
               <div>
                 <div style={{ fontSize: '0.88rem', fontWeight: 700 }}>{r.name}</div>
-                <div style={{ color: C.amber, fontSize: '0.85rem' }}>{'★'.repeat(r.stars)}</div>
+                <div style={{ color: C.blue, fontSize: '0.85rem' }}>{'★'.repeat(r.stars)}</div>
               </div>
               <div style={{ marginLeft: 'auto', fontSize: '0.72rem', color: C.muted }}>{r.date}</div>
             </div>
@@ -144,24 +291,27 @@ function handlePickPhotos(id, files) {
               <div style={{ fontSize: '0.72rem', fontWeight: 700, color: C.muted, textTransform: 'uppercase', letterSpacing: '0.4px', marginBottom: '6px' }}>
                 Project Images
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+              <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center' }}>
                 {/* Already saved photos */}
-                {r.photos.map((photo) => (
+                {savedPhotos.map((photo) => (
                   <div key={photo.photo_id} style={{ position: 'relative', width: '64px', height: '64px' }}>
                     <img src={photo.url} alt="Project" onClick={() => setLightbox(photo.url)}
                       style={{ width: '64px', height: '64px', borderRadius: '8px', border: `1px solid ${C.border}`, objectFit: 'cover', cursor: 'pointer', display: 'block' }} />
-                    <button onClick={() => removeSavedPhoto(r.id, photo.photo_id)} title="Remove photo"
-                      style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#B3261E', color: '#fff', border: '2px solid #fff', fontSize: '0.65rem', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <button
+                      onClick={(e) => { e.stopPropagation(); setConfirmDelete({ reviewId: r.id, photoId: photo.photo_id, photoUrl: photo.url }); }}
+                      title="Remove photo"
+                      style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#B3261E', color: '#fff', border: '2px solid #fff', fontSize: '0.65rem', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+                    >
                       ×
                     </button>
                   </div>
                 ))}
 
-                {/* Staged, not-yet-uploaded photos */}
-                {staged.map((file, i) => (
-                  <div key={i} style={{ position: 'relative', width: '64px', height: '64px' }}>
-                    <img src={URL.createObjectURL(file)} alt="Pending upload"
-                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: `2px dashed ${C.amber}`, objectFit: 'cover', display: 'block', opacity: 0.75 }} />
+                {/* Staged, not-yet-uploaded photos preview */}
+                {staged.map((item, i) => (
+                  <div key={item.id || i} style={{ position: 'relative', width: '64px', height: '64px' }}>
+                    <img src={item.previewUrl} alt="Pending upload"
+                      style={{ width: '64px', height: '64px', borderRadius: '8px', border: `2px dashed ${C.blue}`, objectFit: 'cover', display: 'block' }} />
                     <button onClick={() => removePendingPhoto(r.id, i)} title="Remove"
                       style={{ position: 'absolute', top: '-6px', right: '-6px', width: '18px', height: '18px', borderRadius: '50%', background: '#B3261E', color: '#fff', border: '2px solid #fff', fontSize: '0.65rem', lineHeight: 1, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       ×
@@ -178,8 +328,8 @@ function handlePickPhotos(id, files) {
                 </label>
               </div>
               {staged.length > 0 && (
-                <div style={{ fontSize: '0.72rem', color: C.amberDark, marginTop: '6px' }}>
-                  {staged.length} photo{staged.length > 1 ? 's' : ''} not saved yet — click Update to save.
+                <div style={{ fontSize: '0.72rem', color: C.blueDark, marginTop: '6px' }}>
+                  {staged.length} photo{staged.length > 1 ? 's' : ''} staged — click <strong>Update</strong> below to save.
                 </div>
               )}
             </div>
@@ -188,14 +338,18 @@ function handlePickPhotos(id, files) {
               <button
                 onClick={() => handleUpdate(r.id)}
                 disabled={staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)}
-                style={{ background: C.amber, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
+                style={{ background: C.blue, color: '#fff', border: 'none', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 'not-allowed' : 'pointer', opacity: (staged.length === 0 || (uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id)) ? 0.5 : 1, whiteSpace: 'nowrap' }}>
                 {uploadPhotos.isPending && uploadPhotos.variables?.reviewId === r.id ? 'Saving…' : 'Update'}
               </button>
-              {!reportedIds[r.id] && (
+              {!reportedIds[r.id] ? (
                 <button onClick={() => toggleReport(r.id)}
                   style={{ background: 'none', color: '#B3261E', border: '1px solid rgba(179,38,30,0.35)', padding: '8px 14px', borderRadius: C.radiusSm, fontSize: '0.78rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer', whiteSpace: 'nowrap' }}>
                   🚩 Report
                 </button>
+              ) : (
+                <span style={{ fontSize: '0.75rem', color: '#B3261E', fontWeight: 600, display: 'inline-flex', alignItems: 'center', padding: '8px 4px', gap: '4px' }}>
+                  ✓ Reported to Admin
+                </span>
               )}
             </div>
 
@@ -206,9 +360,11 @@ function handlePickPhotos(id, files) {
                   placeholder="Explain why you're reporting this review…" rows={2}
                   style={{ width: '100%', border: `1px solid ${C.border}`, borderRadius: C.radiusSm, padding: '8px 12px', fontSize: '0.8rem', fontFamily: "'DM Sans', sans-serif", outline: 'none', color: C.slate, resize: 'vertical' }} />
                 <div style={{ display: 'flex', gap: '8px', marginTop: '6px' }}>
-                  <button onClick={() => submitReport(r.id)}
-                    style={{ background: '#B3261E', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}>
-                    Submit Report
+                  <button
+                    onClick={() => submitReport(r.id)}
+                    disabled={reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id}
+                    style={{ background: '#B3261E', color: '#fff', border: 'none', padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 600, fontFamily: "'DM Sans', sans-serif", cursor: (reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id) ? 'wait' : 'pointer', opacity: (reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id) ? 0.6 : 1 }}>
+                    {reportReviewMutation.isPending && reportReviewMutation.variables?.reviewId === r.id ? 'Submitting…' : 'Submit Report'}
                   </button>
                   <button onClick={() => toggleReport(r.id)}
                     style={{ background: 'none', color: C.muted, border: `1px solid ${C.border}`, padding: '7px 14px', borderRadius: C.radiusSm, fontSize: '0.76rem', fontWeight: 500, fontFamily: "'DM Sans', sans-serif", cursor: 'pointer' }}>
@@ -221,6 +377,20 @@ function handlePickPhotos(id, files) {
         );
       })}
 
+      {/* Confirmation Modal Before Removing Photo */}
+      {confirmDelete && (
+        <PhotoDeleteModal
+          photoUrl={confirmDelete.photoUrl}
+          onCancel={() => setConfirmDelete(null)}
+          onConfirm={async () => {
+            const { reviewId, photoId } = confirmDelete;
+            setConfirmDelete(null);
+            await removeSavedPhoto(reviewId, photoId);
+          }}
+        />
+      )}
+
+      {/* Lightbox Modal */}
       {lightbox && (
         <div onClick={() => setLightbox(null)}
           style={{ position: 'fixed', inset: 0, background: 'rgba(26,29,35,0.85)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: '2rem', cursor: 'zoom-out' }}>

@@ -70,7 +70,7 @@ export default function AdminDashboard() {
                     fixed top-[60px] left-0 h-[calc(100vh-60px)] w-[220px] bg-white border-r border-border
                     flex flex-col p-4 z-40 transition-transform duration-200
                     ${sidebarOpen ? 'translate-x-0' : '-translate-x-full'}
-                    md:translate-x-0 md:static md:h-auto md:z-auto
+                    md:translate-x-0 md:sticky md:top-[60px] md:h-[calc(100vh-60px)] md:z-auto
                 `}>
                     {/* Admin identity */}
                     <div className="flex items-center gap-2.5 pb-4 mb-4 border-b border-border">

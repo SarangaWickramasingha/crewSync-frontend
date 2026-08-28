@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter, usePathname } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/src/components/layout/Navbar';
@@ -11,6 +11,7 @@ export default function PropertyOwnerLayout({ children }) {
   const { isGuest, loading } = useAuth();
   const router = useRouter();
   const pathname = usePathname();
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   // Pages that guest property owners are legally allowed to click into
   const allowedGuestPages = [
@@ -40,10 +41,10 @@ export default function PropertyOwnerLayout({ children }) {
 
   return (
     <>
-      <Navbar variant="propertyOwnerDashboard" />
+      <Navbar variant="propertyOwnerDashboard" onHamburger={() => setSidebarOpen(v => !v)} />
       <TasksProvider>
         <div className="grid md:grid-cols-[220px_1fr] min-h-[calc(100vh-60px)]">
-          <DashboardSidebar />
+          <DashboardSidebar open={sidebarOpen} setOpen={setSidebarOpen} />
           <main className="p-6 md:p-8 bg-[#F7F6F2]">{children}</main>
         </div>
       </TasksProvider>

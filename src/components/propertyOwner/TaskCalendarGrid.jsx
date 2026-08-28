@@ -1,16 +1,15 @@
 'use client';
 
 import { useState, useMemo } from 'react';
+import { useRouter } from 'next/navigation';
 import useProjectTimelineData from './useProjectTimelineData';
 import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
 
-const COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
-
 const STATUS_CFG = {
   0: { label: 'Empty', bg: 'transparent', dot: '#ccc' },
   1: { label: 'Done', bg: '#E6F4EC', dot: '#1B6E3A' },
-  2: { label: 'In Progress', bg: '#FFF3E0', dot: '#E8820C' },
+  2: { label: 'In Progress', bg: '#dcfce7', dot: '#16a34a' },
   3: { label: 'Blocked', bg: '#FDECEA', dot: '#C0392B' },
 };
 
@@ -45,12 +44,11 @@ function fmtCompact(n) {
 
 function AddTaskModal({ onSave, onClose }) {
   const [name, setName] = useState('');
-  const [color, setColor] = useState(COLORS[0]);
   const [budget, setBudget] = useState('');
 
   function submit() {
     if (!name.trim()) return;
-    onSave(name.trim(), color, Number(budget) || 0);
+    onSave(name.trim(), Number(budget) || 0);
   }
 
   return (
@@ -60,7 +58,7 @@ function AddTaskModal({ onSave, onClose }) {
 
         <div className="text-[11px] font-medium text-[#8A8FA8]">Task name</div>
         <input
-          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#16a34a]"
           placeholder="e.g. Roofing Task 2"
           value={name}
           autoFocus
@@ -71,25 +69,11 @@ function AddTaskModal({ onSave, onClose }) {
         <div className="text-[11px] font-medium text-[#8A8FA8]">Estimated Budget (LKR)</div>
         <input
           type="number"
-          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#E8820C]"
+          className="w-full rounded-md border border-[rgba(26,29,35,0.1)] bg-white px-2.5 py-[7px] font-sans text-[13px] text-[#1A1D23] outline-none focus:border-[#16a34a]"
           placeholder="e.g. 250000"
           value={budget}
           onChange={(e) => setBudget(e.target.value)}
         />
-
-        <div className="text-[11px] font-medium text-[#8A8FA8]">Colour</div>
-        <div className="flex flex-wrap gap-1.5">
-          {COLORS.map((c) => (
-            <div
-              key={c}
-              className={`h-[22px] w-[22px] cursor-pointer rounded-full border-2 ${
-                color === c ? 'border-[#1A1D23]' : 'border-transparent'
-              }`}
-              style={{ background: c }}
-              onClick={() => setColor(c)}
-            />
-          ))}
-        </div>
 
         <div className="mt-1 flex justify-end gap-2">
           <button
@@ -99,7 +83,7 @@ function AddTaskModal({ onSave, onClose }) {
             Cancel
           </button>
           <button
-            className="rounded-md border-none bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white"
+            className="rounded-md border-none bg-[#16a34a] hover:bg-[#15803d] px-3 py-[5px] font-sans text-xs font-semibold text-white cursor-pointer"
             onClick={submit}
           >
             Add Task
@@ -110,12 +94,31 @@ function AddTaskModal({ onSave, onClose }) {
   );
 }
 
-export default function TaskCalendarGrid({ projectId = null }) {
-  const {
-    tasks, isLoaded, addTask, deleteTask, updateTask, toggleTaskCompleted,
-    estimatedBudget, totalCost, remainingBudget, totalAllocatedBudget,
-    projectCompleted, finishProject, unlockProject, addNotification,
-  } = useProjectTimelineData(projectId);
+export default function TaskCalendarGrid({ projectId = null, guestMode = false, demoTasks = null }) {
+  const hookResult = useProjectTimelineData(projectId);
+  const router = useRouter();
+
+  const [demoTasksState, setDemoTasksState] = useState(demoTasks);
+  const tasks = demoTasksState ?? hookResult.tasks;
+  const isLoaded = demoTasks ? true : hookResult.isLoaded;
+  const addTask = hookResult.addTask;
+  const deleteTask = hookResult.deleteTask;
+  const updateTask = hookResult.updateTask;
+  const toggleTaskCompleted = hookResult.toggleTaskCompleted;
+  const estimatedBudget = demoTasksState ? 1500000 : hookResult.estimatedBudget;
+  const totalCost = useMemo(
+    () => demoTasksState ? demoTasksState.reduce((s, t) => s + (Number(t.cost) || 0), 0) : hookResult.totalCost,
+    [demoTasksState, hookResult.totalCost]
+  );
+  const totalAllocatedBudget = useMemo(
+    () => demoTasksState ? demoTasksState.reduce((s, t) => s + (Number(t.budget) || 0), 0) : hookResult.totalAllocatedBudget,
+    [demoTasksState, hookResult.totalAllocatedBudget]
+  );
+  const remainingBudget = estimatedBudget - totalCost;
+  const projectCompleted = demoTasks ? false : hookResult.projectCompleted;
+  const finishProject = hookResult.finishProject;
+  const unlockProject = hookResult.unlockProject;
+  const addNotification = hookResult.addNotification;
 
   const today = useMemo(() => new Date(), []);
   const [baseDate, setBaseDate] = useState(() => new Date());
@@ -135,7 +138,29 @@ export default function TaskCalendarGrid({ projectId = null }) {
     const task = tasks.find((t) => t.id === taskId);
     if (task?.completed) return;
     const k = dayKey(day);
-    updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
+    if (demoTasks) {
+      setDemoTasksState((prev) =>
+        prev.map((t) =>
+          t.id === taskId
+            ? { ...t, days: { ...t.days, [k]: cycleStatus(t.days[k] ?? 0) } }
+            : t
+        )
+      );
+    } else {
+      updateTask(taskId, { days: { ...task.days, [k]: cycleStatus(task.days[k] ?? 0) } });
+    }
+  }
+
+  function demoUpdateTask(taskId, updates) {
+    setDemoTasksState((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, ...updates } : t))
+    );
+  }
+
+  function demoToggleTaskCompleted(taskId) {
+    setDemoTasksState((prev) =>
+      prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t))
+    );
   }
 
   function statusToEnum(st) {
@@ -143,6 +168,11 @@ export default function TaskCalendarGrid({ projectId = null }) {
   }
 
   async function handleSave() {
+    if (guestMode) {
+      router.push('/register');
+      return;
+    }
+
     const dirtyTasks = tasks.filter((t) => Object.keys(t.days || {}).length > 0);
     if (!dirtyTasks.length) return;
 
@@ -164,9 +194,9 @@ export default function TaskCalendarGrid({ projectId = null }) {
 
   return (
     <>
-      {showAdd && (
+      {showAdd && !guestMode && (
         <AddTaskModal
-          onSave={(name, color, budget) => { addTask(name, color, budget); setShowAdd(false); }}
+          onSave={(name, budget) => { addTask(name, '#16a34a', budget); setShowAdd(false); }}
           onClose={() => setShowAdd(false)}
         />
       )}
@@ -174,7 +204,14 @@ export default function TaskCalendarGrid({ projectId = null }) {
         <EditTaskModal
           task={editingTask}
           onClose={() => setEditingTask(null)}
-          onSave={(updates) => { updateTask(editingTask.id, updates); setEditingTask(null); }}
+          onSave={(updates) => {
+            if (demoTasks) {
+              demoUpdateTask(editingTask.id, updates);
+            } else {
+              updateTask(editingTask.id, updates);
+            }
+            setEditingTask(null);
+          }}
         />
       )}
 
@@ -186,6 +223,15 @@ export default function TaskCalendarGrid({ projectId = null }) {
 
       {isLoaded && (
         <>
+      {guestMode && (
+        <div className="mb-3.5 rounded-lg border border-[rgba(26,153,230,0.3)] bg-[#EBF5FB] px-4 py-2.5 text-[13px] text-[#1A56A0] flex items-center gap-2">
+          <svg className="w-4 h-4 text-[#1A56A0] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+            <path strokeLinecap="round" strokeLinejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+          </svg>
+          <span>Guest Preview — click cells to try it out, then sign up to save your project timeline.</span>
+        </div>
+      )}
+
       <div className="mb-3.5 flex flex-wrap items-center gap-6 rounded-xl border border-[rgba(26,29,35,0.1)] bg-white px-[18px] py-3.5">
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Estimated Budget</span>
@@ -197,7 +243,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Total Cost</span>
-          <span className="font-syne text-base font-bold text-[#B85A00]">LKR {fmtCompact(totalCost)}</span>
+          <span className="font-syne text-base font-bold text-[#15803d]">LKR {fmtCompact(totalCost)}</span>
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Remaining</span>
@@ -208,35 +254,37 @@ export default function TaskCalendarGrid({ projectId = null }) {
             LKR {fmtCompact(remainingBudget)}
           </span>
         </div>
-        <div className="ml-auto">
-          {projectCompleted ? (
-            <button
-              className="rounded-lg border border-[rgba(26,29,35,0.2)] bg-white px-4 py-2 font-sans text-[13px] font-semibold text-[#1A1D23] hover:bg-[#F7F6F2] flex items-center gap-1.5"
-              onClick={unlockProject}
-            >
-              <svg className="w-4 h-4 text-[#1A1D23]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
-              </svg>
-              Unlock Project
-            </button>
-          ) : (
-            <button
-              className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
-              onClick={async () => {
-                if (window.confirm("Are you sure you want to finish this project? This will lock all edits.")) {
-                  await finishProject();
-                }
-              }}
-            >
-              ✓ Finish Project
-            </button>
-          )}
-        </div>
+        {!guestMode && (
+          <div className="ml-auto">
+            {projectCompleted ? (
+              <button
+                className="rounded-lg border border-[rgba(26,29,35,0.2)] bg-white px-4 py-2 font-sans text-[13px] font-semibold text-[#1A1D23] hover:bg-[#F7F6F2] flex items-center gap-1.5"
+                onClick={unlockProject}
+              >
+                <svg className="w-4 h-4 text-[#1A1D23]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                </svg>
+                Unlock Project
+              </button>
+            ) : (
+              <button
+                className="rounded-lg bg-[#1B6E3A] px-4 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90"
+                onClick={async () => {
+                  if (window.confirm("Are you sure you want to finish this project? This will lock all edits.")) {
+                    await finishProject();
+                  }
+                }}
+              >
+                ✓ Finish Project
+              </button>
+            )}
+          </div>
+        )}
       </div>
 
-      {projectCompleted && (
-        <div className="mb-3.5 rounded-lg border border-[rgba(232,130,12,0.3)] bg-[#FFF3E0] px-4 py-2.5 text-[13px] text-[#B85A00] flex items-center gap-2">
-          <svg className="w-4 h-4 text-[#B85A00] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+      {!guestMode && projectCompleted && (
+        <div className="mb-3.5 rounded-lg border border-[rgba(22,163,74,0.3)] bg-[#dcfce7] px-4 py-2.5 text-[13px] text-[#15803d] flex items-center gap-2">
+          <svg className="w-4 h-4 text-[#15803d] shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
             <path strokeLinecap="round" strokeLinejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
           </svg>
           <span>Project marked as completed — editing is locked. Click &quot;Unlock Project&quot; to make changes.</span>
@@ -268,13 +316,15 @@ export default function TaskCalendarGrid({ projectId = null }) {
               Next ›
             </button>
           </div>
-          <button
-            className="rounded-md bg-[#E8820C] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
-            onClick={() => setShowAdd(true)}
-            disabled={projectCompleted}
-          >
-            + Add Task
-          </button>
+          {!guestMode && (
+            <button
+              className="rounded-md bg-[#16a34a] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:bg-[#15803d] disabled:cursor-not-allowed disabled:opacity-50"
+              onClick={() => setShowAdd(true)}
+              disabled={projectCompleted}
+            >
+              + Add Task
+            </button>
+          )}
         </div>
 
         {/* TABLE */}
@@ -291,10 +341,10 @@ export default function TaskCalendarGrid({ projectId = null }) {
                     <th
                       key={i}
                       className={`sticky top-0 z-[2] whitespace-nowrap border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-2.5 py-[7px] text-center font-sans text-[11px] font-semibold text-[#8A8FA8] last:border-r-0 ${
-                        isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
+                        isT ? 'bg-[rgba(22,163,74,0.05)]' : ''
                       }`}
                     >
-                      <span className={isT ? '!font-bold !text-[#B85A00]' : ''}>
+                      <span className={isT ? '!font-bold !text-[#15803d]' : ''}>
                         {DOW[d.getDay()]} {d.getDate()}
                       </span>
                     </th>
@@ -306,7 +356,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
               {tasks.length === 0 && (
                 <tr className="border-b border-[rgba(26,29,35,0.1)]">
                   <td colSpan={8} className="p-6 text-center text-[13px] text-[#8A8FA8]">
-                    No tasks yet — click &quot;+ Add Task&quot; to get started
+                    {guestMode ? 'No demo tasks available' : 'No tasks yet — click "+ Add Task" to get started'}
                   </td>
                 </tr>
               )}
@@ -315,7 +365,6 @@ export default function TaskCalendarGrid({ projectId = null }) {
                   <td className="border-r border-[rgba(26,29,35,0.1)] p-0 align-middle">
                     <div className="sticky left-0 z-[1] flex min-w-[230px] flex-col gap-1.5 bg-white px-3 py-2 group-hover:bg-[#F7F6F2]">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: t.color }} />
                         <span
                           className={`flex-1 truncate text-[13px] font-medium text-[#1A1D23] ${
                             t.completed ? 'text-[#8A8FA8] line-through' : ''
@@ -324,7 +373,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                         >
                           {t.name}
                         </span>
-                        {!projectCompleted && !t.completed && (
+                        {!guestMode && !projectCompleted && !t.completed && (
                           <button
                             className="px-0.5 text-sm leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B]"
                             onClick={() => deleteTask(t.id)}
@@ -340,7 +389,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                             Budget: LKR {(t.budget || 0).toLocaleString()}
                           </span>
                         )}
-                        <span className="text-[11px] font-semibold text-[#B85A00]">
+                        <span className="text-[11px] font-semibold text-[#15803d]">
                           Cost: LKR {(t.cost || 0).toLocaleString()}
                         </span>
                         {t.assignedSP && (
@@ -367,12 +416,24 @@ export default function TaskCalendarGrid({ projectId = null }) {
                             <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
                               ✓ Completed
                             </span>
-                            {!projectCompleted && (
+                            {!guestMode && !projectCompleted && (
                               <button
-                                className="rounded-[5px] border border-[#E8820C] px-1.5 py-px font-sans text-[10px] text-[#E8820C] hover:bg-[#FFF3E0]"
+                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
                                 onClick={() => {
                                   if (window.confirm("Are you sure you want to unfreeze this task?")) {
                                     toggleTaskCompleted(t.id);
+                                  }
+                                }}
+                              >
+                                Unfreeze
+                              </button>
+                            )}
+                            {guestMode && !projectCompleted && (
+                              <button
+                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
+                                onClick={() => {
+                                  if (window.confirm("Are you sure you want to unfreeze this task?")) {
+                                    demoToggleTaskCompleted(t.id);
                                   }
                                 }}
                               >
@@ -386,7 +447,7 @@ export default function TaskCalendarGrid({ projectId = null }) {
                               className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
                               onClick={() => {
                                 if (window.confirm("Are you sure you want to finish this task? This will freeze the task.")) {
-                                  toggleTaskCompleted(t.id);
+                                  guestMode ? demoToggleTaskCompleted(t.id) : toggleTaskCompleted(t.id);
                                 }
                               }}
                             >
@@ -406,8 +467,8 @@ export default function TaskCalendarGrid({ projectId = null }) {
                       <td
                         key={i}
                         className={`h-16 border-r border-[rgba(26,29,35,0.1)] p-0 text-center last:border-r-0 ${
-                          isT ? 'bg-[rgba(232,130,12,0.05)]' : ''
-                        } ${projectCompleted ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                          isT ? 'bg-[rgba(22,163,74,0.05)]' : ''
+                        } ${projectCompleted && !guestMode ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
                         onClick={() => toggleCell(t.id, d)}
                         title={`Click to cycle status: ${cfg.label}`}
                       >
@@ -454,11 +515,13 @@ export default function TaskCalendarGrid({ projectId = null }) {
       {/* SAVE */}
       <div className="mt-4 flex justify-end">
         <button
-          className="rounded-lg bg-[#E8820C] px-6 py-2 font-sans text-[13px] font-semibold text-white hover:bg-[#B85A00] disabled:cursor-not-allowed disabled:opacity-50"
+          className={`rounded-lg px-6 py-2 font-sans text-[13px] font-semibold text-white hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50 ${
+            guestMode ? 'bg-[#1A56A0] hover:bg-[#144480]' : 'bg-[#16a34a] hover:bg-[#15803d]'
+          }`}
           onClick={handleSave}
-          disabled={saving || projectCompleted}
+          disabled={saving || (!guestMode && projectCompleted)}
         >
-          {saving ? 'Saving…' : 'Save'}
+          {guestMode ? 'Sign Up to Save' : saving ? 'Saving…' : 'Save'}
         </button>
       </div>
         </>
