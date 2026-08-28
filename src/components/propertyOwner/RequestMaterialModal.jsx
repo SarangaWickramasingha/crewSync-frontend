@@ -24,8 +24,8 @@ export default function RequestMaterialModal({ product, onClose }) {
         {sent ? (
           <>
             <div className="mb-3 flex justify-center">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E6F4EC]">
-                <svg className="w-7 h-7 text-[#1B6E3A]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[var(--color-owner-light)]">
+                <svg className="w-7 h-7 text-[var(--color-owner)]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
                 </svg>
               </div>
@@ -35,7 +35,7 @@ export default function RequestMaterialModal({ product, onClose }) {
               Your request for {quantity}x {product.name} has been sent to {product.supplier}.
             </p>
             <button
-              className="mt-2 rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer"
+              className="mt-2 rounded-lg border-none bg-[var(--color-owner)] hover:bg-[var(--color-owner-dark)] px-[18px] py-2 text-[13px] font-semibold text-white transition-colors cursor-pointer"
               onClick={onClose}
             >
               Close
@@ -51,7 +51,7 @@ export default function RequestMaterialModal({ product, onClose }) {
             <div className="bg-[#F7F6F2] rounded-lg p-3.5 mb-4 text-left border border-black/5">
               <div className="text-xs font-bold text-[#1A1D23]">{product.name}</div>
               <div className="text-[11px] text-[#8A8FA8] mt-0.5">{product.supplier}</div>
-              <div className="text-xs text-[#E8820C] font-semibold mt-1.5">
+              <div className="text-xs text-[var(--color-owner-dark)] font-semibold mt-1.5">
                 Price: {product.price}
               </div>
             </div>
@@ -63,7 +63,7 @@ export default function RequestMaterialModal({ product, onClose }) {
                 min="1"
                 value={quantity}
                 onChange={(e) => setQuantity(Math.max(1, parseInt(e.target.value) || 1))}
-                className="w-full bg-white border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E8820C]"
+                className="w-full bg-white border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[var(--color-owner)]"
               />
             </div>
 
@@ -71,7 +71,7 @@ export default function RequestMaterialModal({ product, onClose }) {
 
             <div className="flex justify-between items-center mb-5 text-sm font-semibold">
               <span className="text-[#4A5068]">Estimated Total</span>
-              <span className="text-lg font-bold text-[#B85A00]">
+              <span className="text-lg font-bold text-[var(--color-owner-dark)]">
                 LKR {totalPrice.toLocaleString()}
               </span>
             </div>
@@ -84,7 +84,7 @@ export default function RequestMaterialModal({ product, onClose }) {
                 Cancel
               </button>
               <button
-                className="rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer"
+                className="rounded-lg border-none bg-[var(--color-owner)] hover:bg-[var(--color-owner-dark)] px-[18px] py-2 text-[13px] font-semibold text-white transition-colors cursor-pointer"
                 onClick={handleSend}
               >
                 Request
