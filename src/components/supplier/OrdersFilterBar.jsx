@@ -1,4 +1,5 @@
 'use client';
+import { Filter, RotateCcw } from 'lucide-react';
 import { MONTHS } from '@/src/hooks/supplier/useOrdersFilters';
 import StatusPill from '@/src/components/ui/StatusPill';
 
@@ -85,26 +86,26 @@ export default function OrdersFilterPanel({
         </div>
 
         <div className="flex items-center gap-2 self-end ml-auto">
+          {hasActiveFilter && (
+            <button
+              type="button"
+              onClick={onClear}
+              className="inline-flex items-center justify-center gap-1.5 px-3.5 py-2 bg-red-50 hover:bg-red-100 text-red-600 hover:text-red-700 border border-red-200 text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-sm"
+              title="Clear all filters"
+            >
+              <RotateCcw className="w-3.5 h-3.5" />
+              Clear filters
+            </button>
+          )}
+
           <button
             type="button"
             onClick={onApply}
             className="inline-flex items-center justify-center gap-1.5 px-4 py-2 bg-supplier hover:bg-supplier-dark text-white text-xs font-semibold rounded-lg transition-all cursor-pointer shadow-sm"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3" />
-            </svg>
+            <Filter className="w-3.5 h-3.5" />
             Filter
           </button>
-
-          {hasActiveFilter && (
-            <button
-              type="button"
-              onClick={onClear}
-              className="text-[0.72rem] font-medium text-muted hover:text-supplier-dark transition-colors cursor-pointer underline underline-offset-2 bg-transparent border-none px-2 py-2"
-            >
-              Clear filters
-            </button>
-          )}
         </div>
       </div>
 
@@ -132,3 +133,4 @@ export default function OrdersFilterPanel({
     </div>
   );
 }
+

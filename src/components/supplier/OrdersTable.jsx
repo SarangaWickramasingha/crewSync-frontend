@@ -30,13 +30,13 @@ export default function OrdersTable({ orders = [], onAccept, onReject, hasActive
           <tbody className="divide-y divide-border">
             {loading ? (
               <tr>
-                <td colSpan={7} className="px-4 py-5 text-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted">
                   Loading orders…
                 </td>
               </tr>
             ) : orders.length === 0 ? (
               <tr>
-                <td colSpan={7} className="px-4 py-5 text-muted">
+                <td colSpan={7} className="px-4 py-10 text-center text-muted">
                   {hasActiveFilter ? 'No orders match the selected filters.' : 'No orders found.'}
                 </td>
               </tr>
