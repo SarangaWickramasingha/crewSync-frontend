@@ -60,11 +60,18 @@ export default function PropertyOwnerNotificationsPage() {
               </div>
               
               <button
-                onClick={() => deleteNotification(n.id)}
-                className="text-[#8A8FA8] hover:text-[#C0392B] text-lg font-bold leading-none px-1 transition-colors cursor-pointer"
-                title="Dismiss notification"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  toggleNotificationRead(n.id);
+                }}
+                className={`text-xs font-semibold rounded-md px-2.5 py-1 transition-all cursor-pointer flex-shrink-0 ${
+                  n.read
+                    ? 'text-[#8A8FA8] hover:text-[#1A1D23] border border-black/10 hover:border-black/20 bg-transparent hover:bg-black/5'
+                    : 'text-[#16a34a] hover:text-[#15803d] border border-[#16a34a]/40 hover:border-[#16a34a] bg-[#dcfce7]/60 hover:bg-[#dcfce7]'
+                }`}
+                title={n.read ? 'Mark as unread' : 'Mark as read'}
               >
-                ×
+                {n.read ? 'Read' : 'Mark read'}
               </button>
             </div>
           ))

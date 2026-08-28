@@ -159,7 +159,22 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
 
   function demoToggleTaskCompleted(taskId) {
     setDemoTasksState((prev) =>
-      prev.map((t) => (t.id === taskId ? { ...t, completed: !t.completed } : t))
+      prev.map((t) => {
+        if (t.id === taskId) {
+          const nextCompleted = !t.completed;
+          if (nextCompleted) {
+            addNotification(
+              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+            );
+          } else {
+            addNotification(
+              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
+            );
+          }
+          return { ...t, completed: nextCompleted };
+        }
+        return t;
+      })
     );
   }
 

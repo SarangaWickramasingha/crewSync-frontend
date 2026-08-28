@@ -222,9 +222,15 @@ export function TasksProvider({ children }) {
       ts.map((t) => {
         if (t.id === id) {
           const nextCompleted = !t.completed;
-          addNotification(
-            `Task <strong>${t.name}</strong> marked as <strong>${nextCompleted ? 'Complete' : 'In Progress'}</strong>`
-          );
+          if (nextCompleted) {
+            addNotification(
+              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+            );
+          } else {
+            addNotification(
+              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
+            );
+          }
           return { ...t, completed: nextCompleted };
         }
         return t;

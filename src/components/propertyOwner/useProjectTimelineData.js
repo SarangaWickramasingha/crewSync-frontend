@@ -94,12 +94,32 @@ export default function useProjectTimelineData(projectId) {
   }
 
   function toggleTaskCompleted(id) {
-    setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, completed: !t.completed } : t)));
+    setTasks((ts) =>
+      ts.map((t) => {
+        if (t.id === id) {
+          const nextCompleted = !t.completed;
+          if (nextCompleted) {
+            ctx.addNotification(
+              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+            );
+          } else {
+            ctx.addNotification(
+              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
+            );
+          }
+          return { ...t, completed: nextCompleted };
+        }
+        return t;
+      })
+    );
     taskApi.toggleTaskFinish(id).catch((err) => console.error('Failed to toggle task finish:', err));
   }
 
   async function finishProject() {
     setProjectCompleted(true);
+    ctx.addNotification(
+      `Project is completed. Full project reports are now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+    );
     try {
       await projectApi.toggleFinishProject(projectId);
       await ctx.loadFromProject(projectId);
