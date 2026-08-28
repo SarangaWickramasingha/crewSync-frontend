@@ -6,8 +6,6 @@ import useProjectTimelineData from './useProjectTimelineData';
 import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
 
-const COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
-
 const STATUS_CFG = {
   0: { label: 'Empty', bg: 'transparent', dot: '#ccc' },
   1: { label: 'Done', bg: '#E6F4EC', dot: '#1B6E3A' },
@@ -46,12 +44,11 @@ function fmtCompact(n) {
 
 function AddTaskModal({ onSave, onClose }) {
   const [name, setName] = useState('');
-  const [color, setColor] = useState(COLORS[0]);
   const [budget, setBudget] = useState('');
 
   function submit() {
     if (!name.trim()) return;
-    onSave(name.trim(), color, Number(budget) || 0);
+    onSave(name.trim(), Number(budget) || 0);
   }
 
   return (
@@ -78,20 +75,6 @@ function AddTaskModal({ onSave, onClose }) {
           onChange={(e) => setBudget(e.target.value)}
         />
 
-        <div className="text-[11px] font-medium text-[#8A8FA8]">Colour</div>
-        <div className="flex flex-wrap gap-1.5">
-          {COLORS.map((c) => (
-            <div
-              key={c}
-              className={`h-[22px] w-[22px] cursor-pointer rounded-full border-2 ${
-                color === c ? 'border-[#1A1D23]' : 'border-transparent'
-              }`}
-              style={{ background: c }}
-              onClick={() => setColor(c)}
-            />
-          ))}
-        </div>
-
         <div className="mt-1 flex justify-end gap-2">
           <button
             className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-3 py-[5px] font-sans text-xs text-[#8A8FA8]"
@@ -100,7 +83,7 @@ function AddTaskModal({ onSave, onClose }) {
             Cancel
           </button>
           <button
-            className="rounded-md border-none bg-[#16a34a] px-3 py-[5px] font-sans text-xs font-semibold text-white"
+            className="rounded-md border-none bg-[#16a34a] hover:bg-[#15803d] px-3 py-[5px] font-sans text-xs font-semibold text-white cursor-pointer"
             onClick={submit}
           >
             Add Task
@@ -213,7 +196,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
     <>
       {showAdd && !guestMode && (
         <AddTaskModal
-          onSave={(name, color, budget) => { addTask(name, color, budget); setShowAdd(false); }}
+          onSave={(name, budget) => { addTask(name, '#16a34a', budget); setShowAdd(false); }}
           onClose={() => setShowAdd(false)}
         />
       )}
@@ -382,7 +365,6 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                   <td className="border-r border-[rgba(26,29,35,0.1)] p-0 align-middle">
                     <div className="sticky left-0 z-[1] flex min-w-[230px] flex-col gap-1.5 bg-white px-3 py-2 group-hover:bg-[#F7F6F2]">
                       <div className="flex items-center gap-2">
-                        <div className="h-2.5 w-2.5 flex-shrink-0 rounded-full" style={{ background: t.color }} />
                         <span
                           className={`flex-1 truncate text-[13px] font-medium text-[#1A1D23] ${
                             t.completed ? 'text-[#8A8FA8] line-through' : ''

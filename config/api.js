@@ -1,6 +1,5 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
-// Change this one line when deploying to production
-export const API_BASE = 'http://localhost/CrewSync-backend/backend/index.php';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost/CrewSync-backend/backend/index.php';
 
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────
@@ -84,4 +83,4 @@ export const API_SUPPLIER_PROFILE = `${API_BASE}/api/supplier/profile`;
 export const API_REPORTS_PROJECT = (projectId) => `${API_BASE}/api/reports/project/${projectId}`;
 export const API_REPORT_TASK_GENERATE = (taskId) => `${API_BASE}/api/reports/task/${taskId}/generate`;
 export const API_REPORT_PROJECT_GENERATE = (projectId) => `${API_BASE}/api/reports/project/${projectId}/generate`;
-export const REPORTS_BASE_URL = 'http://127.0.0.1/crewsync/reports/';
+export const REPORTS_BASE_URL = process.env.NEXT_PUBLIC_REPORTS_BASE_URL || 'http://127.0.0.1/crewsync/reports/';
