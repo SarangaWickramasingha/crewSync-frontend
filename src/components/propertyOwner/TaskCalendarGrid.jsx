@@ -260,7 +260,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Total Cost</span>
-          <span className="font-syne text-base font-bold text-[#15803d]">LKR {fmtCompact(totalCost)}</span>
+          <span className="font-syne text-base font-bold text-[#B85A00]">LKR {fmtCompact(totalCost)}</span>
         </div>
         <div className="flex flex-col gap-0.5">
           <span className="text-[11px] uppercase tracking-[.4px] text-[#8A8FA8]">Remaining</span>
