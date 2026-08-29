@@ -492,7 +492,7 @@ export default function StartProjectPage() {
             <div className="p-[1.4rem] px-8 border-t border-[rgba(26,29,35,0.1)] flex items-center justify-between bg-[#F7F6F2] gap-4 flex-wrap">
               <div className="flex gap-[10px]">
                 {currentPage === 2 && !success && (
-                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-[DM_Sans] disabled:opacity-50">← Back</button>
+                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-[DM_Sans] disabled:opacity-50 flex items-center justify-center">Back</button>
                 )}
               </div>
               <div className="text-[0.73rem] text-[#8A8FA8] max-w-[300px] leading-[1.4]">
