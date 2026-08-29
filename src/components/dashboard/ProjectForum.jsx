@@ -117,13 +117,13 @@ export default function ProjectForum({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
           placeholder="Add a comment to this project thread…"
-          className="flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#2563eb]"
+          className="flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a]"
           disabled={!projectId}
         />
         <button
           onClick={handlePostComment}
           disabled={posting || !projectId}
-          className="bg-[#2563eb] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
+          className="bg-[#1B6E3A] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
         >
           {posting ? 'Posting…' : 'Post'}
         </button>
