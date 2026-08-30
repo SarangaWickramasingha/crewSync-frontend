@@ -216,27 +216,20 @@ export function TasksProvider({ children }) {
     taskApi.updateTask(id, payload).catch((err) => console.error('Failed to update task on backend:', err));
   }
 
-  // ── TOGGLE TASK COMPLETED ────────────────────────────────────────────────────
-  function toggleTaskCompleted(id) {
+  // ── FINISH TASK (permanent — no unfreeze) ─────────────────────────────────
+  function finishTask(id) {
     setTasks((ts) =>
       ts.map((t) => {
         if (t.id === id) {
-          const nextCompleted = !t.completed;
-          if (nextCompleted) {
-            addNotification(
-              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
-            );
-          } else {
-            addNotification(
-              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
-            );
-          }
-          return { ...t, completed: nextCompleted };
+          addNotification(
+            `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+          );
+          return { ...t, completed: true };
         }
         return t;
       })
     );
-    taskApi.toggleTaskFinish(id).catch((err) => console.error('Failed to toggle task finish:', err));
+    taskApi.finishTask(id).catch((err) => console.error('Failed to finish task:', err));
   }
 
   function assignSP(taskId, spName) { updateTask(taskId, { assignedSP: spName }); }
@@ -254,7 +247,7 @@ export function TasksProvider({ children }) {
     currentProjectId,
     deleteTask,
     updateTask,
-    toggleTaskCompleted,
+    finishTask,
     assignSP,
     unassignSP,
     loadFromProject,

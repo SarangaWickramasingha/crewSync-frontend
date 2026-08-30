@@ -18,7 +18,7 @@ export async function updateTask(id, payload) {
   return unwrap(await request.put(API_TASK(id), payload));
 }
 
-export async function toggleTaskFinish(id) {
+export async function finishTask(id) {
   return unwrap(await request.put(API_TASK_FINISH(id)));
 }
 

@@ -93,26 +93,19 @@ export default function useProjectTimelineData(projectId) {
     taskApi.updateTask(id, payload).catch((err) => console.error('Failed to update task on backend:', err));
   }
 
-  function toggleTaskCompleted(id) {
+  function finishTask(id) {
     setTasks((ts) =>
       ts.map((t) => {
         if (t.id === id) {
-          const nextCompleted = !t.completed;
-          if (nextCompleted) {
-            ctx.addNotification(
-              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
-            );
-          } else {
-            ctx.addNotification(
-              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
-            );
-          }
-          return { ...t, completed: nextCompleted };
+          ctx.addNotification(
+            `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+          );
+          return { ...t, completed: true };
         }
         return t;
       })
     );
-    taskApi.toggleTaskFinish(id).catch((err) => console.error('Failed to toggle task finish:', err));
+    taskApi.finishTask(id).catch((err) => console.error('Failed to finish task:', err));
   }
 
   async function finishProject() {
@@ -148,7 +141,7 @@ export default function useProjectTimelineData(projectId) {
     addTask,
     deleteTask,
     updateTask,
-    toggleTaskCompleted,
+    finishTask,
     estimatedBudget,
     totalCost,
     totalAllocatedBudget,

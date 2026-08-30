@@ -94,6 +94,34 @@ function AddTaskModal({ onSave, onClose }) {
   );
 }
 
+function FinishTaskModal({ name, onConfirm, onClose }) {
+  return (
+    <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)]">
+      <div className="flex w-[340px] flex-col gap-2.5 rounded-[14px] border border-[rgba(26,29,35,0.1)] bg-white p-[22px] shadow-[0_8px_32px_rgba(26,29,35,0.15)]">
+        <h3 className="m-0 font-syne text-sm font-bold text-[#1A1D23]">Finish Task</h3>
+        <p className="m-0 text-[13px] leading-relaxed text-[#4A5068]">
+          Once you finish <strong>{name}</strong>, the task report will be available but you won&apos;t
+          be able to work on this anymore.
+        </p>
+        <div className="mt-1 flex justify-end gap-2">
+          <button
+            className="rounded-md border border-[rgba(26,29,35,0.1)] bg-transparent px-3 py-[5px] font-sans text-xs text-[#8A8FA8]"
+            onClick={onClose}
+          >
+            Cancel
+          </button>
+          <button
+            className="cursor-pointer rounded-md border-none bg-[#1B6E3A] px-3 py-[5px] font-sans text-xs font-semibold text-white hover:opacity-90"
+            onClick={onConfirm}
+          >
+            OK
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function TaskCalendarGrid({ projectId = null, guestMode = false, demoTasks = null }) {
   const hookResult = useProjectTimelineData(projectId);
   const router = useRouter();
@@ -104,7 +132,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
   const addTask = hookResult.addTask;
   const deleteTask = hookResult.deleteTask;
   const updateTask = hookResult.updateTask;
-  const toggleTaskCompleted = hookResult.toggleTaskCompleted;
+  const finishTask = hookResult.finishTask;
   const estimatedBudget = demoTasksState ? 1500000 : hookResult.estimatedBudget;
   const totalCost = useMemo(
     () => demoTasksState ? demoTasksState.reduce((s, t) => s + (Number(t.cost) || 0), 0) : hookResult.totalCost,
@@ -124,6 +152,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
   const [baseDate, setBaseDate] = useState(() => new Date());
   const [showAdd, setShowAdd] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
+  const [finishTaskTarget, setFinishTaskTarget] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const days = useMemo(() => getWeekDays(baseDate), [baseDate]);
@@ -157,21 +186,14 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
     );
   }
 
-  function demoToggleTaskCompleted(taskId) {
+  function demoFinishTask(taskId) {
     setDemoTasksState((prev) =>
       prev.map((t) => {
         if (t.id === taskId) {
-          const nextCompleted = !t.completed;
-          if (nextCompleted) {
-            addNotification(
-              `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
-            );
-          } else {
-            addNotification(
-              `Task <strong>${t.name}</strong> marked as <strong>In Progress</strong>`
-            );
-          }
-          return { ...t, completed: nextCompleted };
+          addNotification(
+            `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+          );
+          return { ...t, completed: true };
         }
         return t;
       })
@@ -226,6 +248,20 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
               updateTask(editingTask.id, updates);
             }
             setEditingTask(null);
+          }}
+        />
+      )}
+      {finishTaskTarget != null && (
+        <FinishTaskModal
+          name={tasks.find((t) => t.id === finishTaskTarget)?.name || ''}
+          onClose={() => setFinishTaskTarget(null)}
+          onConfirm={() => {
+            if (guestMode) {
+              demoFinishTask(finishTaskTarget);
+            } else {
+              finishTask(finishTaskTarget);
+            }
+            setFinishTaskTarget(null);
           }}
         />
       )}
@@ -427,44 +463,14 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                           </button>
                         )}
                         {t.completed ? (
-                          <div className="flex items-center gap-1.5">
-                            <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
-                              ✓ Completed
-                            </span>
-                            {!guestMode && !projectCompleted && (
-                              <button
-                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
-                                onClick={() => {
-                                  if (window.confirm("Are you sure you want to unfreeze this task?")) {
-                                    toggleTaskCompleted(t.id);
-                                  }
-                                }}
-                              >
-                                Unfreeze
-                              </button>
-                            )}
-                            {guestMode && !projectCompleted && (
-                              <button
-                                className="rounded-[5px] border border-[#16a34a] px-1.5 py-px font-sans text-[10px] text-[#16a34a] hover:bg-[#dcfce7]"
-                                onClick={() => {
-                                  if (window.confirm("Are you sure you want to unfreeze this task?")) {
-                                    demoToggleTaskCompleted(t.id);
-                                  }
-                                }}
-                              >
-                                Unfreeze
-                              </button>
-                            )}
-                          </div>
+                          <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
+                            ✓ Completed
+                          </span>
                         ) : (
                           !projectCompleted && (
                             <button
                               className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
-                              onClick={() => {
-                                if (window.confirm("Are you sure you want to finish this task? This will freeze the task.")) {
-                                  guestMode ? demoToggleTaskCompleted(t.id) : toggleTaskCompleted(t.id);
-                                }
-                              }}
+                              onClick={() => setFinishTaskTarget(t.id)}
                             >
                               Finish Task
                             </button>
