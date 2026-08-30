@@ -5,12 +5,14 @@ import Link from 'next/link';
 import { Eye, EyeOff } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { useRouter } from 'next/navigation';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/src/components/layout/Navbar';
 import { loginSchema } from '@/src/lib/validators/auth';
 import { useLogin } from '@/src/hooks/auth/useAuth';
 
 export default function LoginPage() {
+    const router = useRouter();
     const { login } = useAuth();
     const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
@@ -34,15 +36,15 @@ export default function LoginPage() {
 
     const redirectByRole = (role) => {
         if (role === 'property_owner') {
-            window.location.assign('/dashboard/propertyowner');
+            router.push('/dashboard/propertyowner');
         } else if (role === 'admin') {
-            window.location.assign('/dashboard/admin');
+            router.push('/dashboard/admin');
         } else if (role === 'service_provider') {
-            window.location.assign('/dashboard/serviceprovider');
+            router.push('/dashboard/serviceprovider');
         } else if (role === 'material_supplier') {
-            window.location.assign('/dashboard/supplier');
+            router.push('/dashboard/supplier');
         } else {
-            window.location.assign('/home');
+            router.push('/home');
         }
     };
 

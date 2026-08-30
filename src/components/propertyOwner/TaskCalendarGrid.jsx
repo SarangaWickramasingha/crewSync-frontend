@@ -9,7 +9,7 @@ import EditTaskModal from './EditTaskModal';
 const STATUS_CFG = {
   0: { label: 'Empty', bg: 'transparent', dot: '#ccc' },
   1: { label: 'Done', bg: '#E6F4EC', dot: '#1B6E3A' },
-  2: { label: 'In Progress', bg: '#dcfce7', dot: '#16a34a' },
+  2: { label: 'In Progress', bg: '#EBF5FB', dot: '#1A56A0' },
   3: { label: 'Blocked', bg: '#FDECEA', dot: '#C0392B' },
 };
 
