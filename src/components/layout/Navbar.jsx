@@ -31,11 +31,11 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   const activeColor = roleKey ? ROLE_COLORS[roleKey].color : '#e8820c';
   const activeHover  = roleKey ? ROLE_COLORS[roleKey].hover  : '#b85a00';
 
-  const Logo = ({ color }) => (
+  const Logo = () => (
     <div
       onClick={() => router.push("/home")}
       className="cursor-pointer font-syne text-xl font-extrabold tracking-tight select-none"
-      style={{ color: color || '#e8820c' }}
+      style={{ color: '#e8820c' }}
     >
       Crew<span className="text-white">Sync</span>
     </div>

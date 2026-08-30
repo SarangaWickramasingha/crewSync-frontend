@@ -492,14 +492,14 @@ export default function StartProjectPage() {
             <div className="p-[1.4rem] px-8 border-t border-[rgba(26,29,35,0.1)] flex items-center justify-between bg-[#F7F6F2] gap-4 flex-wrap">
               <div className="flex gap-[10px]">
                 {currentPage === 2 && !success && (
-                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-[DM_Sans] disabled:opacity-50">← Back</button>
+                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-[DM_Sans] disabled:opacity-50 flex items-center justify-center">Back</button>
                 )}
               </div>
               <div className="text-[0.73rem] text-[#8A8FA8] max-w-[300px] leading-[1.4]">
                 {currentPage === 1 ? 'Your project info is protected and shared only with verified CrewSync members.' : 'Once submitted, service providers can begin sending you proposals.'}
               </div>
-              <button onClick={nextStep} disabled={submitting || success} className="py-[11px] px-7 bg-[#E8820C] text-white border-none rounded-[8px] text-[0.92rem] font-semibold cursor-pointer transition-all whitespace-nowrap hover:bg-[#B85A00] hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)] font-[DM_Sans] disabled:opacity-50">
-                {submitting ? 'Submitting...' : currentPage === 1 ? 'Review & Submit →' : 'Submit Project →'}
+              <button onClick={nextStep} disabled={submitting || success} className="py-[11px] px-7 bg-[#E8820C] text-white border-none rounded-[8px] text-[0.92rem] font-semibold cursor-pointer transition-all whitespace-nowrap hover:bg-[#B85A00] hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)] font-[DM_Sans] disabled:opacity-50 flex items-center justify-center">
+                {submitting ? 'Submitting...' : currentPage === 1 ? 'Review & Submit' : 'Submit Project'}
               </button>
             </div>
           </div>
