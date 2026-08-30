@@ -52,7 +52,7 @@ export default function PrivacyPolicyPage() {
                         <p>
                             We share relevant profile information (such as your name, district, and role-specific
                             details) with other users as necessary for the platform to function — for example, a
-                            property owner can see a service provider's experience and ratings before hiring them. We
+                            property owner can see a service provider&apos;s experience and ratings before hiring them. We
                             do not sell your personal information to third parties.
                         </p>
                     </section>

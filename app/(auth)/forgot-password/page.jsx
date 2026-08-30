@@ -128,7 +128,7 @@ export default function ForgotPasswordPage() {
                             {/* Step 1 — Email */}
                             {step === 1 && (
                                 <form onSubmit={handleSendOtp}>
-                                    <p className="text-xs text-muted mb-4">Enter your registered email address and we'll send you a verification code.</p>
+                                    <p className="text-xs text-muted mb-4">Enter your registered email address and we&apos;ll send you a verification code.</p>
                                     <div className="mb-4">
                                         <label className="block mb-1.5 text-[0.78rem] font-semibold uppercase tracking-wide text-[#4A5068]">
                                             Email Address
