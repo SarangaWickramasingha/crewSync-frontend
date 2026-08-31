@@ -4,10 +4,10 @@ import { API_SEARCH_PROVIDERS, API_SEARCH_MATERIALS } from '@/config/api';
 
 export async function searchProviders(params = {}) {
   const data = await request.get(API_SEARCH_PROVIDERS, { params });
-  return unwrap(data).providers;
+  return unwrap(data);
 }
 
 export async function searchMaterials(params = {}) {
   const data = await request.get(API_SEARCH_MATERIALS, { params });
-  return unwrap(data).materials;
+  return unwrap(data);
 }

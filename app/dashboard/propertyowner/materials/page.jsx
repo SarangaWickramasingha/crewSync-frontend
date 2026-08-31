@@ -7,6 +7,7 @@ import RequestMaterialModal from '@/src/components/propertyOwner/RequestMaterial
 import MaterialCard from '@/src/components/propertyOwner/MaterialCard';
 import { useAuth } from '@/context/AuthContext';
 import { searchMaterials } from '@/src/api/searchApi';
+import SearchPagination from '@/src/components/propertyOwner/SearchPagination';
 import { MATERIAL_NAME_TO_ID } from '@/constants/registerMaps';
 import { DISTRICTS } from '@/constants/districts';
 
@@ -37,12 +38,15 @@ export default function PropertyOwnerMaterialsPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [requestingProduct, setRequestingProduct] = useState(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const loadMaterials = useCallback(async (filters) => {
+  const loadMaterials = useCallback(async (filters, page = 1) => {
     setLoading(true);
     setError(null);
 
-    const params = {};
+    const params = { page, page_size: 9 };
     if (filters.category === 'Hardware') {
       params.hardware = 1;
     } else if (filters.category !== ALL_MATERIALS) {
@@ -68,7 +72,10 @@ export default function PropertyOwnerMaterialsPage() {
 
     try {
       const result = await searchMaterials(params);
-      setProducts(result);
+      setProducts(result.materials || []);
+      setCurrentPage(result.pagination?.page || 1);
+      setTotalItems(result.pagination?.total || 0);
+      setTotalPages(result.pagination?.total_pages || 1);
     } catch (e) {
       setError(e.message);
       setProducts([]);
@@ -78,7 +85,7 @@ export default function PropertyOwnerMaterialsPage() {
   }, []);
 
   useEffect(() => {
-    const timer = setTimeout(() => loadMaterials(appliedFilters), 0);
+    const timer = setTimeout(() => loadMaterials(appliedFilters, 1), 0);
     return () => clearTimeout(timer);
   }, [loadMaterials, appliedFilters]);
 
@@ -167,26 +174,38 @@ export default function PropertyOwnerMaterialsPage() {
         <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#C0392B]">
           {error}
         </div>
-      ) : products.length === 0 ? (
-        <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#8A8FA8]">
-          No materials found matching your selected filters.
-        </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
-          {products.map((p) => (
-            <MaterialCard
-              key={p.id}
-              product={p}
-              onRequest={(product) => {
-                if (isGuest) {
-                  router.push('/register');
-                } else {
-                  setRequestingProduct(product);
-                }
-              }}
-            />
-          ))}
-        </div>
+        <>
+          {products.length === 0 ? (
+            <div className="text-center p-8 bg-white border border-black/10 rounded-xl text-sm text-[#8A8FA8]">
+              No materials found matching your selected filters.
+            </div>
+          ) : (
+            <>
+              <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                {products.map((p) => (
+                  <MaterialCard
+                    key={p.id}
+                    product={p}
+                    onRequest={(product) => {
+                      if (isGuest) {
+                        router.push('/register');
+                      } else {
+                        setRequestingProduct(product);
+                      }
+                    }}
+                  />
+                ))}
+              </div>
+              <SearchPagination
+                currentPage={currentPage}
+                totalPages={totalPages}
+                total={totalItems}
+                onPageChange={(p) => loadMaterials(appliedFilters, p)}
+              />
+            </>
+          )}
+        </>
       )}
 
       {requestingProduct && (

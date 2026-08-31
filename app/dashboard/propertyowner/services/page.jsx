@@ -8,6 +8,7 @@ import ServiceProviderCard from '@/src/components/propertyOwner/ServiceProviderC
 import { useAuth } from '@/context/AuthContext';
 import { searchProviders } from '@/src/api/searchApi';
 import { fetchUnassignedTasks } from '@/src/api/taskApi';
+import SearchPagination from '@/src/components/propertyOwner/SearchPagination';
 import { SKILL_NAME_TO_ID } from '@/constants/registerMaps';
 import { DISTRICTS } from '@/constants/districts';
 
@@ -52,13 +53,16 @@ export default function PropertyOwnerServicesPage() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [searched, setSearched] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalItems, setTotalItems] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
-  const loadProviders = async () => {
+  const loadProviders = async (page = 1) => {
     setLoading(true);
     setError(null);
     setSearched(true);
     try {
-      const params = {};
+      const params = { page, page_size: 12 };
       if (searchVal.trim()) params.q = searchVal.trim();
       if (selectedDistrict !== 'All Districts') params.district = selectedDistrict;
       if (selectedSkillId) params.skill_id = selectedSkillId;
@@ -91,7 +95,10 @@ export default function PropertyOwnerServicesPage() {
         }
       }
       const result = await searchProviders(params);
-      setProviders(result.map(mapProvider));
+      setProviders((result.providers || []).map(mapProvider));
+      setCurrentPage(result.pagination?.page || 1);
+      setTotalItems(result.pagination?.total || 0);
+      setTotalPages(result.pagination?.total_pages || 1);
     } catch (e) {
       setError(e.message);
       setProviders([]);
@@ -195,7 +202,7 @@ export default function PropertyOwnerServicesPage() {
           <option value="above50k">Above LKR 50,000 / day</option>
         </select>
         <button
-          onClick={loadProviders}
+          onClick={() => loadProviders(1)}
           className="bg-[#16a34a] hover:opacity-85 text-white text-sm font-semibold px-6 py-2 rounded-lg transition-colors cursor-pointer"
         >
           Search
@@ -219,17 +226,25 @@ export default function PropertyOwnerServicesPage() {
           No service providers found matching your search.
         </div>
       ) : (
-        <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-          {providers.map((p) => (
-            <ServiceProviderCard
-              key={p.providerId}
-              provider={p}
-              isGuest={isGuest}
-              onRequestClick={handleRequestClick}
-              onSeeReviewsClick={handleSeeReviewsClick}
-            />
-          ))}
-        </div>
+        <>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+            {providers.map((p) => (
+              <ServiceProviderCard
+                key={p.providerId}
+                provider={p}
+                isGuest={isGuest}
+                onRequestClick={handleRequestClick}
+                onSeeReviewsClick={handleSeeReviewsClick}
+              />
+            ))}
+          </div>
+          <SearchPagination
+            currentPage={currentPage}
+            totalPages={totalPages}
+            total={totalItems}
+            onPageChange={(p) => loadProviders(p)}
+          />
+        </>
       )}
 
       {requesting && (
