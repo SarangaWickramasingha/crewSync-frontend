@@ -45,6 +45,7 @@ export default function PropertyOwnerServicesPage() {
   const [searchVal, setSearchVal] = useState('');
   const [selectedDistrict, setSelectedDistrict] = useState('Colombo');
   const [selectedSkillId, setSelectedSkillId] = useState(null);
+  const [selectedRatingRange, setSelectedRatingRange] = useState('all');
   const [providers, setProviders] = useState([]);
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -60,6 +61,20 @@ export default function PropertyOwnerServicesPage() {
       if (searchVal.trim()) params.q = searchVal.trim();
       if (selectedDistrict !== 'All Districts') params.district = selectedDistrict;
       if (selectedSkillId) params.skill_id = selectedSkillId;
+      if (selectedRatingRange !== 'all') {
+        const ranges = {
+          '5':     { min: 5.0, max: 5.0 },
+          '4.5-5': { min: 4.5, max: 5.0 },
+          '4-4.5': { min: 4.0, max: 4.5 },
+          '3.5-4': { min: 3.5, max: 4.0 },
+          'below3.5': { min: 0, max: 3.5 },
+        };
+        const range = ranges[selectedRatingRange];
+        if (range) {
+          params.min_rating = range.min;
+          params.max_rating = range.max;
+        }
+      }
       const result = await searchProviders(params);
       setProviders(result.map(mapProvider));
     } catch (e) {
@@ -139,6 +154,18 @@ export default function PropertyOwnerServicesPage() {
           {Object.entries(SKILL_NAME_TO_ID).map(([skillName, skillId]) => (
             <option key={skillId} value={skillId}>{skillName}</option>
           ))}
+        </select>
+        <select
+          value={selectedRatingRange}
+          onChange={(e) => setSelectedRatingRange(e.target.value)}
+          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#16a34a]"
+        >
+          <option value="all">All Ratings</option>
+          <option value="5">5 Stars</option>
+          <option value="4.5-5">5 - 4.5 Stars</option>
+          <option value="4-4.5">4.5 - 4 Stars</option>
+          <option value="3.5-4">4 - 3.5 Stars</option>
+          <option value="below3.5">Below 3.5 Stars</option>
         </select>
         <button
           onClick={loadProviders}
