@@ -1,6 +1,6 @@
 import { request } from '@/src/lib/request';
 import { unwrap } from '@/src/api/helpers';
-import { API_SUPPLIER_PRODUCTS, API_SUPPLIER_PRODUCT_DELETE, API_SUPPLIER_ORDERS, API_SUPPLIER_ORDER_STATUS, API_SUPPLIER_PROFILE } from '@/config/api';
+import { API_SUPPLIER_PRODUCTS, API_SUPPLIER_PRODUCT_DELETE, API_SUPPLIER_ORDERS, API_SUPPLIER_ORDER_STATUS, API_SUPPLIER_PROFILE, API_MATERIAL_ORDER_CREATE } from '@/config/api';
 
 export async function fetchProducts() {
   try {
@@ -34,6 +34,10 @@ export async function fetchOrders() {
 
 export async function updateOrderStatus(orderId, status) {
   return unwrap(await request.put(API_SUPPLIER_ORDER_STATUS(orderId), { status }));
+}
+
+export async function createMaterialOrder(payload) {
+  return unwrap(await request.post(API_MATERIAL_ORDER_CREATE, payload));
 }
 
 export async function fetchProfile() {

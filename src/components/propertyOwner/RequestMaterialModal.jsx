@@ -2,20 +2,44 @@
 
 import { useState } from 'react';
 import { useTasks } from './TasksContext';
+import { supplierApi } from '@/src/api';
 
 export default function RequestMaterialModal({ product, onClose }) {
   const { addNotification } = useTasks();
   const [quantity, setQuantity] = useState(1);
   const [sent, setSent] = useState(false);
+  const [submitting, setSubmitting] = useState(false);
+  const [error, setError] = useState(null);
 
   const priceNum = Number(product.price.replace(/[^0-9]/g, '')) || 0;
   const totalPrice = priceNum * quantity;
 
-  function handleSend() {
-    addNotification(
-      `Material request sent: <strong>${quantity}x ${product.name}</strong> from <strong>${product.supplier}</strong> (Total: LKR ${totalPrice.toLocaleString()})`
-    );
-    setSent(true);
+  async function handleSend() {
+    const supplierMaterialId = product.id || product.supplier_material_id;
+
+    setSubmitting(true);
+    setError(null);
+
+    try {
+      if (supplierMaterialId) {
+        await supplierApi.createMaterialOrder({
+          supplier_material_id: supplierMaterialId,
+          quantity,
+        });
+        addNotification(
+          `Material request sent: <strong>${quantity}x ${product.name}</strong> from <strong>${product.supplier}</strong> (Total: LKR ${totalPrice.toLocaleString()})`
+        );
+      } else {
+        await addNotification(
+          `Material request sent: <strong>${quantity}x ${product.name}</strong> from <strong>${product.supplier}</strong> (Total: LKR ${totalPrice.toLocaleString()})`
+        );
+      }
+      setSent(true);
+    } catch (e) {
+      setError(e.message);
+    } finally {
+      setSubmitting(false);
+    }
   }
 
   return (
@@ -67,6 +91,12 @@ export default function RequestMaterialModal({ product, onClose }) {
               />
             </div>
 
+            {error && (
+              <div className="mb-3 rounded-lg bg-[#C0392B]/10 px-3 py-2 text-left text-xs text-[#C0392B]">
+                {error}
+              </div>
+            )}
+
             <div className="h-px bg-black/10 my-4" />
 
             <div className="flex justify-between items-center mb-5 text-sm font-semibold">
@@ -84,10 +114,11 @@ export default function RequestMaterialModal({ product, onClose }) {
                 Cancel
               </button>
               <button
-                className="rounded-lg border-none bg-[var(--color-owner)] hover:bg-[var(--color-owner-dark)] px-[18px] py-2 text-[13px] font-semibold text-white transition-colors cursor-pointer"
+                className="rounded-lg border-none bg-[var(--color-owner)] hover:bg-[var(--color-owner-dark)] px-[18px] py-2 text-[13px] font-semibold text-white transition-colors cursor-pointer disabled:opacity-60"
                 onClick={handleSend}
+                disabled={submitting}
               >
-                Request
+                {submitting ? 'Sending...' : 'Request'}
               </button>
             </div>
           </>
