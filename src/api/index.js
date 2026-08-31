@@ -10,3 +10,4 @@ export * as reportApi from '@/src/api/reportApi';
 export * as searchApi from '@/src/api/searchApi';
 export * as serviceRequestApi from '@/src/api/serviceRequestApi';
 export * as notificationApi from '@/src/api/notificationApi';
+export * as reviewApi from '@/src/api/reviewApi';

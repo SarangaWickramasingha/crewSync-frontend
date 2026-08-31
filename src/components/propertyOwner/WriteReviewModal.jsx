@@ -2,31 +2,24 @@
 
 import { useState } from 'react';
 
-const PROVIDERS = [
-  'Sunil Karunaratne – Mason',
-  'Ruwan Perera – Electrician',
-  'Dinesh Wickrama – Carpenter',
-  'Nishantha Jayalath – Plumber',
-];
-
-export default function WriteReviewModal({ onClose, onSubmit }) {
-  const [provider, setProvider] = useState(PROVIDERS[0]);
+export default function WriteReviewModal({ providers = [], onClose, onSubmit }) {
+  const [providerId, setProviderId] = useState(providers[0]?.provider_id ?? '');
   const [rating, setRating] = useState(0);
   const [text, setText] = useState('');
+  const [submitting, setSubmitting] = useState(false);
+
+  const selectedProvider = providers.find((p) => p.provider_id === providerId);
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!text.trim()) return;
+    if (!text.trim() || !providerId) return;
 
-    const today = new Date();
-    const months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    const dateStr = `Posted ${months[today.getMonth()]} ${today.getDate()}, ${today.getFullYear()}`;
-
+    setSubmitting(true);
     onSubmit({
-      name: provider,
+      provider_id: providerId,
+      name: selectedProvider?.name ?? '',
       rating,
       text: text.trim(),
-      date: dateStr,
     });
   }
 
@@ -38,19 +31,20 @@ export default function WriteReviewModal({ onClose, onSubmit }) {
       >
         <h3 className="font-syne text-base font-bold text-[#1A1D23] m-0">Write a Review</h3>
         <p className="text-xs text-[#8A8FA8] m-0">
-          Share your experience with service providers in the Kandy district.
+          Share your experience with a service provider assigned to your project tasks.
         </p>
 
         <div className="flex flex-col gap-1">
           <label className="text-xs font-semibold text-[#4A5068]">Service Provider</label>
           <select
-            value={provider}
-            onChange={(e) => setProvider(e.target.value)}
+            value={providerId}
+            onChange={(e) => setProviderId(Number(e.target.value))}
             className="w-full bg-white border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#E8820C]"
           >
-            {PROVIDERS.map((p) => (
-              <option key={p} value={p}>
-                {p}
+            {providers.length === 0 && <option value="">No providers assigned to your tasks</option>}
+            {providers.map((p) => (
+              <option key={p.provider_id} value={p.provider_id}>
+                {p.name}
               </option>
             ))}
           </select>
@@ -96,9 +90,10 @@ export default function WriteReviewModal({ onClose, onSubmit }) {
           </button>
           <button
             type="submit"
-            className="rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer"
+            disabled={submitting}
+            className="rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer disabled:opacity-60"
           >
-            Submit Review
+            {submitting ? 'Submitting...' : 'Submit Review'}
           </button>
         </div>
       </form>

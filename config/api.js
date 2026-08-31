@@ -63,6 +63,9 @@ export const API_PROVIDER_TIMELINE = `${API_BASE}/api/provider/timeline`;
 export const API_PROVIDER_ALL_REVIEWS = `${API_BASE}/api/provider/reviews/all`;
 export const API_REVIEW_PHOTOS_UPLOAD = (reviewId) => `${API_BASE}/api/reviews/${reviewId}/photos`;
 export const API_REVIEW_PHOTO_DELETE = (photoId) => `${API_BASE}/api/review-photos/${photoId}`;
+export const API_REVIEW_CREATE = `${API_BASE}/api/reviews`;
+export const API_REVIEW_MINE = `${API_BASE}/api/reviews/mine`;
+export const API_REVIEW_ASSIGNED_PROVIDERS = `${API_BASE}/api/reviews/assigned-providers`;
 
 export const API_PROVIDER_PROFILE = `${API_BASE}/api/provider/profile`;
 export const API_PROVIDER_SKILLS = `${API_BASE}/api/provider/skills`;
