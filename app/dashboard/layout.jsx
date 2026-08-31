@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import Navbar from '@/src/components/layout/Navbar';
+import { useNotifications } from '@/src/hooks/useNotifications';
 
 const NAV = {
     PROPERTY_OWNER: [
@@ -42,6 +43,7 @@ const NAV = {
                 { href: '/dashboard/serviceprovider/timeline', icon: CalendarDays, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Timeline' },
                 { href: '/dashboard/serviceprovider/forum', icon: MessageSquare, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Forum' },
                 { href: '/dashboard/serviceprovider/reviews', icon: Star, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Reviews' },
+                { href: '/dashboard/serviceprovider/notifications', icon: Bell, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Notifications' },
                 { href: '/dashboard/serviceprovider/profile', icon: UserCircle, iconBg: 'bg-blue-50', iconColor: 'text-blue-600', label: 'Profile' },
             ],
         },
@@ -58,6 +60,7 @@ const NAV = {
         {
             section: 'Account',
             items: [
+                { href: '/dashboard/supplier/notifications', icon: Bell, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Notifications' },
                 { href: '/dashboard/supplier/profile', icon: UserCircle, iconBg: 'bg-orange-50', iconColor: 'text-orange-600', label: 'Profile' },
             ],
         },
@@ -123,6 +126,9 @@ export default function DashboardLayout({ children }) {
     const pathname = usePathname();
     const [sidebarOpen, setSidebarOpen] = useState(false);
 
+    const { data: notifData } = useNotifications();
+    const unreadCount = (notifData?.notifications ?? []).filter((n) => !n.read).length;
+
     // Guest (not logged in) pages render their own navbar/sidebar
     if (!user) {
         return <>{children}</>;
@@ -182,6 +188,8 @@ export default function DashboardLayout({ children }) {
                                 <div className="flex flex-col gap-0.5">
                                     {items.map(item => {
                                         const Icon = item.icon;
+                                        const isNotif = item.href.includes('/notifications');
+                                        const badge = isNotif && unreadCount > 0 ? unreadCount : item.badge ?? null;
                                         const active = pathname === item.href ||
                                             (item.href !== '/dashboard' && item.href !== '/dashboard/serviceprovider' && item.href !== '/dashboard/supplier' && pathname.startsWith(item.href));
                                         return (
@@ -199,9 +207,9 @@ export default function DashboardLayout({ children }) {
                                                     <Icon size={16} className={item.iconColor} strokeWidth={2.2} />
                                                 </div>
                                                 <span className="flex-1">{item.label}</span>
-                                                {item.badge && (
+                                                {badge != null && (
                                                     <span className={`${sidebarColors.bg} ${sidebarColors.text} text-[0.65rem] font-bold px-1.5 py-0.5 rounded-full`}>
-                                                        {item.badge}
+                                                        {badge}
                                                     </span>
                                                 )}
                                             </Link>
