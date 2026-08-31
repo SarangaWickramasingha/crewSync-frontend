@@ -30,7 +30,7 @@ function mapProvider(p) {
     avatarColor: palette.avatarColor,
     name: p.name,
     role: `${skillLabel} · ${p.district || 'N/A'} District`,
-    rating: Math.round(p.rating),
+    rating: p.rating,
     reviewCount: p.review_count,
     location: p.district || 'Not specified',
     contactNo: p.contact_no || '+94 77 123 4567',

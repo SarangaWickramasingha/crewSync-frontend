@@ -21,9 +21,7 @@ export default function ServiceProviderCard({ provider, isGuest, onRequestClick,
       <div className="text-sm font-bold">{provider.name}</div>
       <div className="text-xs text-[#8A8FA8] mb-2">{provider.role}</div>
       <div className="text-sm mb-1">
-        <span className="text-[#E8820C]">{'★'.repeat(provider.rating)}{'☆'.repeat(5 - provider.rating)}</span>
-        {' '}
-        <span className="text-[#8A8FA8] text-xs">{provider.rating}.0 ({provider.reviewCount} reviews)</span>
+        <span className="text-[#8A8FA8] text-xs">Rating: {provider.rating} ({provider.reviewCount} reviews)</span>
       </div>
       <div className="text-xs text-[#8A8FA8]">{provider.location}</div>
       <div className="text-sm font-semibold text-[var(--color-owner-dark)] mt-2">{provider.price}</div>
