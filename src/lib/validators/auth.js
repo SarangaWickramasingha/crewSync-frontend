@@ -176,6 +176,7 @@ export function toRegisterPayload(values) {
   if (values.role === 'supplier') {
     payload.business_name = values.businessName?.trim() ?? '';
     payload.business_address = values.address?.trim() ?? '';
+    payload.city = values.city?.trim() ?? '';
     payload.brn = values.brn?.trim() ?? '';
     payload.delivery = values.delivery ? 1 : 0;
     payload.is_hardware_shop = values.hasHardwareStore ? 1 : 0;

@@ -23,6 +23,7 @@ const PERSONAL_FIELDS = [
 
 const BUSINESS_FIELDS = [
   { name: 'businessName', label: 'Business Name' },
+  { name: 'city', label: 'City' },
   { name: 'businessAddress', label: 'Business Address', type: 'textarea', full: true },
 ];
 
@@ -33,7 +34,7 @@ const HARDWARE_FIELDS = [
 ];
 
 const EMPTY_PERSONAL = { firstName: '', lastName: '', contactNumber: '', district: '' };
-const EMPTY_BUSINESS = { businessName: '', businessAddress: '' };
+const EMPTY_BUSINESS = { businessName: '', city: '', businessAddress: '' };
 const EMPTY_HARDWARE = { storeName: '', brNumber: '', address: '' };
 
 export default function SupplierProfilePage() {
