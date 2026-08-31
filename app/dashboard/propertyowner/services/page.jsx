@@ -46,6 +46,7 @@ export default function PropertyOwnerServicesPage() {
   const [selectedDistrict, setSelectedDistrict] = useState('Colombo');
   const [selectedSkillId, setSelectedSkillId] = useState(null);
   const [selectedRatingRange, setSelectedRatingRange] = useState('all');
+  const [selectedPriceRange, setSelectedPriceRange] = useState('all');
   const [providers, setProviders] = useState([]);
   const [unassignedTasks, setUnassignedTasks] = useState([]);
   const [loading, setLoading] = useState(false);
@@ -73,6 +74,20 @@ export default function PropertyOwnerServicesPage() {
         if (range) {
           params.min_rating = range.min;
           params.max_rating = range.max;
+        }
+      }
+      if (selectedPriceRange !== 'all') {
+        const priceRanges = {
+          'under5k':   { min: 0, max: 5000 },
+          '5k-10k':    { min: 5000, max: 10000 },
+          '10k-20k':   { min: 10000, max: 20000 },
+          '20k-50k':   { min: 20000, max: 50000 },
+          'above50k':  { min: 50000, max: null },
+        };
+        const pr = priceRanges[selectedPriceRange];
+        if (pr) {
+          params.min_price = pr.min;
+          if (pr.max !== null) params.max_price = pr.max;
         }
       }
       const result = await searchProviders(params);
@@ -166,6 +181,18 @@ export default function PropertyOwnerServicesPage() {
           <option value="4-4.5">4.5 - 4 Stars</option>
           <option value="3.5-4">4 - 3.5 Stars</option>
           <option value="below3.5">Below 3.5 Stars</option>
+        </select>
+        <select
+          value={selectedPriceRange}
+          onChange={(e) => setSelectedPriceRange(e.target.value)}
+          className="bg-white border border-black/10 rounded-lg px-3.5 py-2 text-sm outline-none focus:border-[#16a34a]"
+        >
+          <option value="all">All Prices</option>
+          <option value="under5k">Under LKR 5,000 / day</option>
+          <option value="5k-10k">LKR 5,000 - 10,000 / day</option>
+          <option value="10k-20k">LKR 10,000 - 20,000 / day</option>
+          <option value="20k-50k">LKR 20,000 - 50,000 / day</option>
+          <option value="above50k">Above LKR 50,000 / day</option>
         </select>
         <button
           onClick={loadProviders}

@@ -24,11 +24,13 @@ export default function PropertyOwnerMaterialsPage() {
   // Temporary dropdown states
   const [category, setCategory] = useState(ALL_MATERIALS);
   const [region, setRegion] = useState(DEFAULT_REGION);
+  const [priceRange, setPriceRange] = useState('all');
 
   // Applied filter state (triggered on "Filter" click)
   const [appliedFilters, setAppliedFilters] = useState({
     category: ALL_MATERIALS,
     region: DEFAULT_REGION,
+    priceRange: 'all',
   });
 
   const [products, setProducts] = useState([]);
@@ -49,6 +51,20 @@ export default function PropertyOwnerMaterialsPage() {
     if (filters.region !== 'All Regions') {
       params.district = filters.region;
     }
+    if (filters.priceRange !== 'all') {
+      const ranges = {
+        'under1k':   { min: 0, max: 1000 },
+        '1k-5k':     { min: 1000, max: 5000 },
+        '5k-10k':    { min: 5000, max: 10000 },
+        '10k-50k':   { min: 10000, max: 50000 },
+        'above50k':  { min: 50000, max: null },
+      };
+      const pr = ranges[filters.priceRange];
+      if (pr) {
+        params.min_price = pr.min;
+        if (pr.max !== null) params.max_price = pr.max;
+      }
+    }
 
     try {
       const result = await searchMaterials(params);
@@ -68,7 +84,7 @@ export default function PropertyOwnerMaterialsPage() {
 
   const handleFilter = (e) => {
     e.preventDefault();
-    setAppliedFilters({ category, region });
+    setAppliedFilters({ category, region, priceRange });
   };
 
   return (
@@ -109,6 +125,24 @@ export default function PropertyOwnerMaterialsPage() {
                 {dist}
               </option>
             ))}
+          </select>
+        </div>
+
+        <div className="flex-1 min-w-[180px]">
+          <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+            Price Range
+          </label>
+          <select
+            value={priceRange}
+            onChange={(e) => setPriceRange(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a] text-slate-800"
+          >
+            <option value="all">Any Price</option>
+            <option value="under1k">Under LKR 1,000</option>
+            <option value="1k-5k">LKR 1,000 - 5,000</option>
+            <option value="5k-10k">LKR 5,000 - 10,000</option>
+            <option value="10k-50k">LKR 10,000 - 50,000</option>
+            <option value="above50k">Above LKR 50,000</option>
           </select>
         </div>
 
