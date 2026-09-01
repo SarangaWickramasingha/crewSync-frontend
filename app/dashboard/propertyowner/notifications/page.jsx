@@ -2,6 +2,7 @@
 
 import DashHeader from '@/src/components/propertyOwner/DashHeader';
 import Card from '@/src/components/propertyOwner/Card';
+import NotificationText from '@/src/components/notifications/NotificationText';
 import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 
 export default function PropertyOwnerNotificationsPage() {
@@ -51,10 +52,9 @@ export default function PropertyOwnerNotificationsPage() {
                   }`}
                 />
                 <div>
-                  <div
-                    className="text-sm text-[#1A1D23]"
-                    dangerouslySetInnerHTML={{ __html: n.text }}
-                  />
+                  <div className="text-sm text-[#1A1D23]">
+                    <NotificationText html={n.text} />
+                  </div>
                   <div className="text-xs text-[#8A8FA8] mt-0.5">{n.time}</div>
                 </div>
               </div>

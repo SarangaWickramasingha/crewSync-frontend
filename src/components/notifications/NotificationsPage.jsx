@@ -2,6 +2,7 @@
 
 import { Bell } from 'lucide-react';
 import { useNotifications } from '@/src/hooks/useNotifications';
+import NotificationText from '@/src/components/notifications/NotificationText';
 
 export default function NotificationsPage() {
   const { data, isLoading, isError, error } = useNotifications();
@@ -46,10 +47,9 @@ export default function NotificationsPage() {
             >
               <div className="w-2 h-2 rounded-full mt-1.5 flex-shrink-0 bg-[#8A8FA8]" />
               <div className="flex-1 min-w-0">
-                <div
-                  className="text-sm text-[#1A1D23]"
-                  dangerouslySetInnerHTML={{ __html: n.text }}
-                />
+                <div className="text-sm text-[#1A1D23]">
+                  <NotificationText html={n.text} />
+                </div>
                 <div className="text-xs text-[#8A8FA8] mt-0.5">{n.time}</div>
               </div>
             </div>
