@@ -23,12 +23,14 @@ export default function PropertyOwnerMaterialsPage() {
   const { isGuest } = useAuth();
 
   // Temporary dropdown states
+  const [searchQuery, setSearchQuery] = useState('');
   const [category, setCategory] = useState(ALL_MATERIALS);
   const [region, setRegion] = useState(DEFAULT_REGION);
   const [priceRange, setPriceRange] = useState('all');
 
   // Applied filter state (triggered on "Filter" click)
   const [appliedFilters, setAppliedFilters] = useState({
+    searchQuery: '',
     category: ALL_MATERIALS,
     region: DEFAULT_REGION,
     priceRange: 'all',
@@ -47,6 +49,7 @@ export default function PropertyOwnerMaterialsPage() {
     setError(null);
 
     const params = { page, page_size: 9 };
+    if (filters.searchQuery.trim()) params.q = filters.searchQuery.trim();
     if (filters.category === 'Hardware') {
       params.hardware = 1;
     } else if (filters.category !== ALL_MATERIALS) {
@@ -91,7 +94,7 @@ export default function PropertyOwnerMaterialsPage() {
 
   const handleFilter = (e) => {
     e.preventDefault();
-    setAppliedFilters({ category, region, priceRange });
+    setAppliedFilters({ searchQuery, category, region, priceRange });
   };
 
   return (
@@ -99,6 +102,19 @@ export default function PropertyOwnerMaterialsPage() {
       <DashHeader title="Find Materials" subtitle="Browse suppliers and compare prices" />
 
       <form onSubmit={handleFilter} className="flex gap-3 mb-6 flex-wrap items-center bg-white p-3.5 border border-black/10 rounded-xl">
+        <div className="flex-1 min-w-[220px]">
+          <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">
+            Search
+          </label>
+          <input
+            type="text"
+            placeholder="Search by material, supplier, or keyword..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-slate-50 border border-slate-200 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a] text-slate-800"
+          />
+        </div>
+
         <div className="flex-1 min-w-[180px]">
           <label className="block text-[11px] font-semibold text-slate-500 mb-1 uppercase tracking-wider">
             Material
