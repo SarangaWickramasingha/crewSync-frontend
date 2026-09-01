@@ -94,6 +94,19 @@ export function TasksProvider({ children }) {
         }
       }   
 
+  // Reload notifications from the backend so a backend-created notification
+  // (e.g. a confirmation created when a service request is sent) shows up.
+  async function refreshNotifications() {
+    try {
+      const data = await notificationApi.fetchNotifications();
+      if (data.notifications) {
+        setNotifications(data.notifications);
+      }
+    } catch (err) {
+      console.error('Failed to refresh notifications:', err);
+    }
+  }
+
   function markAllNotificationsRead() {
     setNotifications((prev) => prev.map((n) => ({ ...n, read: true })));
     notificationApi.markRead().catch(err => console.error(err));
@@ -280,6 +293,7 @@ export function TasksProvider({ children }) {
     },
     notifications,
     addNotification,
+    refreshNotifications,
     markAllNotificationsRead,
     toggleNotificationRead,
     deleteNotification,

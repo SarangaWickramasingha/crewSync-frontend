@@ -5,7 +5,7 @@ import { useTasks } from './TasksContext';
 import { createServiceRequest } from '@/src/api/serviceRequestApi';
 
 export default function RequestServiceModal({ provider, onClose, tasks: allTasks }) {
-  const { tasks: ctxTasks } = useTasks();
+  const { tasks: ctxTasks, refreshNotifications } = useTasks();
   const tasks = allTasks || ctxTasks;
   const [selected, setSelected] = useState([]);
   const [sent, setSent] = useState(false);
@@ -22,6 +22,7 @@ export default function RequestServiceModal({ provider, onClose, tasks: allTasks
     try {
       await createServiceRequest({ provider_id: provider.providerId, task_id: selected });
       setSent(true);
+      refreshNotifications();
     } catch (e) {
       setError(e.message);
     } finally {
