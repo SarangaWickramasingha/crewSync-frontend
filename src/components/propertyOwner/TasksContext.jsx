@@ -197,27 +197,27 @@ export function TasksProvider({ children }) {
 
   // ── UPDATE TASK ──────────────────────────────────────────────────────────────
   function updateTask(id, updates) {
+    const prev = tasks.find((t) => t.id === id);
+
     setTasks((ts) =>
-      ts.map((t) => {
-        if (t.id === id) {
-          if (updates.cost !== undefined && updates.cost !== t.cost) {
-            addNotification(`Cost for task <strong>${t.name}</strong> updated to <strong>LKR ${updates.cost.toLocaleString()}</strong>`);
-          }
-          if (updates.budget !== undefined && updates.budget !== t.budget) {
-            addNotification(`Estimated budget for task <strong>${t.name}</strong> updated to <strong>LKR ${Number(updates.budget).toLocaleString()}</strong>`);
-          }
-          if (updates.assignedSP !== undefined && updates.assignedSP !== t.assignedSP) {
-            if (updates.assignedSP) {
-              addNotification(`Request sent to <strong>${updates.assignedSP}</strong> for task <strong>${t.name}</strong>`);
-            } else if (t.assignedSP) {
-              addNotification(`Service provider unassigned from task <strong>${t.name}</strong>`);
-            }
-          }
-          return { ...t, ...updates };
-        }
-        return t;
-      })
+      ts.map((t) => (t.id === id ? { ...t, ...updates } : t))
     );
+
+    if (prev) {
+      if (updates.cost !== undefined && updates.cost !== prev.cost) {
+        addNotification(`Cost for task <strong>${prev.name}</strong> updated to <strong>LKR ${updates.cost.toLocaleString()}</strong>`);
+      }
+      if (updates.budget !== undefined && updates.budget !== prev.budget) {
+        addNotification(`Estimated budget for task <strong>${prev.name}</strong> updated to <strong>LKR ${Number(updates.budget).toLocaleString()}</strong>`);
+      }
+      if (updates.assignedSP !== undefined && updates.assignedSP !== prev.assignedSP) {
+        if (updates.assignedSP) {
+          addNotification(`Request sent to <strong>${updates.assignedSP}</strong> for task <strong>${prev.name}</strong>`);
+        } else if (prev.assignedSP) {
+          addNotification(`Service provider unassigned from task <strong>${prev.name}</strong>`);
+        }
+      }
+    }
 
     const payload = {};
     if (updates.name !== undefined) payload.task_name = updates.name;
@@ -231,17 +231,15 @@ export function TasksProvider({ children }) {
 
   // ── FINISH TASK (permanent — no unfreeze) ─────────────────────────────────
   function finishTask(id) {
+    const task = tasks.find((t) => t.id === id);
     setTasks((ts) =>
-      ts.map((t) => {
-        if (t.id === id) {
-          addNotification(
-            `Task <strong>${t.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
-          );
-          return { ...t, completed: true };
-        }
-        return t;
-      })
+      ts.map((t) => (t.id === id ? { ...t, completed: true } : t))
     );
+    if (task) {
+      addNotification(
+        `Task <strong>${task.name}</strong> is completed. A task report is now available in the <a href="/dashboard/propertyowner/reports" class="font-semibold text-[#16a34a] hover:underline">Reports</a> page.`
+      );
+    }
     taskApi.finishTask(id).catch((err) => console.error('Failed to finish task:', err));
   }
 
