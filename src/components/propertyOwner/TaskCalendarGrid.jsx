@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation';
 import useProjectTimelineData from './useProjectTimelineData';
 import { taskApi } from '@/src/api';
 import EditTaskModal from './EditTaskModal';
+import RequestProviderByIdModal from './RequestProviderByIdModal';
 
 const STATUS_CFG = {
   0: { label: 'Empty', bg: 'transparent', dot: '#ccc' },
@@ -153,6 +154,7 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
   const [showAdd, setShowAdd] = useState(false);
   const [editingTask, setEditingTask] = useState(null);
   const [finishTaskTarget, setFinishTaskTarget] = useState(null);
+  const [requestProviderTask, setRequestProviderTask] = useState(null);
   const [saving, setSaving] = useState(false);
 
   const days = useMemo(() => getWeekDays(baseDate), [baseDate]);
@@ -263,6 +265,12 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
             }
             setFinishTaskTarget(null);
           }}
+        />
+      )}
+      {requestProviderTask != null && (
+        <RequestProviderByIdModal
+          task={requestProviderTask}
+          onClose={() => setRequestProviderTask(null)}
         />
       )}
 
@@ -460,6 +468,18 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
                             Edit
+                          </button>
+                        )}
+                        {!projectCompleted && !t.completed && !guestMode && (
+                          <button
+                            className="rounded-[5px] border border-[#E8820C]/40 bg-[#FFF8F0] px-1.5 py-px font-sans text-[10px] font-semibold text-[#B85A00] hover:bg-[#FFEEDB] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                            onClick={() => setRequestProviderTask(t)}
+                            title="Request Service Provider by ID"
+                          >
+                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                            </svg>
+                            Request SP
                           </button>
                         )}
                         {t.completed ? (
