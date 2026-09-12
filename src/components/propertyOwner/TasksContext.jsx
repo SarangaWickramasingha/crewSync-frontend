@@ -17,7 +17,21 @@ export function TasksProvider({ children }) {
   const [isLoaded, setIsLoaded] = useState(false);
   const [estimatedBudget, setEstimatedBudget] = useState(DEFAULT_BUDGET);
   const [currentProjectId, setCurrentProjectId] = useState(null);
+  const [currentProject, setCurrentProject] = useState(null);
   const [projectName, setProjectName] = useState('');
+  const [projects, setProjects] = useState([]);
+
+  async function refreshProjects() {
+    try {
+      const data = await projectApi.fetchProjects();
+      const projList = data.projects || [];
+      setProjects(projList);
+      return projList;
+    } catch (err) {
+      console.error('Failed to fetch projects:', err);
+      return [];
+    }
+  }
 
   useEffect(() => {
     // One-time cleanup of old test data cached in the browser
@@ -39,31 +53,38 @@ export function TasksProvider({ children }) {
            console.error('Failed to load user notifications:', notifErr);
         }
  
-        // If the URL already has a project_id parameter (e.g. from redirect),
-        // let ProjectLoader load that specific project instead of overriding it here.
-        if (typeof window !== 'undefined') {
-          const urlParams = new URLSearchParams(window.location.search);
-          if (urlParams.has('project_id')) {
-            return;
-          }
-        }
-
         const data = await projectApi.fetchProjects();
-        if (data.projects?.length > 0) {
-          // 1. Try to find an active (unfinished) project first
-          const activeProj = data.projects.find(p => !Number(p.is_finished));
-          if (activeProj) {
-            await loadFromProject(activeProj.project_id);
+        const projList = data.projects || [];
+        setProjects(projList);
+
+        if (projList.length > 0) {
+          let targetPid = null;
+          if (typeof window !== 'undefined') {
+            const urlParams = new URLSearchParams(window.location.search);
+            if (urlParams.has('project_id')) {
+              targetPid = Number(urlParams.get('project_id'));
+            }
+          }
+
+          if (targetPid && projList.some(p => Number(p.project_id) === targetPid)) {
+            await loadFromProject(targetPid);
           } else {
-            // 2. If all projects are finished, load the newest project
-            // (assuming data.projects is sorted start_date DESC, projects[0] is the newest)
-            await loadFromProject(data.projects[0].project_id);
+            // 1. Try to find an active (unfinished) project first
+            const activeProj = projList.find(p => !Number(p.is_finished));
+            if (activeProj) {
+              await loadFromProject(activeProj.project_id);
+            } else {
+              // 2. If all projects are finished, load the newest project
+              await loadFromProject(projList[0].project_id);
+            }
           }
         } else {
           setTasks([]);
           setEstimatedBudget(0);
           setProjectCompleted(false);
           setCurrentProjectId(null);
+          setCurrentProject(null);
+          setProjectName('');
         }
       } catch (e) {
         console.error('Failed to load user project:', e);
@@ -125,9 +146,11 @@ export function TasksProvider({ children }) {
 
   // ── LOAD PROJECT + TASKS FROM BACKEND ────────────────────────────────────────
   async function loadFromProject(projectId) {
+    if (!projectId) return;
     try {
       const data = await projectApi.fetchProject(projectId);
-      setCurrentProjectId(projectId);
+      setCurrentProjectId(Number(projectId));
+      setCurrentProject(data.project || null);
       setProjectName(data.project?.project_name || '');
 
       const STATUS_TO_CELL = { done: 1, in_progress: 2, blocked: 3 };
@@ -145,15 +168,15 @@ export function TasksProvider({ children }) {
           days,
           cost: Number(t.t_cost) || 0,
           budget: Number(t.task_budget) || 0,
-          assignedSP: null,
+          assignedSP: t.sp_name || t.assigned_sp || null,
           completed: !!Number(t.is_finished),
         };
       });
 
       setTasks(mapped);
       setNextId(mapped.length + 100);
-      setEstimatedBudget(Number(data.project.p_budget) || DEFAULT_BUDGET);
-      setProjectCompleted(!!Number(data.project.is_finished));
+      setEstimatedBudget(Number(data.project?.p_budget) || DEFAULT_BUDGET);
+      setProjectCompleted(!!Number(data.project?.is_finished));
 
     } catch (e) {
       console.error('Failed to load project tasks:', e);
@@ -253,9 +276,12 @@ export function TasksProvider({ children }) {
   const value = {
     tasks,
     isLoaded,
-    projectName,
-    addTask,
+    projects,
+    currentProject,
     currentProjectId,
+    projectName,
+    refreshProjects,
+    addTask,
     deleteTask,
     updateTask,
     finishTask,
@@ -273,6 +299,14 @@ export function TasksProvider({ children }) {
       if (currentProjectId) {
         try {
           await projectApi.toggleFinishProject(currentProjectId);
+          setProjects((prev) =>
+            prev.map((p) =>
+              Number(p.project_id) === Number(currentProjectId)
+                ? { ...p, is_finished: 1 }
+                : p
+            )
+          );
+          setCurrentProject((prev) => (prev ? { ...prev, is_finished: 1 } : null));
         } catch (err) {
           console.error('Failed to finish project:', err);
         }
@@ -284,6 +318,14 @@ export function TasksProvider({ children }) {
       if (currentProjectId) {
         try {
           await projectApi.toggleFinishProject(currentProjectId);
+          setProjects((prev) =>
+            prev.map((p) =>
+              Number(p.project_id) === Number(currentProjectId)
+                ? { ...p, is_finished: 0 }
+                : p
+            )
+          );
+          setCurrentProject((prev) => (prev ? { ...prev, is_finished: 0 } : null));
         } catch (err) {
           console.error('Failed to unlock project:', err);
         }
