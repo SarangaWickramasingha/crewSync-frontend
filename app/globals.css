@@ -27,7 +27,9 @@
   --color-primary-dark:  #14532d;
   --color-primary-light: #dcfce7;
 
-  --color-amber: #E8820C;
+  --color-amber:       #E8820C;
+  --color-amber-dark:  #B85A00;
+  --color-amber-light: #FFF3E0;
 
   --color-slate:       #1e293b;
   --color-slate-light: #475569;
