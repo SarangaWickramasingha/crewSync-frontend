@@ -388,10 +388,10 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
 
         {/* TABLE */}
         <div className="overflow-x-auto">
-          <table className="min-w-[680px] w-full border-collapse">
+          <table className="min-w-[750px] w-full border-collapse">
             <thead>
               <tr>
-                <th className="sticky left-0 top-0 z-[3] min-w-[230px] border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-2.5 py-[7px] text-left font-sans text-[11px] font-semibold text-[#8A8FA8]">
+                <th className="sticky left-0 top-0 z-[3] min-w-[280px] sm:min-w-[320px] border-b border-r border-[rgba(26,29,35,0.1)] bg-[#F7F6F2] px-3.5 py-2.5 text-left font-sans text-xs font-semibold text-[#8A8FA8]">
                   Task
                 </th>
                 {days.map((d, i) => {
@@ -422,19 +422,26 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
               {tasks.map((t) => (
                 <tr key={t.id} className="group border-b border-[rgba(26,29,35,0.1)] last:border-b-0 hover:bg-[#F7F6F2]">
                   <td className="border-r border-[rgba(26,29,35,0.1)] p-0 align-middle">
-                    <div className="sticky left-0 z-[1] flex min-w-[230px] flex-col gap-1.5 bg-white px-3 py-2 group-hover:bg-[#F7F6F2]">
-                      <div className="flex items-center gap-2">
-                        <span
-                          className={`flex-1 truncate text-[13px] font-medium text-[#1A1D23] ${
-                            t.completed ? 'text-[#8A8FA8] line-through' : ''
-                          }`}
-                          title={t.name}
-                        >
-                          {t.name}
-                        </span>
+                    <div className="sticky left-0 z-[1] flex min-w-[280px] sm:min-w-[320px] flex-col gap-2 bg-white px-3.5 py-3 group-hover:bg-[#F7F6F2] transition-colors">
+                      {/* Task title and delete action */}
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0 flex-1">
+                          <span
+                            className="w-2.5 h-2.5 rounded-full flex-shrink-0"
+                            style={{ backgroundColor: t.color || '#16a34a' }}
+                          />
+                          <span
+                            className={`truncate text-sm font-semibold text-[#1A1D23] ${
+                              t.completed ? 'text-[#8A8FA8] line-through' : ''
+                            }`}
+                            title={t.name}
+                          >
+                            {t.name}
+                          </span>
+                        </div>
                         {!guestMode && !projectCompleted && !t.completed && (
                           <button
-                            className="px-0.5 text-sm leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B]"
+                            className="text-base leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B] p-0.5 rounded transition-all cursor-pointer"
                             onClick={() => deleteTask(t.id)}
                             title="Remove task"
                           >
@@ -442,57 +449,71 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                           </button>
                         )}
                       </div>
-                      <div className="flex flex-wrap items-center gap-2">
+
+                      {/* Budget, cost & assigned worker badges */}
+                      <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs">
                         {t.budget > 0 && (
-                          <span className="text-[11px] font-semibold text-[#1A56A0]">
-                            Budget: LKR {(t.budget || 0).toLocaleString()}
+                          <span className="text-[#1A56A0] font-medium">
+                            Budget: <strong className="font-semibold">LKR {(t.budget || 0).toLocaleString()}</strong>
                           </span>
                         )}
-                        <span className="text-[11px] font-semibold text-[#15803d]">
-                          Cost: LKR {(t.cost || 0).toLocaleString()}
+                        <span className="text-[#15803d] font-medium">
+                          Cost: <strong className="font-semibold">LKR {(t.cost || 0).toLocaleString()}</strong>
                         </span>
                         {t.assignedSP && (
-                          <span className="text-[11px] text-[#4A5068] flex items-center gap-1">
+                          <span className="text-[#4A5068] inline-flex items-center gap-1 bg-black/[0.04] px-2 py-0.5 rounded text-[11px] font-medium">
                             <svg className="w-3 h-3 text-[#4A5068]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                             </svg>
                             {t.assignedSP}
                           </span>
                         )}
+                      </div>
+
+                      {/* Action buttons row */}
+                      <div className="flex flex-wrap items-center gap-2 pt-0.5">
                         {!projectCompleted && !t.completed && (
                           <button
-                            className="rounded-[5px] border border-[rgba(26,29,35,0.1)] px-1.5 py-px font-sans text-[10px] text-[#4A5068] hover:bg-[#EEECEA] inline-flex items-center gap-1"
+                            className="rounded-lg border border-black/15 bg-white hover:bg-[#F7F6F2] text-[#4A5068] hover:text-[#1A1D23] px-3 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                             onClick={() => setEditingTask(t)}
+                            title="Edit task details, costs & budget"
                           >
-                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                            <svg className="w-3.5 h-3.5 text-[#8A8FA8]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                             </svg>
-                            Edit
+                            <span>Edit</span>
                           </button>
                         )}
                         {!projectCompleted && !t.completed && !guestMode && (
                           <button
-                            className="rounded-[5px] border border-[#E8820C]/40 bg-[#FFF8F0] px-1.5 py-px font-sans text-[10px] font-semibold text-[#B85A00] hover:bg-[#FFEEDB] inline-flex items-center gap-1 cursor-pointer transition-colors"
+                            className="rounded-lg border border-[#FDBA74] bg-[#FFF7ED] hover:bg-[#FFEDD5] text-[#C2410C] px-3 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                             onClick={() => setRequestProviderTask(t)}
                             title="Request Service Provider by ID"
                           >
-                            <svg className="w-2.5 h-2.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                            <svg className="w-3.5 h-3.5 text-[#EA580C]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.2">
                               <path strokeLinecap="round" strokeLinejoin="round" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
                             </svg>
-                            Request SP
+                            <span>Request SP</span>
                           </button>
                         )}
                         {t.completed ? (
-                          <span className="rounded-[5px] bg-[#E6F4EC] px-1.5 py-px text-[10px] font-bold text-[#1B6E3A]">
-                            ✓ Completed
+                          <span className="rounded-lg bg-[#DCFCE7] border border-[#86EFAC] px-3 py-1.5 text-xs font-semibold text-[#15803d] inline-flex items-center gap-1.5">
+                            <svg className="w-3.5 h-3.5 text-[#15803d]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                              <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                            </svg>
+                            <span>Completed</span>
                           </span>
                         ) : (
                           !projectCompleted && (
                             <button
-                              className="rounded-[5px] border border-[#1B6E3A] px-1.5 py-px font-sans text-[10px] text-[#1B6E3A] hover:bg-[#E6F4EC]"
+                              className="rounded-lg border border-[#86EFAC] bg-[#F0FDF4] hover:bg-[#DCFCE7] text-[#15803d] px-3 py-1.5 text-xs font-semibold inline-flex items-center gap-1.5 transition-colors shadow-xs cursor-pointer"
                               onClick={() => setFinishTaskTarget(t.id)}
+                              title="Mark task as finished"
                             >
-                              Finish Task
+                              <svg className="w-3.5 h-3.5 text-[#16a34a]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                              </svg>
+                              <span>Finish Task</span>
                             </button>
                           )
                         )}
