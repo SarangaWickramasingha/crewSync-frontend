@@ -29,6 +29,8 @@ export default function ServiceProviderForumPage() {
             statusLabel={proj.project_status}
             statusVariant={proj.project_status === 'Completed' ? 'green' : 'amber'}
             mineBubbleColor="#dbeafe"
+            buttonClassName="bg-provider hover:bg-provider-dark"
+            focusBorderClass="focus:border-provider"
           />
         ))
       )}

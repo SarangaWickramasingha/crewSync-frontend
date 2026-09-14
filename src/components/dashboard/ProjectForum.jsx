@@ -42,6 +42,8 @@ export default function ProjectForum({
   statusLabel,
   statusVariant = 'amber',
   mineBubbleColor = '#FFF3E0',
+  buttonClassName = 'bg-owner hover:bg-owner-dark',
+  focusBorderClass = 'focus:border-owner',
 }) {
   const [input, setInput] = useState('');
 
@@ -117,13 +119,13 @@ export default function ProjectForum({
           onChange={(e) => setInput(e.target.value)}
           onKeyDown={(e) => e.key === 'Enter' && handlePostComment()}
           placeholder="Add a comment to this project thread…"
-          className="flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none focus:border-[#16a34a]"
+          className={`flex-1 border border-black/10 rounded-lg px-3 py-2 text-sm outline-none transition-colors ${focusBorderClass}`}
           disabled={!projectId}
         />
         <button
           onClick={handlePostComment}
           disabled={posting || !projectId}
-          className="bg-[#1B6E3A] hover:opacity-90 disabled:opacity-50 text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap"
+          className={`text-white text-sm font-semibold px-4 py-2 rounded-lg whitespace-nowrap transition-colors disabled:opacity-50 cursor-pointer ${buttonClassName}`}
         >
           {posting ? 'Posting…' : 'Post'}
         </button>
