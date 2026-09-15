@@ -1,5 +1,5 @@
 // ── API BASE ───────────────────────────────────────────────────────────────────
-export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'http://localhost/CrewSync-backend/backend/index.php';
+export const API_BASE = process.env.NEXT_PUBLIC_API_BASE || 'https://crewsync-1sis.onrender.com/backend/index.php';
 
 
 // ── AUTH ───────────────────────────────────────────────────────────────────────
