@@ -114,33 +114,57 @@ export default function HomePage() {
   const features = [
     {
       icon: "/icons/timeline.png",
+      badge: "Planning",
+      badgeColor: "bg-amber-50 text-amber-dark border-amber-200/70",
+      iconBg: "bg-amber-500/10 border-amber-500/20 text-amber",
       title: "Smart Project Timeline",
       desc: "Auto-generate construction tasks (foundation, walls, roofing, finishing). Fully customizable task schedules.",
+      highlight: "Auto-generated phases & milestones",
     },
     {
       icon: "/icons/home-page/escrow.png",
+      badge: "Security",
+      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
+      iconBg: "bg-emerald-500/10 border-emerald-500/20 text-emerald-600",
       title: "Secure Escrow Payments",
       desc: "Payments are held securely and released to providers only after task completion, protecting both sides.",
+      highlight: "Milestone-based fund release",
     },
     {
       icon: "/icons/reviews.png",
+      badge: "Verified",
+      badgeColor: "bg-blue-50 text-blue-700 border-blue-200/70",
+      iconBg: "bg-blue-500/10 border-blue-500/20 text-blue-600",
       title: "Ratings & Reviews",
       desc: "Verified reviews from real clients. Build trust and choose quality workers with confidence.",
+      highlight: "Authentic client ratings & feedback",
     },
     {
       icon: "/icons/home-page/chat.png",
+      badge: "Real-time",
+      badgeColor: "bg-indigo-50 text-indigo-700 border-indigo-200/70",
+      iconBg: "bg-indigo-500/10 border-indigo-500/20 text-indigo-600",
       title: "In-platform Chat",
       desc: "Direct messaging with service providers and suppliers. No need for external apps.",
+      highlight: "Direct messaging & coordination",
     },
     {
       icon: "/icons/reports.png",
+      badge: "Analytics",
+      badgeColor: "bg-slate-100 text-slate-700 border-slate-200/80",
+      iconBg: "bg-slate-500/10 border-slate-500/20 text-slate-700",
       title: "Downloadable Reports",
       desc: "Generate and download project reports, cost summaries, and task documentation at any stage.",
+      highlight: "One-click PDF & cost breakdown",
     },
     {
       icon: "/icons/home-page/search.png",
+      badge: "Discovery",
+      badgeColor: "bg-amber-50 text-amber-dark border-amber-200/70",
+      iconBg: "bg-amber-500/10 border-amber-500/20 text-amber",
       title: "Search & Filter",
       desc: "Find professionals and materials by district, city, rating, category, and price range.",
+      highlight: "Filter by district, rate & trade",
     },
   ];
 
@@ -280,36 +304,70 @@ export default function HomePage() {
         </section>
 
         {/* PLATFORM FEATURES */}
-        <section className="w-full border-y border-border/80 bg-surface/50 px-4 py-14 sm:px-6 sm:py-18">
-          <div className="mx-auto max-w-6xl">
-            <div className="text-center sm:text-left">
-              <h2 className="text-2xl sm:text-3xl font-bold text-slate tracking-tight">
+        <section className="w-full border-y border-border/80 bg-gradient-to-b from-surface/30 via-surface/70 to-surface/30 px-4 py-16 sm:px-6 sm:py-20 relative overflow-hidden">
+          {/* Subtle background ambient glow */}
+          <div
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] rounded-full blur-3xl opacity-25"
+            style={{
+              background: "radial-gradient(circle, rgba(232,130,12,0.2) 0%, transparent 70%)"
+            }}
+          />
+
+          <div className="relative z-10 mx-auto max-w-6xl">
+            <div className="text-center sm:text-left mb-10 sm:mb-12">
+              <div className="inline-flex items-center gap-1.5 rounded-full border border-amber/25 bg-amber/10 px-3.5 py-1 text-xs font-semibold text-amber mb-3">
+                Built-in Platform Tools
+              </div>
+              <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate tracking-tight">
                 Platform Features
               </h2>
-              <p className="mt-1.5 mb-8 text-sm sm:text-base text-muted">
-                Everything you need to run a successful construction project
+              <p className="mt-2 text-sm sm:text-base text-muted max-w-2xl">
+                Everything you need to run a successful construction project from start to finish
               </p>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5 sm:gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 items-stretch">
               {features.map((f) => (
                 <div
                   key={f.title}
-                  className="flex flex-col p-6 rounded-2xl border border-border/80 bg-white shadow-xs hover:border-amber/30 hover:shadow-md transition-all duration-200"
+                  className="group relative flex flex-col justify-between p-6 sm:p-7 rounded-2xl border border-border/80 bg-white shadow-xs hover:border-amber/40 hover:shadow-[0_14px_34px_-10px_rgba(232,130,12,0.14),0_4px_16px_rgba(0,0,0,0.04)] hover:-translate-y-1.5 transition-all duration-300 overflow-hidden"
                 >
-                  <div className="mb-4 flex h-11 w-11 items-center justify-center rounded-xl bg-surface border border-border/60 shadow-2xs">
-                    <img
-                      src={f.icon}
-                      alt={f.title}
-                      className="h-6 w-6 object-contain"
-                    />
+                  {/* Subtle top corner ambient flare on hover */}
+                  <div className="pointer-events-none absolute -right-10 -top-10 h-28 w-28 rounded-full bg-gradient-to-br from-amber/15 to-transparent blur-xl opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+                  <div>
+                    {/* Top Row: Icon + Category Badge */}
+                    <div className="flex items-center justify-between gap-3 mb-5">
+                      <div className={`flex h-12 w-12 items-center justify-center rounded-xl border shadow-2xs transition-transform duration-300 group-hover:scale-105 ${f.iconBg}`}>
+                        <img
+                          src={f.icon}
+                          alt={f.title}
+                          className="h-6 w-6 object-contain"
+                        />
+                      </div>
+                      <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${f.badgeColor}`}>
+                        {f.badge}
+                      </span>
+                    </div>
+
+                    {/* Title */}
+                    <h3 className="text-lg font-bold text-slate group-hover:text-amber transition-colors duration-200 mb-2">
+                      {f.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm leading-relaxed text-muted">
+                      {f.desc}
+                    </p>
                   </div>
-                  <h3 className="mb-2 text-base sm:text-lg font-bold text-slate">
-                    {f.title}
-                  </h3>
-                  <p className="text-sm leading-relaxed text-muted">
-                    {f.desc}
-                  </p>
+
+                  {/* Bottom Highlight Feature */}
+                  <div className="mt-6 pt-4 border-t border-border/60 flex items-center gap-2 text-xs font-medium text-slate/75">
+                    <svg className="w-4 h-4 text-emerald-600 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                    </svg>
+                    <span>{f.highlight}</span>
+                  </div>
                 </div>
               ))}
             </div>
