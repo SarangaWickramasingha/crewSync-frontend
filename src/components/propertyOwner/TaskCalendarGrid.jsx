@@ -131,7 +131,6 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
   const tasks = demoTasksState ?? hookResult.tasks;
   const isLoaded = demoTasks ? true : hookResult.isLoaded;
   const addTask = hookResult.addTask;
-  const deleteTask = hookResult.deleteTask;
   const updateTask = hookResult.updateTask;
   const finishTask = hookResult.finishTask;
   const estimatedBudget = demoTasksState ? 1500000 : hookResult.estimatedBudget;
@@ -439,15 +438,6 @@ export default function TaskCalendarGrid({ projectId = null, guestMode = false, 
                             {t.name}
                           </span>
                         </div>
-                        {!guestMode && !projectCompleted && !t.completed && (
-                          <button
-                            className="text-base leading-none text-[#8A8FA8] opacity-0 group-hover:opacity-100 hover:text-[#C0392B] p-0.5 rounded transition-all cursor-pointer"
-                            onClick={() => deleteTask(t.id)}
-                            title="Remove task"
-                          >
-                            ×
-                          </button>
-                        )}
                       </div>
 
                       {/* Budget, cost & assigned worker badges */}

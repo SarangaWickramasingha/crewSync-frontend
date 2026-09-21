@@ -10,10 +10,6 @@ export async function fetchUnassignedTasks() {
   return unwrap(await request.get(API_TASKS_UNASSIGNED));
 }
 
-export async function deleteTask(id) {
-  return unwrap(await request.delete(API_TASK(id)));
-}
-
 export async function updateTask(id, payload) {
   return unwrap(await request.put(API_TASK(id), payload));
 }
