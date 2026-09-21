@@ -2,19 +2,14 @@
 
 import { useEffect, useState, useRef } from 'react';
 import { useRouter } from 'next/navigation';
-import Card from '@/src/components/propertyOwner/Card';
 import DashHeader from '@/src/components/propertyOwner/DashHeader';
 import MetricCard from '@/src/components/propertyOwner/MetricCard';
-import StatusPill from '@/src/components/ui/StatusPill';
+import ProjectProgressCard from '@/src/components/propertyOwner/ProjectProgressCard';
+import BudgetOverviewCard from '@/src/components/propertyOwner/BudgetOverviewCard';
+import { fmtCompact } from '@/src/components/propertyOwner/utils';
 import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 import { useAuth } from '@/context/AuthContext';
 import { ChevronDown, Check } from 'lucide-react';
-
-function fmtCompact(n) {
-  if (n >= 1000000 || n <= -1000000) return (n / 1000000).toFixed(1).replace(/\.0$/, '') + 'M';
-  if (n >= 1000 || n <= -1000) return (n / 1000).toFixed(0) + 'K';
-  return n.toLocaleString();
-}
 
 function formatMonthYear(dateStr) {
   if (!dateStr) return '';
@@ -235,90 +230,15 @@ export default function PropertyOwnerOverviewPage() {
       </div>
 
       <div className="grid md:grid-cols-2 gap-4">
-        <Card>
-          <div className="flex justify-between items-center mb-5">
-            <h3 className="font-syne text-base font-bold">Project Progress</h3>
-            <StatusPill variant={projectCompleted ? 'blue' : 'green'}>
-              {projectCompleted ? 'Completed' : 'In Progress'}
-            </StatusPill>
-          </div>
-          <div className="flex items-center gap-6 flex-wrap">
-            <svg width="90" height="90" viewBox="0 0 90 90" className="flex-shrink-0">
-              <circle cx="45" cy="45" r="36" fill="none" stroke="#EEECEA" strokeWidth="10" />
-              <circle
-                cx="45"
-                cy="45"
-                r="36"
-                fill="none"
-                stroke="#16a34a"
-                strokeWidth="10"
-                strokeDasharray={circumference}
-                strokeDashoffset={dashOffset}
-                strokeLinecap="round"
-                transform="rotate(-90 45 45)"
-              />
-              <text
-                x="45"
-                y="50"
-                textAnchor="middle"
-                fontFamily="Syne, sans-serif"
-                fontSize="16"
-                fontWeight="700"
-                fill="#1A1D23"
-              >
-                {progressPercent}%
-              </text>
-            </svg>
-            <div className="flex-1 min-w-40">
-              {tasks.length === 0 ? (
-                <p className="text-sm text-[#8A8FA8]">No tasks yet — add some in the Timeline tab.</p>
-              ) : (
-                tasks.map((t) => (
-                  <div
-                    key={t.id}
-                    className="flex justify-between py-1.5 text-sm border-b border-black/10 last:border-0"
-                  >
-                    <span className="truncate max-w-[200px]">{t.name}</span>
-                    <span style={{ color: t.completed ? '#1B6E3A' : '#8A8FA8' }}>
-                      {t.completed ? '✓ Done' : 'Pending'}
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
-        </Card>
+        <ProjectProgressCard
+          progressPercent={progressPercent}
+          circumference={circumference}
+          dashOffset={dashOffset}
+          projectCompleted={projectCompleted}
+          tasks={tasks}
+        />
 
-        <Card>
-          <h3 className="font-syne text-base font-bold mb-4">Budget Overview</h3>
-          {tasks.length === 0 ? (
-            <p className="text-sm text-[#8A8FA8]">No task costs yet — add costs in the Timeline tab.</p>
-          ) : (
-            tasks.map((t) => (
-              <div key={t.id} className="mb-3">
-                <div className="flex justify-between text-sm mb-1">
-                  <span className="truncate max-w-[200px]">{t.name}</span>
-                  <span className="font-semibold">LKR {(t.cost || 0).toLocaleString()}</span>
-                </div>
-                <div className="h-2 bg-owner-light rounded overflow-hidden">
-                  <div
-                    className="h-full rounded transition-all duration-300 bg-owner"
-                    style={{
-                      width: `${Math.min(100, ((t.cost || 0) / maxCost) * 100)}%`,
-                    }}
-                  />
-                </div>
-              </div>
-            ))
-          )}
-          <div className="h-px bg-black/10 my-4" />
-          <div className="flex justify-between text-sm font-semibold">
-            <span>Remaining Budget</span>
-            <span className={remainingBudget >= 0 ? 'text-owner font-bold' : 'text-danger font-bold'}>
-              LKR {fmtCompact(remainingBudget)}
-            </span>
-          </div>
-        </Card>
+        <BudgetOverviewCard tasks={tasks} maxCost={maxCost} remainingBudget={remainingBudget} />
       </div>
     </div>
   );
