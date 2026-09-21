@@ -4,9 +4,10 @@ import { useSendOtp, useVerifyOtp } from '@/src/hooks/auth/useAuth';
 
 const RESEND_COOLDOWN = 60; // seconds
 
-export default function StepOtpVerification({ email, theme, onVerified }) {
-    const [otp, setOtp] = useState('');
+export default function StepOtpVerification({ email, theme, onVerified, devOtp, onResendOtp }) {
+    const [otp, setOtp] = useState(devOtp || '');
     const [error, setError] = useState('');
+    const [devModeCode, setDevModeCode] = useState(devOtp || null);
     const [cooldown, setCooldown] = useState(RESEND_COOLDOWN);
     const inputRef = useRef(null);
 
@@ -44,9 +45,15 @@ export default function StepOtpVerification({ email, theme, onVerified }) {
     const handleResend = async () => {
         setError('');
         try {
-            await sendOtpMutation.mutateAsync({ email });
+            const data = await sendOtpMutation.mutateAsync({ email });
+            if (data?.dev_otp) {
+                setDevModeCode(data.dev_otp);
+                setOtp(data.dev_otp);
+                onResendOtp?.(data.dev_otp);
+            } else {
+                setOtp('');
+            }
             setCooldown(RESEND_COOLDOWN);
-            setOtp('');
             inputRef.current?.focus();
         } catch (err) {
             setError(err.message || 'Could not resend code. Please try again.');
@@ -91,6 +98,12 @@ export default function StepOtpVerification({ email, theme, onVerified }) {
 
             {error && (
                 <p className="text-xs text-red-500 mt-2">{error}</p>
+            )}
+
+            {devModeCode && (
+                <p className="text-xs text-amber-600 mt-2 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">
+                    Dev mode enabled — email delivery is disabled, use code: <span className="font-bold tracking-wider">{devModeCode}</span>
+                </p>
             )}
 
             <button

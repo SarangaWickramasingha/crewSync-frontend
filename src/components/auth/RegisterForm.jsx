@@ -35,6 +35,7 @@ export default function RegisterForm() {
     const roleParam = searchParams ? searchParams.get('role') : null;
     const [step, setStep] = useState(0);
     const [error, setError] = useState('');
+    const [devOtp, setDevOtp] = useState(null);
     const [mounted, setMounted] = useState(false);
 
     const {
@@ -84,7 +85,8 @@ export default function RegisterForm() {
                     setError('This email is already registered. Please login instead.');
                     return;
                 }
-                await sendOtpMutation.mutateAsync({ email: emailValue });
+                const sendOtpData = await sendOtpMutation.mutateAsync({ email: emailValue });
+                setDevOtp(sendOtpData?.dev_otp || null);
             } catch (err) {
                 setError(err.message || 'Could not connect to the server. Make sure the backend is running.');
                 return;
@@ -221,6 +223,8 @@ export default function RegisterForm() {
                             email={watch('email').trim().toLowerCase()}
                             theme={theme}
                             onVerified={handleOtpVerified}
+                            devOtp={devOtp}
+                            onResendOtp={setDevOtp}
                         />
                     )}
 
