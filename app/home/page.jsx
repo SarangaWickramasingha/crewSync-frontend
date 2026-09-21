@@ -64,7 +64,14 @@ export default function HomePage() {
     {
       icon: "/icons/owner.png",
       title: "Property Owner",
+      tag: "For Homeowners & Builders",
+      badgeColor: "bg-emerald-50 text-emerald-700 border-emerald-200/70",
       desc: "Plan, manage, and track your construction project from start to finish. Hire directly, save costs.",
+      perks: [
+        "Post projects & track milestone stages",
+        "Secure escrow-protected fund release",
+        "Hire vetted providers & order materials",
+      ],
       btnLabel: "Open Dashboard",
       route: "/dashboard/propertyowner",
       guestRoute: "/dashboard/propertyowner/timeline",
@@ -72,31 +79,54 @@ export default function HomePage() {
       registerRole: "owner",
       accent: "bg-owner",
       hoverBg: "hover:bg-owner-dark",
-      iconBg: "bg-owner-light",
+      hoverBorder: "hover:border-owner/40",
+      iconBg: "bg-owner-light border-owner/20",
+      topBar: "from-emerald-500 via-green-600 to-emerald-700",
+      glowColor: "rgba(22,163,74,0.15)",
     },
     {
       icon: "/icons/provider.png",
       title: "Service Provider",
+      tag: "For Contractors & Trades",
+      badgeColor: "bg-blue-50 text-blue-700 border-blue-200/70",
       desc: "Showcase your skills to hundreds of clients. Accept jobs on your schedule, get paid securely.",
+      perks: [
+        "Browse local jobs & submit proposals",
+        "Guaranteed payment on milestone approval",
+        "Build a verified profile with real reviews",
+      ],
       btnLabel: "View Provider Panel",
       route: "/dashboard/serviceprovider",
       roleKey: "service_provider",
       registerRole: "provider",
       accent: "bg-provider",
       hoverBg: "hover:bg-provider-dark",
-      iconBg: "bg-provider-light",
+      hoverBorder: "hover:border-provider/40",
+      iconBg: "bg-provider-light border-provider/20",
+      topBar: "from-blue-500 via-blue-600 to-indigo-600",
+      glowColor: "rgba(37,99,235,0.15)",
     },
     {
       icon: "/icons/supplier.png",
       title: "Material Supplier",
+      tag: "For Hardware & Stores",
+      badgeColor: "bg-orange-50 text-orange-700 border-orange-200/70",
       desc: "List your products, manage inventory, and reach property owners island-wide.",
+      perks: [
+        "List building materials & supplies online",
+        "Direct purchase orders from active sites",
+        "Manage inventory & fulfillment easily",
+      ],
       btnLabel: "Supplier Portal",
       route: "/dashboard/supplier",
       roleKey: "material_supplier",
       registerRole: "supplier",
       accent: "bg-supplier",
       hoverBg: "hover:bg-supplier-dark",
-      iconBg: "bg-supplier-light",
+      hoverBorder: "hover:border-supplier/40",
+      iconBg: "bg-supplier-light border-supplier/20",
+      topBar: "from-amber-500 via-orange-500 to-orange-600",
+      glowColor: "rgba(249,115,22,0.15)",
     },
   ];
 
@@ -244,57 +274,87 @@ export default function HomePage() {
         </section>
 
         {/* WHO IS CREWSYNC FOR */}
-        <section className="mx-auto max-w-6xl px-4 py-14 sm:px-6 sm:py-18">
-          <div className="text-center sm:text-left">
-            <h2 className="text-2xl sm:text-3xl font-bold text-slate tracking-tight">
+        <section className="mx-auto max-w-6xl px-4 py-16 sm:px-6 sm:py-20">
+          <div className="text-center sm:text-left mb-10 sm:mb-12">
+            <div className="inline-flex items-center gap-1.5 rounded-full border border-slate/15 bg-slate/5 px-3.5 py-1 text-xs font-semibold text-slate mb-3">
+              Role-Based Experience
+            </div>
+            <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate tracking-tight">
               Who is CrewSync for?
             </h2>
-            <p className="mt-1.5 mb-8 text-sm sm:text-base text-muted">
-              Choose your role to explore the platform
+            <p className="mt-2 text-sm sm:text-base text-muted max-w-2xl">
+              Choose your role to explore tailored features and tools built for your needs
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-stretch">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-7 items-stretch">
             {roles.map((r) => (
               <div
                 key={r.title}
-                className="group relative flex flex-col h-full rounded-2xl border border-border/90 bg-white shadow-xs transition-all duration-200 hover:-translate-y-1 hover:shadow-lg hover:border-slate/20 overflow-hidden cursor-pointer"
+                className={`group relative flex flex-col justify-between h-full rounded-2xl border border-border/90 bg-white shadow-xs transition-all duration-300 hover:-translate-y-1.5 hover:shadow-[0_18px_38px_-12px_rgba(0,0,0,0.12)] ${r.hoverBorder} overflow-hidden cursor-pointer`}
                 onClick={() => handleRoleClick(r)}
               >
-                {/* Top Role Indicator Bar */}
-                <div className={`h-1.5 w-full ${r.accent}`} />
+                {/* Top Role Indicator Gradient Bar */}
+                <div className={`h-2 w-full bg-gradient-to-r ${r.topBar}`} />
+
+                {/* Ambient Top Glow on Hover */}
+                <div
+                  className="pointer-events-none absolute -right-12 -top-12 h-36 w-36 rounded-full blur-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                  style={{ background: r.glowColor }}
+                />
 
                 {/* Card Content */}
                 <div className="flex flex-col flex-1 p-6 sm:p-7">
-                  <div
-                    className={`mb-5 flex h-12 w-12 items-center justify-center rounded-xl shadow-2xs ${r.iconBg}`}
-                  >
-                    <img
-                      src={r.icon}
-                      alt={r.title}
-                      className="h-6 w-6 object-contain"
-                    />
+                  {/* Top Row: Icon + Role Tag Badge */}
+                  <div className="flex items-center justify-between gap-3 mb-5">
+                    <div
+                      className={`flex h-13 w-13 items-center justify-center rounded-2xl border shadow-xs transition-transform duration-300 group-hover:scale-105 ${r.iconBg}`}
+                    >
+                      <img
+                        src={r.icon}
+                        alt={r.title}
+                        className="h-6 w-6 object-contain"
+                      />
+                    </div>
+                    <span className={`text-[11px] font-semibold px-2.5 py-1 rounded-full border ${r.badgeColor}`}>
+                      {r.tag}
+                    </span>
                   </div>
 
-                  <h3 className="mb-2 text-lg sm:text-xl font-bold text-slate">
+                  <h3 className="mb-2 text-xl font-bold text-slate tracking-tight">
                     {r.title}
                   </h3>
 
-                  <p className="text-sm leading-relaxed text-muted flex-1 mb-6">
+                  <p className="text-sm leading-relaxed text-muted mb-5">
                     {r.desc}
                   </p>
+
+                  {/* Role Perks Checklist */}
+                  <div className="space-y-2 mb-6 pt-4 border-t border-border/60">
+                    {r.perks.map((perk, i) => (
+                      <div key={i} className="flex items-start gap-2.5 text-xs text-slate/80">
+                        <svg className="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span>{perk}</span>
+                      </div>
+                    ))}
+                  </div>
 
                   {/* Aligned Action Button at Bottom */}
                   <div className="mt-auto pt-2">
                     <button
                       type="button"
-                      className={`w-full inline-flex items-center justify-center rounded-xl px-4 py-2.5 sm:py-3 text-sm font-semibold text-white transition-all shadow-xs group-hover:shadow-md active:scale-[0.99] cursor-pointer ${r.accent} ${r.hoverBg}`}
+                      className={`w-full inline-flex items-center justify-center gap-2 rounded-xl px-4 py-3 text-sm font-semibold text-white transition-all shadow-xs group-hover:shadow-md active:scale-[0.99] cursor-pointer ${r.accent} ${r.hoverBg}`}
                       onClick={(e) => {
                         e.stopPropagation();
                         handleRoleClick(r);
                       }}
                     >
-                      {r.btnLabel}
+                      <span>{r.btnLabel}</span>
+                      <svg className="w-4 h-4 transition-transform duration-200 group-hover:translate-x-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M13.5 4.5L21 12m0 0l-7.5 7.5M21 12H3" />
+                      </svg>
                     </button>
                   </div>
                 </div>
