@@ -13,7 +13,7 @@ const ACTION_LABEL = {
   accepted: { text: 'In Progress', className: 'text-blue-600' },
 };
 
-export default function OrdersTable({ orders = [], onAccept, onReject, hasActiveFilter = false, loading = false }) {
+export default function OrdersTable({ orders = [], onAccept, onReject, onDeliver, hasActiveFilter = false, loading = false }) {
   return (
     <div className="bg-white border border-border rounded-xl overflow-hidden shadow-sm">
       <div className="overflow-x-auto">
@@ -68,11 +68,21 @@ export default function OrdersTable({ orders = [], onAccept, onReject, hasActive
                         </button>
                       </div>
                     )}
-                    {ACTION_LABEL[order.status] && (
-                      <span className={`text-[11px] font-medium ${ACTION_LABEL[order.status].className}`}>
-                        {ACTION_LABEL[order.status].text}
-                      </span>
+                    {(order.status === 'Processing' || order.status === 'accepted') && (
+                      <button
+                        onClick={() => onDeliver(order.id)}
+                        className="px-3 py-1.5 bg-green-600 text-white rounded text-[11px] font-medium hover:bg-green-700 transition-all cursor-pointer"
+                      >
+                        Mark Delivered
+                      </button>
                     )}
+                    {ACTION_LABEL[order.status] &&
+                      order.status !== 'Processing' &&
+                      order.status !== 'accepted' && (
+                        <span className={`text-[11px] font-medium ${ACTION_LABEL[order.status].className}`}>
+                          {ACTION_LABEL[order.status].text}
+                        </span>
+                      )}
                   </td>
                 </tr>
               ))
