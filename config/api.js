@@ -46,6 +46,7 @@ export const API_SEARCH_MATERIALS = `${API_BASE}/api/search/materials`;
 
 // ── SERVICE REQUESTS ─────────────────────────────────────────────────────────
 export const API_SERVICE_REQUEST_CREATE = `${API_BASE}/api/service-requests`;
+export const API_SERVICE_REQUEST_TASK_PENDING = (taskId) => `${API_BASE}/api/service-requests/task/${taskId}/pending`;
 
 // ── PUBLIC PROVIDER PROFILE ─────────────────────────────────────────────────
 export const API_PROVIDER_PUBLIC = (id) => `${API_BASE}/api/providers/${id}`;
