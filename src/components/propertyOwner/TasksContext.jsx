@@ -7,6 +7,7 @@ const TasksContext = createContext(null);
 const INIT_TASKS = [];
 const INIT_NOTIFICATIONS = [];
 const DEFAULT_BUDGET = 0;
+const TASK_COLORS = ['#16a34a', '#15803d'];
 
 export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState(INIT_TASKS);

@@ -24,7 +24,7 @@ export default function ProjectProgressCard({
             cy="45"
             r="36"
             fill="none"
-            stroke="#16a34a"
+            stroke="var(--color-owner, #16a34a)"
             strokeWidth="10"
             strokeDasharray={circumference}
             strokeDashoffset={dashOffset}
@@ -53,7 +53,7 @@ export default function ProjectProgressCard({
                 className="flex justify-between py-1.5 text-sm border-b border-black/10 last:border-0"
               >
                 <span className="truncate max-w-[200px]">{t.name}</span>
-                <span style={{ color: t.completed ? '#1B6E3A' : '#8A8FA8' }}>
+                <span className={t.completed ? 'text-owner font-medium' : 'text-[#8A8FA8]'}>
                   {t.completed ? '✓ Done' : 'Pending'}
                 </span>
               </div>
