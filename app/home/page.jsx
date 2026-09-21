@@ -280,7 +280,7 @@ export default function HomePage() {
               Role-Based Experience
             </div>
             <h2 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-slate tracking-tight">
-              Who is CrewSync for?
+              Who is CrewSync for ?
             </h2>
             <p className="mt-2 text-sm sm:text-base text-muted max-w-2xl">
               Choose your role to explore tailored features and tools built for your needs
@@ -364,12 +364,12 @@ export default function HomePage() {
         </section>
 
         {/* PLATFORM FEATURES */}
-        <section className="w-full border-y border-border/80 bg-gradient-to-b from-surface/30 via-surface/70 to-surface/30 px-4 py-16 sm:px-6 sm:py-20 relative overflow-hidden">
+        <section className="w-full border-y border-[#E2DFD7] bg-[#F3F1EC] px-4 py-16 sm:px-6 sm:py-20 relative overflow-hidden">
           {/* Subtle background ambient glow */}
           <div
-            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[650px] h-[350px] rounded-full blur-3xl opacity-25"
+            className="pointer-events-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[750px] h-[380px] rounded-full blur-3xl opacity-35"
             style={{
-              background: "radial-gradient(circle, rgba(232,130,12,0.2) 0%, transparent 70%)"
+              background: "radial-gradient(circle, rgba(232,130,12,0.22) 0%, rgba(243,241,236,0) 70%)"
             }}
           />
 
