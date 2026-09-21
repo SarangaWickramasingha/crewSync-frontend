@@ -33,7 +33,7 @@ export default function PropertyOwnerLayout({ children }) {
   // Prevent UI flashing or hydration mismatches while fetching auth state
   if (loading) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-[#F7F6F2] font-['DM_Sans'] text-sm text-[#8A8FA8]">
+      <div className="flex h-screen w-screen items-center justify-center bg-[#F7F6F2] font-sans text-sm text-[#8A8FA8]">
         Loading workspace...
       </div>
     );

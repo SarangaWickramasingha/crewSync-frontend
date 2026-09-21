@@ -158,7 +158,7 @@ export default function StartProjectPage() {
 
           {/* LEFT PANEL */}
           <aside className="w-[240px] shrink-0 sticky top-[80px] max-lg:w-full max-lg:static">
-            <div className="font-[Syne] text-[1.6rem] font-extrabold text-[#E8820C] tracking-[-0.5px] mb-1">
+            <div className="font-syne text-[1.6rem] font-extrabold text-[#E8820C] tracking-[-0.5px] mb-1">
               Crew<span className="text-[#1A1D23]">Sync</span>
             </div>
             <div className="text-[0.88rem] text-[#8A8FA8] mb-6 leading-[1.5]">
@@ -246,14 +246,14 @@ export default function StartProjectPage() {
 
                   {/* Project Basics */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/basics.png" alt="Basics" className="h-4.5 w-4.5 object-contain" /> Project Basics
                     </div>
                     <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                       <div className="flex flex-col gap-[5px] col-span-2">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Project Name <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <input
-                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
+                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
                           type="text"
                           placeholder="e.g. My House Build – Kandy"
                           {...register('projName')}
@@ -268,14 +268,14 @@ export default function StartProjectPage() {
 
                   {/* Location (District & Site Address) */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/location.png" alt="Location" className="h-4.5 w-4.5 object-contain" /> Location
                     </div>
                     <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                       <div className="flex flex-col gap-[5px] col-span-2">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">District <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <select
-                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] cursor-pointer"
+                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] cursor-pointer"
                           {...register('projDistrict')}
                           disabled={submitting || success}
                         >
@@ -289,7 +289,7 @@ export default function StartProjectPage() {
                       <div className="flex flex-col gap-[5px] col-span-2">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Site Address <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <input
-                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
+                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] placeholder:text-[#8A8FA8]"
                           type="text"
                           placeholder="e.g. No. 12, Rajapihilla Road, Kandy"
                           {...register('projAddress')}
@@ -304,12 +304,12 @@ export default function StartProjectPage() {
 
                   {/* Selected Tasks */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center justify-between gap-2 flex-wrap">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center justify-between gap-2 flex-wrap">
                       <span className="flex items-center gap-2">
-                        <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Associated Project Tasks <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">— select all that apply <span className="text-[#C0392B]">*</span></span>
+                        <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Associated Project Tasks <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-sans">— select all that apply <span className="text-[#C0392B]">*</span></span>
                       </span>
                       {(watched.phases ?? []).length > 0 && (
-                        <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-[DM_Sans]">
+                        <span className="text-[0.72rem] font-normal tracking-normal normal-case text-[#8A8FA8] font-sans">
                           Allocated: <span className={`font-semibold ${watched.budget && allocatedTotal > Number(watched.budget) ? 'text-[#C0392B]' : 'text-[#1B6E3A]'}`}>LKR {fmt(allocatedTotal)}</span>
                           {watched.budget ? <> / LKR {fmt(watched.budget)}</> : null}
                         </span>
@@ -339,7 +339,7 @@ export default function StartProjectPage() {
                                   <input
                                     type="number"
                                     placeholder="e.g. 250000"
-                                    className="p-[8px] px-[13px] pl-[48px] border border-[rgba(26,29,35,0.15)] rounded-[7px] font-[DM_Sans] text-[0.82rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
+                                    className="p-[8px] px-[13px] pl-[48px] border border-[rgba(26,29,35,0.15)] rounded-[7px] font-sans text-[0.82rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
                                     value={phaseBudgets[phase.name] ?? ''}
                                     onChange={e => setPhaseBudget(phase.name, e.target.value)}
                                     disabled={submitting || success}
@@ -358,14 +358,14 @@ export default function StartProjectPage() {
 
                   {/* Dates */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/timeline.png" alt="Timeline" className="h-4.5 w-4.5 object-contain" /> Project Timeline
                     </div>
                     <div className="grid grid-cols-2 gap-4 max-sm:grid-cols-1">
                       <div className="flex flex-col gap-[5px]">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Start Date <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <input
-                          className="p-2.5 px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
+                          className="p-2.5 px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
                           {...register('projStartDate')}
@@ -378,7 +378,7 @@ export default function StartProjectPage() {
                       <div className="flex flex-col gap-[5px]">
                         <label className="text-[0.73rem] font-semibold text-[#4A5068] uppercase tracking-[0.3px]">Target Completion Date <span className="text-[#C0392B] ml-0.5">*</span></label>
                         <input
-                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
+                          className="p-[10px] px-[13px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full"
                           type="date"
                           min={today}
                           {...register('projTargetDate')}
@@ -393,13 +393,13 @@ export default function StartProjectPage() {
 
                   {/* Budget */}
                   <div className="mb-[1.8rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/budget.png" alt="Budget" className="h-4.5 w-4.5 object-contain" /> Estimated Budget
                     </div>
                     <div className="bg-[#1A1D23] text-white rounded-[10px] p-4 px-[18px] flex items-center justify-between mb-4">
                       <div>
                         <div className="text-[0.72rem] text-white/50 uppercase tracking-[0.5px]">Estimated Project Budget</div>
-                        <div className="font-[Syne] text-[1.6rem] font-bold text-[#E8820C]">LKR {watched.budget ? fmt(watched.budget) : '0'}</div>
+                        <div className="font-syne text-[1.6rem] font-bold text-[#E8820C]">LKR {watched.budget ? fmt(watched.budget) : '0'}</div>
                         <div className="text-[0.75rem] text-white/45 mt-0.5">Sri Lankan Rupees</div>
                       </div>
                       <div className="text-[2rem] h-10 w-10 flex items-center justify-center bg-white/10 rounded-full p-2">
@@ -411,7 +411,7 @@ export default function StartProjectPage() {
                       <div className="relative">
                         <span className="absolute left-3 top-1/2 -translate-y-1/2 text-[0.82rem] text-[#8A8FA8] pointer-events-none">LKR</span>
                         <input
-                          className="p-[10px] px-[13px] pl-[50px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-[DM_Sans] text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
+                          className="p-[10px] px-[13px] pl-[50px] border border-[rgba(26,29,35,0.1)] rounded-[8px] font-sans text-[0.88rem] text-[#1A1D23] bg-white outline-none transition focus:border-[#E8820C] focus:shadow-[0_0_0_3px_rgba(232,130,12,0.1)] w-full placeholder:text-[#8A8FA8]"
 
                           type="number"
                           placeholder="e.g. 6500000"
@@ -447,7 +447,7 @@ export default function StartProjectPage() {
               {currentPage === 2 && (
                 <div className="animate-[fadeIn_0.25s_ease]">
                   <div className="mb-[1.4rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/review.png" alt="Review" className="h-4.5 w-4.5 object-contain" /> Review Your Project
                     </div>
                     <p className="text-[0.84rem] text-[#8A8FA8] leading-[1.5]">Please review all details before submitting. Your project will be visible to verified service providers and suppliers immediately after submission.</p>
@@ -471,7 +471,7 @@ export default function StartProjectPage() {
                   </div>
 
                   <div className="mb-[1.4rem]">
-                    <div className="font-[Syne] text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
+                    <div className="font-syne text-[0.82rem] font-bold text-[#1A1D23] uppercase tracking-[0.8px] mb-4 pb-2 border-b border-[rgba(26,29,35,0.1)] flex items-center gap-2">
                       <img src="/icons/project-form/tasks.png" alt="Tasks" className="h-4.5 w-4.5 object-contain" /> Selected Tasks ({(watched.phases ?? []).length})
                     </div>
                     <div className="flex flex-col gap-2">
@@ -493,13 +493,13 @@ export default function StartProjectPage() {
             <div className="p-[1.4rem] px-8 border-t border-[rgba(26,29,35,0.1)] flex items-center justify-between bg-[#F7F6F2] gap-4 flex-wrap">
               <div className="flex gap-[10px]">
                 {currentPage === 2 && !success && (
-                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-[DM_Sans] disabled:opacity-50 flex items-center justify-center">Back</button>
+                  <button onClick={goBack} disabled={submitting} className="py-[11px] px-5 bg-transparent text-[#4A5068] border border-[rgba(26,29,35,0.1)] rounded-[8px] text-[0.88rem] font-medium cursor-pointer transition hover:bg-[#EEECEA] font-sans disabled:opacity-50 flex items-center justify-center">Back</button>
                 )}
               </div>
               <div className="text-[0.73rem] text-[#8A8FA8] max-w-[300px] leading-[1.4]">
                 {currentPage === 1 ? 'Your project info is protected and shared only with verified CrewSync members.' : 'Once submitted, service providers can begin sending you proposals.'}
               </div>
-              <button onClick={nextStep} disabled={submitting || success} className="py-[11px] px-7 bg-[#E8820C] text-white border-none rounded-[8px] text-[0.92rem] font-semibold cursor-pointer transition-all whitespace-nowrap hover:bg-[#B85A00] hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)] font-[DM_Sans] disabled:opacity-50 flex items-center justify-center">
+              <button onClick={nextStep} disabled={submitting || success} className="py-[11px] px-7 bg-[#E8820C] text-white border-none rounded-[8px] text-[0.92rem] font-semibold cursor-pointer transition-all whitespace-nowrap hover:bg-[#B85A00] hover:-translate-y-0.5 hover:shadow-[0_4px_12px_rgba(232,130,12,0.3)] font-sans disabled:opacity-50 flex items-center justify-center">
                 {submitting ? 'Submitting...' : currentPage === 1 ? 'Review & Submit' : 'Submit Project'}
               </button>
             </div>

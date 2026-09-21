@@ -46,7 +46,7 @@ export default function ProjectProgressCard({
             x="45"
             y="50"
             textAnchor="middle"
-            fontFamily="Syne, sans-serif"
+            style={{ fontFamily: 'var(--font-syne)' }}
             fontSize="16"
             fontWeight="700"
             fill="#1A1D23"

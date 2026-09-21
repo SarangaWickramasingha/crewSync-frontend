@@ -41,7 +41,7 @@ function ReviewPhotoCarousel({ photos }) {
               ❯
             </button>
 
-            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-md font-mono">
+            <div className="absolute bottom-2 right-2 bg-black/60 text-white text-xs px-2 py-0.5 rounded-md font-mono tabular-nums">
               {activeIdx + 1} / {photos.length}
             </div>
           </>
