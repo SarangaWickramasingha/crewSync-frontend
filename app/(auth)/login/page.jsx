@@ -99,20 +99,6 @@ export default function LoginPage() {
                                 Sri Lanka&apos;s construction coordination platform - connecting property owners,
                                 service providers, and suppliers in one place.
                             </p>
-
-                            {/* Stats row */}
-                            <div className="flex gap-6 mt-6">
-                                {[
-                                    { val: '500+', lbl: 'Professionals' },
-                                    { val: '1,200+', lbl: 'Projects' },
-                                    { val: '25+', lbl: 'Districts' },
-                                ].map(s => (
-                                    <div key={s.lbl}>
-                                        <p className="text-[#E8820C] text-lg font-bold">{s.val}</p>
-                                        <p className="text-white/50 text-xs">{s.lbl}</p>
-                                    </div>
-                                ))}
-                            </div>
                         </div>
                     </div>
                 </div>
