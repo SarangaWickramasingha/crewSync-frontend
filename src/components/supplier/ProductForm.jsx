@@ -16,7 +16,14 @@ const inputClass =
 
 const selectClass = `${inputClass} cursor-pointer`;
 
-export default function ProductForm({ defaultValues, onSubmit, onCancel, submitLabel = 'Add Product', isSubmitting }) {
+export default function ProductForm({
+  defaultValues,
+  onSubmit,
+  onCancel,
+  submitLabel = 'Add Product',
+  isSubmitting,
+  materialOptions = MATERIAL_TITLES,
+}) {
   const {
     register,
     handleSubmit,
@@ -29,10 +36,18 @@ export default function ProductForm({ defaultValues, onSubmit, onCancel, submitL
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="grid grid-cols-2 gap-3 text-left w-full">
       <FormField label="Product Title" error={errors.material?.message}>
-        <select {...register('material')} className={selectClass}>
-          {MATERIAL_TITLES.map((title) => (
-            <option key={title} value={title}>{title}</option>
-          ))}
+        <select
+          {...register('material')}
+          className={selectClass}
+          disabled={materialOptions.length === 0}
+        >
+          {materialOptions.length === 0 ? (
+            <option value="">-- All materials added --</option>
+          ) : (
+            materialOptions.map((title) => (
+              <option key={title} value={title}>{title}</option>
+            ))
+          )}
         </select>
       </FormField>
 
@@ -68,8 +83,8 @@ export default function ProductForm({ defaultValues, onSubmit, onCancel, submitL
         )}
         <button
           type="submit"
-          disabled={isSubmitting}
-          className="flex-1 py-2.5 px-4 rounded-lg border-none bg-supplier hover:bg-supplier-dark text-white text-[0.84rem] font-semibold transition-colors cursor-pointer text-center disabled:opacity-60 disabled:cursor-wait"
+          disabled={isSubmitting || materialOptions.length === 0}
+          className="flex-1 py-2.5 px-4 rounded-lg border-none bg-supplier hover:bg-supplier-dark text-white text-[0.84rem] font-semibold transition-colors cursor-pointer text-center disabled:opacity-60 disabled:cursor-not-allowed"
         >
           {isSubmitting ? 'Saving…' : submitLabel}
         </button>

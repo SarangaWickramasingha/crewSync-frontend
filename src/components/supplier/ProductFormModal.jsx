@@ -2,7 +2,16 @@
 import { useEffect, useRef, useState } from 'react';
 import ProductForm from '@/src/components/supplier/ProductForm';
 
-export default function ProductFormModal({ open, title, defaultValues, onSubmit, onClose, submitLabel, isSubmitting }) {
+export default function ProductFormModal({
+  open,
+  title,
+  defaultValues,
+  onSubmit,
+  onClose,
+  submitLabel,
+  isSubmitting,
+  materialOptions,
+}) {
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
   const backdropRef = useRef(null);
@@ -52,6 +61,7 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
           onCancel={onClose}
           submitLabel={submitLabel}
           isSubmitting={isSubmitting}
+          materialOptions={materialOptions}
         />
       </div>
     </div>

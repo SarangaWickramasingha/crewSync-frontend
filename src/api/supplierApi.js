@@ -6,10 +6,13 @@ export async function fetchProducts() {
   try {
     const res = await request.get(API_SUPPLIER_PRODUCTS);
     const data = unwrap(res);
-    return data?.products ?? data?.data ?? [];
+    return {
+      products: data?.products ?? data?.data ?? (Array.isArray(data) ? data : []),
+      available_materials: data?.available_materials ?? [],
+    };
   } catch (e) {
     console.warn('fetchProducts fallback:', e.message);
-    return [];
+    return { products: [], available_materials: [] };
   }
 }
 

@@ -13,15 +13,37 @@ import EmptyState from '@/src/components/supplier/EmptyState';
 import DeleteConfirmModal from '@/src/components/admin/DeleteConfirmModal';
 import { primaryBtnClass } from '@/src/components/supplier/formStyles';
 
-const EMPTY_FORM = { material: MATERIAL_TITLES[0], description: '', price: '', stockType: 'in', stockNote: '' };
-
 export default function MyProductsPage() {
-  const { data: products = [], isLoading, isError, error } = useProducts();
+  const { data, isLoading, isError, error } = useProducts();
   const saveProduct = useSaveProduct();
   const deleteProduct = useDeleteProduct();
 
+  const products = Array.isArray(data) ? data : (data?.products ?? []);
+  const rawAvailableMaterials = data?.available_materials ?? [];
+
+  const existingMaterialIds = new Set(products.map((p) => p.material_id));
+  const availableMaterialOptions =
+    rawAvailableMaterials.length > 0
+      ? rawAvailableMaterials.map((m) => m.name)
+      : MATERIAL_TITLES.filter((title) => !existingMaterialIds.has(MATERIAL_NAME_TO_ID[title]));
+
   const [modal, setModal] = useState(null);
   const [productToRemove, setProductToRemove] = useState(null);
+
+  const modalMaterialOptions =
+    modal?.mode === 'edit'
+      ? modal.product?.title
+        ? [modal.product.title, ...availableMaterialOptions.filter((m) => m !== modal.product.title)]
+        : availableMaterialOptions
+      : availableMaterialOptions;
+
+  const emptyForm = {
+    material: availableMaterialOptions[0] || '',
+    description: '',
+    price: '',
+    stockType: 'in',
+    stockNote: '',
+  };
 
   function handleSubmit(values) {
     saveProduct.mutate(toProductPayload(values), {
@@ -72,11 +94,12 @@ export default function MyProductsPage() {
       <ProductFormModal
         open={modal !== null}
         title={modal?.mode === 'edit' ? 'Edit Product' : 'New Product'}
-        defaultValues={modal?.mode === 'edit' ? productToForm(modal.product) : EMPTY_FORM}
+        defaultValues={modal?.mode === 'edit' ? productToForm(modal.product) : emptyForm}
         onSubmit={handleSubmit}
         onClose={() => setModal(null)}
         submitLabel={modal?.mode === 'edit' ? 'Save Changes' : 'Add Product'}
         isSubmitting={saveProduct.isPending}
+        materialOptions={modalMaterialOptions}
       />
 
       {productToRemove && (
