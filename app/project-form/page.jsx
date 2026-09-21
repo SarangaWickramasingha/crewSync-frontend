@@ -6,6 +6,7 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { DISTRICTS, projectSchema, toProjectPayload } from '@/src/lib/validators/project'
 import { useCreateProject } from '@/src/hooks/project/useProject'
+import { Lightbulb, TriangleAlert, Check } from 'lucide-react'
 
 const DEFAULT_VALUES = {
   projName: '',
@@ -180,7 +181,7 @@ export default function StartProjectPage() {
                     currentPage > i  ? 'bg-[#E8820C] border-[#E8820C] text-white' :
                     'bg-white border-[rgba(26,29,35,0.1)] text-[#8A8FA8]'
                   }`}>
-                    {currentPage > i ? '✓' : i}
+                    {currentPage > i ? <Check className="h-4 w-4" /> : i}
                   </div>
                   <div className="pb-[22px] pt-1">
                     <div className={`text-[0.8rem] font-semibold leading-none ${
@@ -198,7 +199,7 @@ export default function StartProjectPage() {
             </div>
 
             <div className="bg-white border border-[rgba(26,29,35,0.1)] rounded-[10px] p-[14px] text-[0.77rem] text-[#4A5068] leading-[1.5]">
-              <strong className="block text-[0.8rem] text-[#1A1D23] mb-1">💡 Tip</strong>
+              <strong className="block text-[0.8rem] text-[#1A1D23] mb-1 flex items-center gap-1.5"><Lightbulb className="h-4 w-4" /> Tip</strong>
               The more detail you provide, the faster service providers and suppliers can respond to your project.
             </div>
           </aside>
@@ -229,13 +230,13 @@ export default function StartProjectPage() {
             <div className="p-8">
               {error && (
                 <div className="bg-[#FDECEA] text-[#C0392B] border border-[rgba(192,57,43,0.2)] rounded-[8px] p-[10px] px-[13px] text-[0.82rem] mb-5 flex items-center gap-2">
-                  <span>⚠</span> {error}
+                  <TriangleAlert className="h-4 w-4 shrink-0" /> {error}
                 </div>
               )}
 
               {success && (
                 <div className="bg-[#E6F4EC] text-[#1B6E3A] border border-[rgba(27,110,58,0.2)] rounded-[8px] p-[10px] px-[13px] text-[0.82rem] mb-5 flex items-center gap-2">
-                  <span>✓</span> Project created successfully! Redirecting to owner dashboard...
+                  <span><Check className="inline h-4 w-4" /></span> Project created successfully! Redirecting to owner dashboard...
                 </div>
               )}
 
@@ -423,7 +424,7 @@ export default function StartProjectPage() {
                       )}
                       {watched.budget && allocatedTotal > Number(watched.budget) && (
                         <div className="text-[0.74rem] text-[#C0392B] mt-1 flex items-center gap-1">
-                          ⚠ Task budgets total LKR {fmt(allocatedTotal)}, which exceeds your overall estimated budget.
+                          <TriangleAlert className="h-4 w-4 shrink-0" /> Task budgets total LKR {fmt(allocatedTotal)}, which exceeds your overall estimated budget.
                         </div>
                       )}
                     </div>
@@ -476,7 +477,7 @@ export default function StartProjectPage() {
                     <div className="flex flex-col gap-2">
                       {(watched.phases ?? []).map(p => (
                         <div key={p} className="bg-[#E6F4EC] text-[#1B6E3A] rounded-[10px] py-2 px-3 text-[0.82rem] font-semibold flex items-center justify-between">
-                          <span>✓ {p}</span>
+                          <span><Check className="inline h-4 w-4" /> {p}</span>
                           <span className="text-[#1A1D23]">
                             {phaseBudgets[p] ? `LKR ${fmt(phaseBudgets[p])}` : 'No budget set'}
                           </span>

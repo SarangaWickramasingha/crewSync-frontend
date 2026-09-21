@@ -8,6 +8,7 @@ import Navbar from "@/src/components/layout/Navbar";
 import { useAuth } from "@/context/AuthContext";
 import { FEEDBACK_TYPES, feedbackSchema, toFeedbackPayload } from "@/src/lib/validators/feedback";
 import { useStatsSummary, useSubmitFeedback } from "@/src/hooks/home/useHome";
+import { Flag, TriangleAlert, Check } from "lucide-react";
 
 const FEEDBACK_DEFAULT_VALUES = { name: "", email: "", messageType: FEEDBACK_TYPES[0], message: "" };
 
@@ -159,7 +160,7 @@ export default function HomePage() {
           />
           <div className="relative z-10 mx-auto max-w-4xl">
             <div className="mb-6 inline-flex items-center gap-1.5 rounded-full border border-amber/30 bg-amber/10 px-4 py-1.5 text-xs font-semibold tracking-wide text-amber backdrop-blur-xs">
-              <span>🇱🇰</span> Built for Sri Lanka&apos;s Construction Sector
+              <Flag className="h-3.5 w-3.5" /> Built for Sri Lanka&apos;s Construction Sector
             </div>
             <h1 className="mb-5 text-3xl sm:text-5xl md:text-6xl font-extrabold leading-[1.12] text-white tracking-tight">
               Manage Your Build,
@@ -167,9 +168,10 @@ export default function HomePage() {
               <span className="text-amber">Without Middlemen</span>
             </h1>
             <p className="mx-auto mb-8 max-w-2xl text-sm sm:text-base md:text-lg text-white/70 leading-relaxed px-2">
-              CrewSync connects property owners directly with skilled tradespeople
-              and material suppliers — with full project tracking, timelines, and
-              transparent payments.
+              CrewSync connects property owners directly with service providers
+              and material suppliers. It helps users manage their projects easily
+              by tracking progress, schedules, and costs in one place, with clear
+              updates and transparent pricing.
             </p>
             <div className="flex flex-col sm:flex-row items-center justify-center gap-3.5">
               {!isProvider && !isSupplier && (
@@ -421,13 +423,13 @@ export default function HomePage() {
 
               {fbSuccess && (
                 <div className="mt-4 rounded-xl bg-primary-light border border-primary/20 p-3.5 text-center text-sm font-semibold text-primary">
-                  ✓ Your message has been sent! The admin team will get back to
+                  <Check className="inline h-4 w-4" /> Your message has been sent! The admin team will get back to
                   you soon.
                 </div>
               )}
               {fbError && (
                 <div className="mt-4 rounded-xl bg-red-50 border border-danger/20 p-3.5 text-center text-sm font-semibold text-danger">
-                  ⚠ {fbError}
+                  <TriangleAlert className="h-4 w-4 shrink-0" /> {fbError}
                 </div>
               )}
             </form>
