@@ -40,12 +40,11 @@ export function productToForm(product) {
 }
 
 export function toProductPayload(values) {
-  const materialId = MATERIAL_NAME_TO_ID[values.material] ?? (Number(values.material) || values.material_id);
   return {
-    material_id: Number(materialId),
+    material_id: MATERIAL_NAME_TO_ID[values.material],
     unit_price: parseNumber(values.price),
     stock_qty: parseQty(values.stockNote),
-    description: values.description ? values.description.trim() : '',
+    description: values.description,
     is_available: values.stockType !== 'out',
   };
 }
