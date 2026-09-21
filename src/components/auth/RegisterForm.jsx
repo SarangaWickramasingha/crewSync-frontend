@@ -157,10 +157,7 @@ export default function RegisterForm() {
 
                 {/* Bottom: tagline */}
                 <div className="relative z-10 mt-auto p-8">
-                    <p className="font-climate text-2xl text-[#E8820C]">
-                        Crew<span className="text-white">Sync</span>
-                    </p>
-                    <p className="text-white font-bold text-xl mt-2">{tagline.heading}</p>
+                    <p className="text-white font-bold text-xl">{tagline.heading}</p>
                     <p className="text-white/60 text-sm mt-1">{tagline.sub}</p>
                 </div>
             </aside>
