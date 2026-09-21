@@ -155,23 +155,6 @@ export default function RegisterForm() {
                 {/* Dark overlay */}
                 <div className="absolute inset-0 bg-gradient-to-b from-[#1A1D23]/60 to-[#1A1D23]/90" />
 
-                {/* Top: dark role switcher */}
-                <div className="relative z-10 p-5 flex gap-2">
-                    {['owner', 'provider', 'supplier'].map(r => (
-                        <button
-                            key={r}
-                            onClick={() => setValue('role', r)}
-                            className={`flex-1 py-1.5 rounded-lg text-[11px] font-semibold transition-all
-                                ${role === r
-                                    ? 'bg-white/20 text-white border border-white/30'
-                                    : 'text-white/50 hover:text-white/80'
-                                }`}
-                        >
-                            {r === 'owner' ? 'Owner' : r === 'provider' ? 'Provider' : 'Supplier'}
-                        </button>
-                    ))}
-                </div>
-
                 {/* Bottom: tagline */}
                 <div className="relative z-10 mt-auto p-8">
                     <p className="font-climate text-2xl text-[#E8820C]">

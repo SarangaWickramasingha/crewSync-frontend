@@ -31,7 +31,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   const activeColor = roleKey ? ROLE_COLORS[roleKey].color : '#e8820c';
   const activeHover  = roleKey ? ROLE_COLORS[roleKey].hover  : '#b85a00';
 
-  const Logo = () => (
+  const renderLogo = () => (
     <div
       onClick={() => router.push("/home")}
       className="cursor-pointer font-syne text-[1.4rem] font-bold tracking-tight select-none transition-opacity hover:opacity-95"
@@ -42,7 +42,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   );
 
   /* ── Shared profile dropdown ── */
-  const ProfileDropdown = ({ dashboardRoute }) => (
+  const renderProfileDropdown = (dashboardRoute) => (
     <div className="relative" ref={profileRef}>
       <button
         onClick={() => setProfileOpen((v) => !v)}
@@ -89,7 +89,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   );
 
   /* ── Shared guest buttons ── */
-  const GuestButtons = () => (
+  const renderGuestButtons = () => (
     <div className="flex items-center gap-2.5">
       <button
         onClick={() => router.push("/login")}
@@ -113,7 +113,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   if (variant === "auth") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
-        <Logo />
+        {renderLogo()}
         <div className="flex items-center text-sm text-white/60">
           New to CrewSync?&nbsp;
           <button
@@ -132,7 +132,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   if (variant === "register") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
-        <Logo />
+        {renderLogo()}
         <div className="flex items-center gap-2.5">
           <span className="text-sm text-white/55">Already have an account?</span>
           <button
@@ -170,10 +170,10 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
               ☰
             </button>
           )}
-          <Logo />
+          {renderLogo()}
         </div>
         <div className="flex items-center gap-2.5">
-          {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardRoute} />}
+          {isGuest ? renderGuestButtons() : renderProfileDropdown(dashboardRoute)}
         </div>
       </nav>
     );
@@ -183,7 +183,13 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   if (variant === "projectForm") {
     return (
       <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
-        <Logo color={activeColor} />
+        <div
+          onClick={() => router.push("/home")}
+          className="cursor-pointer font-syne text-[1.4rem] font-bold tracking-tight select-none transition-opacity hover:opacity-95"
+          style={{ fontFamily: "var(--font-syne), 'Syne', sans-serif", color: activeColor }}
+        >
+          Crew<span className="text-white">Sync</span>
+        </div>
         <button
           onClick={() => window.history.back()}
           className="flex items-center gap-1.5 text-white/50 text-sm font-medium hover:text-white transition-colors duration-200 cursor-pointer bg-transparent border-none"
@@ -207,9 +213,9 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
 
   return (
     <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
-      <Logo />
+      {renderLogo()}
       <div className="flex items-center gap-2.5">
-        {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardHref} />}
+        {isGuest ? renderGuestButtons() : renderProfileDropdown(dashboardHref)}
       </div>
     </nav>
   );
