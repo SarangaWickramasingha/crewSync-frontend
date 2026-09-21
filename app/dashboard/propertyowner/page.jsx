@@ -73,6 +73,7 @@ export default function PropertyOwnerOverviewPage() {
     projectName,
     loadFromProject,
     isLoaded,
+    isLoadingProject,
   } = useTasks();
 
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -150,6 +151,7 @@ export default function PropertyOwnerOverviewPage() {
                       type="button"
                       onClick={() => {
                         loadFromProject(proj.project_id);
+                        router.replace(`/dashboard/propertyowner?project_id=${proj.project_id}`, { scroll: false });
                         setDropdownOpen(false);
                       }}
                       className={`w-full text-left px-3.5 py-2.5 flex items-center justify-between hover:bg-black/[0.04] transition-colors cursor-pointer ${
@@ -236,9 +238,15 @@ export default function PropertyOwnerOverviewPage() {
           dashOffset={dashOffset}
           projectCompleted={projectCompleted}
           tasks={tasks}
+          isLoading={isLoadingProject}
         />
 
-        <BudgetOverviewCard tasks={tasks} maxCost={maxCost} remainingBudget={remainingBudget} />
+        <BudgetOverviewCard
+          tasks={tasks}
+          maxCost={maxCost}
+          remainingBudget={remainingBudget}
+          isLoading={isLoadingProject}
+        />
       </div>
     </div>
   );

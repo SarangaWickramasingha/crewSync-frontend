@@ -7,6 +7,7 @@ export default function ProjectProgressCard({
   dashOffset,
   projectCompleted,
   tasks,
+  isLoading = false,
 }) {
   return (
     <Card>
@@ -16,7 +17,17 @@ export default function ProjectProgressCard({
           {projectCompleted ? 'Completed' : 'In Progress'}
         </StatusPill>
       </div>
-      <div className="flex items-center gap-6 flex-wrap">
+      {isLoading ? (
+        <div className="flex items-center gap-6 py-4 animate-pulse">
+          <div className="w-[90px] h-[90px] rounded-full bg-black/5 flex-shrink-0" />
+          <div className="flex-1 space-y-3">
+            <div className="h-4 bg-black/5 rounded w-3/4" />
+            <div className="h-4 bg-black/5 rounded w-1/2" />
+            <div className="h-4 bg-black/5 rounded w-2/3" />
+          </div>
+        </div>
+      ) : (
+        <div className="flex items-center gap-6 flex-wrap">
         <svg width="90" height="90" viewBox="0 0 90 90" className="flex-shrink-0">
           <circle cx="45" cy="45" r="36" fill="none" stroke="#EEECEA" strokeWidth="10" />
           <circle
@@ -61,6 +72,7 @@ export default function ProjectProgressCard({
           )}
         </div>
       </div>
+      )}
     </Card>
   );
 }

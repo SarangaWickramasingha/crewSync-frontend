@@ -15,6 +15,7 @@ export function TasksProvider({ children }) {
   const [projectCompleted, setProjectCompleted] = useState(false);
   const [notifications, setNotifications] = useState(INIT_NOTIFICATIONS);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [isLoadingProject, setIsLoadingProject] = useState(false);
   const [estimatedBudget, setEstimatedBudget] = useState(DEFAULT_BUDGET);
   const [currentProjectId, setCurrentProjectId] = useState(null);
   const [currentProject, setCurrentProject] = useState(null);
@@ -147,6 +148,7 @@ export function TasksProvider({ children }) {
   // ── LOAD PROJECT + TASKS FROM BACKEND ────────────────────────────────────────
   async function loadFromProject(projectId) {
     if (!projectId) return;
+    setIsLoadingProject(true);
     try {
       const data = await projectApi.fetchProject(projectId);
       setCurrentProjectId(Number(projectId));
@@ -180,6 +182,8 @@ export function TasksProvider({ children }) {
 
     } catch (e) {
       console.error('Failed to load project tasks:', e);
+    } finally {
+      setIsLoadingProject(false);
     }
   }
 
@@ -276,6 +280,7 @@ export function TasksProvider({ children }) {
   const value = {
     tasks,
     isLoaded,
+    isLoadingProject,
     projects,
     currentProject,
     currentProjectId,
