@@ -300,12 +300,11 @@ export default function PropertyOwnerOverviewPage() {
                   <span className="truncate max-w-[200px]">{t.name}</span>
                   <span className="font-semibold">LKR {(t.cost || 0).toLocaleString()}</span>
                 </div>
-                <div className="h-2 bg-[#EEECEA] rounded overflow-hidden">
+                <div className="h-2 bg-owner-light rounded overflow-hidden">
                   <div
-                    className="h-full rounded transition-all duration-300"
+                    className="h-full rounded transition-all duration-300 bg-owner"
                     style={{
                       width: `${Math.min(100, ((t.cost || 0) / maxCost) * 100)}%`,
-                      background: t.color,
                     }}
                   />
                 </div>
@@ -315,7 +314,7 @@ export default function PropertyOwnerOverviewPage() {
           <div className="h-px bg-black/10 my-4" />
           <div className="flex justify-between text-sm font-semibold">
             <span>Remaining Budget</span>
-            <span style={{ color: remainingBudget >= 0 ? '#1B6E3A' : '#C0392B' }}>
+            <span className={remainingBudget >= 0 ? 'text-owner font-bold' : 'text-danger font-bold'}>
               LKR {fmtCompact(remainingBudget)}
             </span>
           </div>

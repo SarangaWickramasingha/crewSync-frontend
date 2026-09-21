@@ -7,7 +7,6 @@ const TasksContext = createContext(null);
 const INIT_TASKS = [];
 const INIT_NOTIFICATIONS = [];
 const DEFAULT_BUDGET = 0;
-const TASK_COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
 
 export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState(INIT_TASKS);
@@ -50,9 +49,9 @@ export function TasksProvider({ children }) {
             setNotifications(notifsData.notifications);
           }
         } catch (notifErr) {
-           console.error('Failed to load user notifications:', notifErr);
+          console.error('Failed to load user notifications:', notifErr);
         }
- 
+
         const data = await projectApi.fetchProjects();
         const projList = data.projects || [];
         setProjects(projList);
@@ -95,25 +94,25 @@ export function TasksProvider({ children }) {
     init();
   }, []);
 
-      async function addNotification(text) {
-        const now = new Date();
-        const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
-        const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
-        
-        // Add locally immediately for instant UI response
-        setNotifications((prev) => [{ id: uniqueId, text, time, read: false }, ...prev]);
-    
-        // Save to database asynchronously
-        try {
-          const data = await notificationApi.createNotification({ text, type: 'system' });
-          // Update the local notification with the real database ID
-          setNotifications((prev) => 
-            prev.map(n => n.id === uniqueId ? { ...n, id: data.notif_id } : n)
-          );
-        } catch (err) {
-          console.error("Failed to save notification:", err);
-        }
-      }   
+  async function addNotification(text) {
+    const now = new Date();
+    const time = `Today, ${now.getHours()}:${String(now.getMinutes()).padStart(2, '0')} ${now.getHours() >= 12 ? 'PM' : 'AM'}`;
+    const uniqueId = `${Date.now()}-${Math.random().toString(36).substr(2, 9)}`;
+
+    // Add locally immediately for instant UI response
+    setNotifications((prev) => [{ id: uniqueId, text, time, read: false }, ...prev]);
+
+    // Save to database asynchronously
+    try {
+      const data = await notificationApi.createNotification({ text, type: 'system' });
+      // Update the local notification with the real database ID
+      setNotifications((prev) =>
+        prev.map(n => n.id === uniqueId ? { ...n, id: data.notif_id } : n)
+      );
+    } catch (err) {
+      console.error("Failed to save notification:", err);
+    }
+  }
 
   // Reload notifications from the backend so a backend-created notification
   // (e.g. a confirmation created when a service request is sent) shows up.
@@ -137,7 +136,7 @@ export function TasksProvider({ children }) {
     const n = notifications.find(notif => notif.id === id);
     if (!n) return;
     setNotifications((prev) => prev.map((item) => (item.id === id ? { ...item, read: !item.read } : item)));
-  
+
     // Toggle status on database (send ID to mark it read, or implement toggle endpoint if needed)
     if (!n.read) {
       notificationApi.markRead(id).catch(err => console.error(err));
