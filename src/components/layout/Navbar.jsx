@@ -34,8 +34,8 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   const Logo = () => (
     <div
       onClick={() => router.push("/home")}
-      className="cursor-pointer font-climate text-xl font-extrabold tracking-tight select-none"
-      style={{ color: '#e8820c' }}
+      className="cursor-pointer font-syne text-[1.4rem] font-bold tracking-tight select-none transition-opacity hover:opacity-95"
+      style={{ fontFamily: "var(--font-syne), 'Syne', sans-serif", color: '#e8820c' }}
     >
       Crew<span className="text-white">Sync</span>
     </div>
@@ -90,23 +90,23 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
 
   /* ── Shared guest buttons ── */
   const GuestButtons = () => (
-    <>
+    <div className="flex items-center gap-2.5">
       <button
         onClick={() => router.push("/login")}
-        className="hidden rounded-lg border border-white/30 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10 sm:block"
+        className="rounded-lg border border-white/20 hover:border-white/40 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10 cursor-pointer"
       >
         Log In
       </button>
       <button
         onClick={() => router.push("/register")}
-        className="rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-all"
+        className="rounded-lg px-3.5 py-1.5 text-sm font-medium text-white transition-all cursor-pointer shadow-sm"
         style={{ backgroundColor: activeColor }}
         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = activeHover}
         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = activeColor}
       >
         Get Started
       </button>
-    </>
+    </div>
   );
 
   /* ── AUTH variant ── */
@@ -131,13 +131,13 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   /* ── REGISTER variant ── */
   if (variant === "register") {
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
         <Logo />
         <div className="flex items-center gap-2.5">
           <span className="text-sm text-white/55">Already have an account?</span>
           <button
             onClick={() => router.push("/login")}
-            className="rounded-lg border border-white/30 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10"
+            className="rounded-lg border border-white/20 hover:border-white/40 bg-transparent px-3.5 py-1.5 text-sm font-medium text-white transition-all hover:bg-white/10 cursor-pointer"
           >
             Log In
           </button>
@@ -159,7 +159,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
       : "/dashboard/propertyowner";
 
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
         <div className="flex items-center gap-3">
           {onHamburger && (
             <button
@@ -172,7 +172,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
           )}
           <Logo />
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2.5">
           {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardRoute} />}
         </div>
       </nav>
@@ -182,7 +182,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   /* ── PROJECT FORM variant ── */
   if (variant === "projectForm") {
     return (
-      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.06]">
+      <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
         <Logo color={activeColor} />
         <button
           onClick={() => window.history.back()}
@@ -206,9 +206,9 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
     : "/dashboard/propertyowner/timeline";
 
   return (
-    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans">
+    <nav className="sticky top-0 z-[100] flex h-[60px] items-center justify-between bg-[#1a1d23] px-6 font-dmSans border-b border-white/[0.08]">
       <Logo />
-      <div className="flex items-center gap-2">
+      <div className="flex items-center gap-2.5">
         {isGuest ? <GuestButtons /> : <ProfileDropdown dashboardRoute={dashboardHref} />}
       </div>
     </nav>
