@@ -120,7 +120,7 @@ export default function HomePage() {
     {
       icon: "/icons/home-page/escrow.png",
       title: "Secure Escrow Payments",
-      desc: "Payments are held securely and released to providers only after task completion — protecting both sides.",
+      desc: "Payments are held securely and released to providers only after task completion, protecting both sides.",
     },
     {
       icon: "/icons/reviews.png",

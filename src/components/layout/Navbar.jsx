@@ -34,7 +34,7 @@ export default function Navbar({ variant = "default", activeTab = "Home", onHamb
   const Logo = () => (
     <div
       onClick={() => router.push("/home")}
-      className="cursor-pointer font-syne text-xl font-extrabold tracking-tight select-none"
+      className="cursor-pointer font-climate text-xl font-extrabold tracking-tight select-none"
       style={{ color: '#e8820c' }}
     >
       Crew<span className="text-white">Sync</span>
