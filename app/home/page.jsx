@@ -201,7 +201,7 @@ export default function HomePage() {
                 num: statsLoading
                   ? "…"
                   : `${formatStat(stats?.avgSaved)} LKR saved`,
-                lbl: "Avg per 100 Spent",
+                lbl: "Avg Savings per Project",
               },
             ].map((s) => (
               <div
