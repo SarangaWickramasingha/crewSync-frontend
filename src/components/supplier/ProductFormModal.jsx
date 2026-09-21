@@ -1,11 +1,17 @@
 'use client';
 import { useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import ProductForm from '@/src/components/supplier/ProductForm';
 
 export default function ProductFormModal({ open, title, defaultValues, onSubmit, onClose, submitLabel, isSubmitting }) {
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
   const backdropRef = useRef(null);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     if (open) {
@@ -20,13 +26,13 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
     }
   }, [open]);
 
-  if (!visible) return null;
+  if (!mounted || !visible) return null;
 
-  return (
+  return createPortal(
     <div
       ref={backdropRef}
       onClick={onClose}
-      className="fixed inset-0 z-[400] flex items-center justify-center p-4 transition-all duration-200 ease-out"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 transition-all duration-200 ease-out"
       style={{
         background: animating ? 'rgba(26,29,35,0.65)' : 'rgba(26,29,35,0)',
         backdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
@@ -54,6 +60,7 @@ export default function ProductFormModal({ open, title, defaultValues, onSubmit,
           isSubmitting={isSubmitting}
         />
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

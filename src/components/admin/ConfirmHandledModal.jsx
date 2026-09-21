@@ -1,8 +1,17 @@
 'use client';
+import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Check, X } from 'lucide-react';
 
 export default function ConfirmHandledModal({ subject, willBeHandled, isSaving, onCancel, onConfirm }) {
-    return (
+    const [mounted, setMounted] = useState(false);
+    useEffect(() => {
+        setMounted(true);
+    }, []);
+
+    if (!mounted) return null;
+
+    return createPortal(
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-[2px] p-4">
             <div className="w-full max-w-sm bg-white rounded-xl shadow-xl overflow-hidden">
                 {/* Header */}
@@ -51,6 +60,7 @@ export default function ConfirmHandledModal({ subject, willBeHandled, isSaving, 
                     </button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
