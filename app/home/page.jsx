@@ -115,7 +115,7 @@ export default function HomePage() {
     {
       icon: "/icons/timeline.png",
       title: "Smart Project Timeline",
-      desc: "Auto-generate construction tasks (foundation → walls → roofing → finishing). Fully customizable task schedules.",
+      desc: "Auto-generate construction tasks (foundation, walls, roofing, finishing). Fully customizable task schedules.",
     },
     {
       icon: "/icons/home-page/escrow.png",
