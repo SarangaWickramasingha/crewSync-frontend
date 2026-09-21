@@ -302,10 +302,9 @@ export default function PropertyOwnerOverviewPage() {
                 </div>
                 <div className="h-2 bg-[#EEECEA] rounded overflow-hidden">
                   <div
-                    className="h-full rounded transition-all duration-300"
+                    className="h-full rounded transition-all duration-300 bg-owner"
                     style={{
                       width: `${Math.min(100, ((t.cost || 0) / maxCost) * 100)}%`,
-                      background: t.color,
                     }}
                   />
                 </div>

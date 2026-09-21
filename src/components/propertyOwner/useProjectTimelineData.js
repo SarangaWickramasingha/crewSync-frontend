@@ -4,7 +4,7 @@ import { useState, useEffect } from 'react';
 import { projectApi, taskApi } from '@/src/api';
 import { useTasks } from './TasksContext';
 
-const TASK_COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
+const TASK_COLORS = ['#16a34a', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
 const STATUS_TO_CELL = { done: 1, in_progress: 2, blocked: 3 };
 
 function mapTasks(tasks, projectName) {

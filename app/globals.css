@@ -3,67 +3,70 @@
 
 @theme {
   /* ── Font families ── */
-  --font-sans:    'DM Sans', sans-serif;
+  --font-sans: 'DM Sans', sans-serif;
   --font-climate: 'Climate Crisis', cursive;
-  --font-dmSans:  'DM Sans', sans-serif;
-  --font-syne:    'Syne', sans-serif;
+  --font-dmSans: 'DM Sans', sans-serif;
+  --font-syne: 'Syne', sans-serif;
 
   /* ── Brand colours (crew*) ── */
-  --color-crewAmber:      #E8820C;
+  --color-crewAmber: #E8820C;
   --color-crewAmber-dark: #B85A00;
-  --color-crewAmber-light:#FFF3E0;
-  --color-crewSlate:      #1A1D23;
-  --color-crewSlate-light:#4A5068;
-  --color-crewMuted:      #8A8FA8;
-  --color-crewSurface:    #F7F6F2;
-  --color-crewSurface2:   #EEECEA;
-  --color-crewGreen:      #1B6E3A;
-  --color-crewGreen-light:#E6F4EC;
-  --color-crewBlue:       #1A56A0;
+  --color-crewAmber-light: #FFF3E0;
+  --color-crewSlate: #1A1D23;
+  --color-crewSlate-light: #4A5068;
+  --color-crewMuted: #8A8FA8;
+  --color-crewSurface: #F7F6F2;
+  --color-crewSurface2: #EEECEA;
+  --color-crewGreen: #1B6E3A;
+  --color-crewGreen-light: #E6F4EC;
+  --color-crewBlue: #1A56A0;
   --color-crewBlue-light: #E8F0FB;
 
   /* ── Generic brand/UI tokens ── */
-  --color-primary:       #1B6E3A;
-  --color-primary-dark:  #14532d;
+  --color-primary: #1B6E3A;
+  --color-primary-dark: #14532d;
   --color-primary-light: #dcfce7;
 
-  --color-amber:       #E8820C;
-  --color-amber-dark:  #B85A00;
+  --color-amber: #E8820C;
+  --color-amber-dark: #B85A00;
   --color-amber-light: #FFF3E0;
 
-  --color-slate:       #1e293b;
+  --color-slate: #1e293b;
   --color-slate-light: #475569;
-  --color-muted:       #64748b;
+  --color-muted: #64748b;
 
-  --color-border:  #e2e8f0;
+  --color-border: #e2e8f0;
   --color-surface: #f8fafc;
 
   --color-success: #16a34a;
-  --color-danger:  #dc2626;
+  --color-danger: #dc2626;
   --color-warning: #f59e0b;
 
-  /* ── Role — Property Owner (green) ── */
-  --color-owner:       #16a34a;
-  --color-owner-light: #dcfce7;
-  --color-owner-dark:  #15803d;
 
   /* ── Role — Service Provider (blue) ── */
-  --color-provider:       #2563eb;
+  --color-provider: #2563eb;
   --color-provider-light: #dbeafe;
-  --color-provider-dark:  #1d4ed8;
+  --color-provider-dark: #1d4ed8;
 
   /* ── Role — Supplier (orange) ── */
-  --color-supplier:       #f97316;
+  --color-supplier: #f97316;
   --color-supplier-light: #ffedd5;
-  --color-supplier-dark:  #ea580c;
+  --color-supplier-dark: #ea580c;
 
   /* ── Animations ── */
   --animate-fadeIn: fadeIn 0.5s ease both;
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; transform: translateY(16px); }
-  to   { opacity: 1; transform: translateY(0); }
+  from {
+    opacity: 0;
+    transform: translateY(16px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
 @layer base {
