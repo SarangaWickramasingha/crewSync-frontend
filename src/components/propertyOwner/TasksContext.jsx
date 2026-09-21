@@ -7,6 +7,7 @@ const TasksContext = createContext(null);
 const INIT_TASKS = [];
 const INIT_NOTIFICATIONS = [];
 const DEFAULT_BUDGET = 0;
+const TASK_COLORS = ['#E8820C', '#1B6E3A', '#1A56A0', '#C0392B', '#6B3FA0', '#2E7D9E', '#7B6E00'];
 
 export function TasksProvider({ children }) {
   const [tasks, setTasks] = useState(INIT_TASKS);
@@ -154,7 +155,7 @@ export function TasksProvider({ children }) {
 
       const STATUS_TO_CELL = { done: 1, in_progress: 2, blocked: 3 };
 
-      const mapped = (data.tasks || []).map((t) => {
+      const mapped = (data.tasks || []).map((t, idx) => {
         const days = {};
         (t.daily_statuses || []).forEach(({ date, status }) => {
           days[date] = STATUS_TO_CELL[status] ?? 0;
@@ -163,6 +164,7 @@ export function TasksProvider({ children }) {
           id: t.task_id,
           name: t.task_name,
           projectName: data.project?.project_name || '',
+          color: TASK_COLORS[idx % TASK_COLORS.length],
           days,
           cost: Number(t.t_cost) || 0,
           budget: Number(t.task_budget) || 0,
@@ -189,7 +191,7 @@ export function TasksProvider({ children }) {
   // ── ADD TASK ──────────────────────────────────────────────────────────────────
   async function addTask(name, color, budget = 0) {
     const tempId = nextId;
-    setTasks((ts) => [...ts, { id: tempId, name, projectName: projectName, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]); setNextId((n) => n + 1);
+    setTasks((ts) => [...ts, { id: tempId, name, projectName: projectName, color, days: {}, cost: 0, budget: Number(budget) || 0, assignedSP: null, completed: false }]); setNextId((n) => n + 1);
     addNotification(`New task <strong>${name}</strong> has been added to the project timeline`);
 
     if (!currentProjectId) return;

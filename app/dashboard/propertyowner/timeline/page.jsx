@@ -22,7 +22,7 @@ const DEMO_TASKS = (() => {
   const keys = getWeekKeys();
   return [
     {
-      id: 1, name: 'Foundation Work', color: '#16a34a',
+      id: 1, name: 'Foundation Work', color: '#E8820C',
       days: { [keys[0]]: 1, [keys[1]]: 1, [keys[2]]: 2, [keys[3]]: 2, [keys[4]]: 0, [keys[5]]: 0, [keys[6]]: 0 },
       cost: 450000, budget: 500000, assignedSP: null, completed: false, projectName: 'Sample House Build',
     },
