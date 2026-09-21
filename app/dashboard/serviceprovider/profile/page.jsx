@@ -92,18 +92,10 @@ export default function ServiceProviderProfilePage() {
 
   const skills = rawSkills.map(s => ({
     skill_id: s.skill_id,
-    name: s.name || ID_TO_SKILL_NAME[s.skill_id] || `Skill #${s.skill_id}`,
+    name: ID_TO_SKILL_NAME[s.skill_id] || `Skill #${s.skill_id}`,
     years: s.years,
     desc: s.desc,
   }));
-
-  const existingSkillIds = new Set(skills.map(s => s.skill_id));
-  const availableSkillOptions = data?.available_skills
-    ? data.available_skills
-    : SKILL_OPTIONS.filter(name => !existingSkillIds.has(SKILL_NAME_TO_ID[name])).map(name => ({
-        skill_id: SKILL_NAME_TO_ID[name],
-        name,
-      }));
 
   const [editingExpSkill, setEditingExpSkill] = useState(null);
 
@@ -285,17 +277,9 @@ export default function ServiceProviderProfilePage() {
                 <div style={{ display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
                   <div style={{ flex: 2, minWidth: '160px' }}>
                     <label style={{ display: 'block', fontSize: '0.72rem', color: C.muted, marginBottom: '3px' }}>Skill Category</label>
-                    <select
-                      {...registerSkill('skill')}
-                      style={inputStyle}
-                      disabled={availableSkillOptions.length === 0}
-                    >
-                      <option value="">
-                        {availableSkillOptions.length === 0 ? '-- All skills added --' : '-- Select Skill --'}
-                      </option>
-                      {availableSkillOptions.map(s => (
-                        <option key={s.skill_id ?? s.name} value={s.name}>{s.name}</option>
-                      ))}
+                    <select {...registerSkill('skill')} style={inputStyle}>
+                      <option value="">-- Select Skill --</option>
+                      {SKILL_OPTIONS.map(s => <option key={s} value={s}>{s}</option>)}
                     </select>
                     <FieldError>{skillErrors.skill?.message}</FieldError>
                   </div>
@@ -320,13 +304,13 @@ export default function ServiceProviderProfilePage() {
 
                 <button
                   type="submit"
-                  disabled={saveSkill.isPending || availableSkillOptions.length === 0}
+                  disabled={saveSkill.isPending}
                   style={{
                     alignSelf: 'flex-start',
-                    background: (saveSkill.isPending || availableSkillOptions.length === 0) ? '#CBD5E1' : C.blue,
+                    background: saveSkill.isPending ? '#CBD5E1' : C.blue,
                     color: '#fff', border: 'none', padding: '8px 16px', borderRadius: C.radiusSm,
                     fontSize: '0.82rem', fontWeight: 600,
-                    cursor: (saveSkill.isPending || availableSkillOptions.length === 0) ? 'not-allowed' : 'pointer',
+                    cursor: saveSkill.isPending ? 'not-allowed' : 'pointer',
                     fontFamily: "'DM Sans', sans-serif", marginTop: '4px'
                   }}>
                   {saveSkill.isPending ? 'Saving…' : '+ Add Skill'}

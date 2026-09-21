@@ -31,10 +31,9 @@ export function toProfileForm(profile) {
 }
 
 export function toSkillPayload(values) {
-  const skillId = SKILL_NAME_TO_ID[values.skill] ?? (Number(values.skill) || values.skill_id);
   return {
-    skill_id: Number(skillId),
+    skill_id: SKILL_NAME_TO_ID[values.skill],
     years: Number(values.years) || 1,
-    description: values.description ? values.description.trim() : '',
+    description: values.description.trim(),
   };
 }
