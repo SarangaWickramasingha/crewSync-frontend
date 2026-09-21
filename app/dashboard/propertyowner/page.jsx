@@ -8,7 +8,6 @@ import MetricCard from '@/src/components/propertyOwner/MetricCard';
 import StatusPill from '@/src/components/ui/StatusPill';
 import { useTasks } from '@/src/components/propertyOwner/TasksContext';
 import { useAuth } from '@/context/AuthContext';
-import { projectApi } from '@/src/api';
 import { ChevronDown, Check } from 'lucide-react';
 
 function fmtCompact(n) {
@@ -207,22 +206,7 @@ export default function PropertyOwnerOverviewPage() {
         subtitle={subtitle}
         action={
           <button
-            onClick={async () => {
-              try {
-                const data = await projectApi.fetchProjects();
-                // Check if there's an active (unfinished) project
-                const activeProject = data.projects?.find((p) => !Number(p.is_finished));
-                if (activeProject) {
-                  // Go to that project's timeline instead
-                  router.push(`/dashboard/propertyowner/timeline?project_id=${activeProject.project_id}`);
-                } else {
-                  router.push('/project-form');
-                }
-              } catch (err) {
-                // If check fails just go to form
-                router.push('/project-form');
-              }
-            }}
+            onClick={() => router.push('/project-form')}
             className="bg-[#16a34a] hover:bg-[#15803d] text-white text-sm font-medium px-4 py-1.5 rounded-md transition-colors shadow-sm cursor-pointer"
           >
             + New Project
