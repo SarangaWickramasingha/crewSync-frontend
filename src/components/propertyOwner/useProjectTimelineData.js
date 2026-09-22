@@ -76,11 +76,6 @@ export default function useProjectTimelineData(projectId) {
       .catch((err) => console.error('Failed to create task on backend:', err));
   }
 
-  function deleteTask(id) {
-    setTasks((ts) => ts.filter((t) => t.id !== id));
-    taskApi.deleteTask(id).catch((err) => console.error('Failed to delete task on backend:', err));
-  }
-
   function updateTask(id, updates) {
     setTasks((ts) => ts.map((t) => (t.id === id ? { ...t, ...updates } : t)));
 
@@ -139,7 +134,6 @@ export default function useProjectTimelineData(projectId) {
     tasks,
     isLoaded,
     addTask,
-    deleteTask,
     updateTask,
     finishTask,
     estimatedBudget,

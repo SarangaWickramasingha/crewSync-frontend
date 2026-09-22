@@ -1,11 +1,15 @@
 'use client';
 import { useEffect, useState } from 'react';
+import { createPortal } from 'react-dom';
 
 export default function PhotoDeleteModal({ photoUrl, onCancel, onConfirm }) {
+  const [mounted, setMounted] = useState(false);
   const [visible, setVisible] = useState(false);
   const [animating, setAnimating] = useState(false);
 
   useEffect(() => {
+    setMounted(true);
+    setVisible(true);
     requestAnimationFrame(() => {
       requestAnimationFrame(() => setAnimating(true));
     });
@@ -19,16 +23,12 @@ export default function PhotoDeleteModal({ photoUrl, onCancel, onConfirm }) {
     }, 200);
   }
 
-  useEffect(() => {
-    setVisible(true);
-  }, []);
+  if (!mounted || !visible) return null;
 
-  if (!visible) return null;
-
-  return (
+  return createPortal(
     <div
       onClick={handleClose}
-      className="fixed inset-0 z-[400] flex items-center justify-center p-4"
+      className="fixed inset-0 z-[9999] flex items-center justify-center p-4"
       style={{
         background: animating ? 'rgba(26,29,35,0.65)' : 'rgba(26,29,35,0)',
         backdropFilter: animating ? 'blur(3px)' : 'blur(0px)',
@@ -78,6 +78,7 @@ export default function PhotoDeleteModal({ photoUrl, onCancel, onConfirm }) {
           </button>
         </div>
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }

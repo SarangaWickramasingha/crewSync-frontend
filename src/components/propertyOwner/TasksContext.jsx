@@ -212,16 +212,6 @@ export function TasksProvider({ children }) {
     }
   }
 
-  // ── DELETE TASK ───────────────────────────────────────────────────────────────
-  function deleteTask(id) {
-    const task = tasks.find((t) => t.id === id);
-    setTasks((ts) => ts.filter((t) => t.id !== id));
-    if (task) {
-      addNotification(`Task <strong>${task.name}</strong> has been removed from the timeline`);
-    }
-    taskApi.deleteTask(id).catch((err) => console.error('Failed to delete task on backend:', err));
-  }
-
   // ── UPDATE TASK ──────────────────────────────────────────────────────────────
   function updateTask(id, updates) {
     const prev = tasks.find((t) => t.id === id);
@@ -287,7 +277,6 @@ export function TasksProvider({ children }) {
     projectName,
     refreshProjects,
     addTask,
-    deleteTask,
     updateTask,
     finishTask,
     assignSP,

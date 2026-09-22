@@ -91,7 +91,7 @@ export default function WriteReviewModal({ providers = [], onClose, onSubmit }) 
           <button
             type="submit"
             disabled={submitting}
-            className="rounded-lg border-none bg-[#E8820C] px-[18px] py-2 text-[13px] font-semibold text-white transition-opacity hover:opacity-90 cursor-pointer disabled:opacity-60"
+            className="rounded-lg border-none bg-[var(--color-owner)] px-[18px] py-2 text-[13px] font-semibold text-white transition-colors hover:bg-[var(--color-owner-dark)] cursor-pointer disabled:opacity-60"
           >
             {submitting ? 'Submitting...' : 'Submit Review'}
           </button>

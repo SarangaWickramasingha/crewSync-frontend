@@ -44,6 +44,11 @@ export default function SupplierOrdersPage() {
     if (orderId) updateStatus.mutate({ orderId, status: 'rejected' });
   }
 
+  function deliverOrder(id) {
+    const orderId = orders.find(o => o.id === id)?.orderId;
+    if (orderId) updateStatus.mutate({ orderId, status: 'delivered' });
+  }
+
   if (isLoading) {
     return <div className="p-10 text-center text-crewMuted text-sm">Loading orders…</div>;
   }
@@ -73,6 +78,7 @@ export default function SupplierOrdersPage() {
         orders={paginated}
         onAccept={acceptOrder}
         onReject={rejectOrder}
+        onDeliver={deliverOrder}
         hasActiveFilter={hasActiveFilter}
       />
 

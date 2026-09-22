@@ -1,8 +1,8 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useTasks } from './TasksContext';
-import { createServiceRequest } from '@/src/api/serviceRequestApi';
+import { createServiceRequest, fetchPendingServiceRequest } from '@/src/api/serviceRequestApi';
 import { fetchPublicProvider } from '@/src/api/providerApi';
 
 export default function RequestProviderByIdModal({ task, onClose }) {
@@ -14,6 +14,21 @@ export default function RequestProviderByIdModal({ task, onClose }) {
   const [sending, setSending] = useState(false);
   const [sent, setSent] = useState(false);
   const [error, setError] = useState('');
+  const [pendingInfo, setPendingInfo] = useState(null);
+
+  useEffect(() => {
+    let cancelled = false;
+    fetchPendingServiceRequest(task.id)
+      .then((data) => {
+        if (!cancelled) setPendingInfo(data);
+      })
+      .catch(() => {
+        if (!cancelled) setPendingInfo({ pending: false, request: null });
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [task.id]);
 
   // Automatically lookup provider details when a valid numeric ID is typed/pasted
   async function handleIdChange(val) {
@@ -87,7 +102,41 @@ export default function RequestProviderByIdModal({ task, onClose }) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center bg-[rgba(26,29,35,0.4)] p-4">
       <div className="w-[380px] max-w-full rounded-[14px] bg-white p-6 font-sans shadow-[0_8px_32px_rgba(26,29,35,0.15)] text-left">
-        {sent ? (
+        {pendingInfo === null ? (
+          <div className="flex items-center justify-center py-10 text-[13px] text-[#8A8FA8] gap-2">
+            <div className="w-3 h-3 border-2 border-[#16a34a] border-t-transparent rounded-full animate-spin" />
+            Checking pending requests...
+          </div>
+        ) : pendingInfo.pending ? (
+          <div className="text-center py-4">
+            <div className="mb-3 flex justify-center">
+              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#FFF3E0]">
+                <svg className="w-7 h-7 text-[#B85A00]" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+              </div>
+            </div>
+            <h3 className="mb-1.5 font-syne text-base font-bold text-[#1A1D23]">Pending a Request</h3>
+            <p className="text-[13px] text-[#4A5068]">
+              A service request is already pending for <strong>{task.name}</strong>.
+            </p>
+            {pendingInfo.request?.provider_name && (
+              <p className="mt-1 text-[13px] text-[#4A5068]">
+                Sent to <strong>{pendingInfo.request.provider_name}</strong>
+                <span className="text-[#8A8FA8]"> (Provider #{pendingInfo.request.provider_id})</span>.
+              </p>
+            )}
+            <p className="mt-1 text-[12px] text-[#8A8FA8]">
+              The provider has 72 hours to respond before the request expires.
+            </p>
+            <button
+              className="mt-5 w-full rounded-lg border-none bg-[#16a34a] hover:bg-[#15803d] py-2.5 text-[13px] font-semibold text-white cursor-pointer transition-colors shadow-sm"
+              onClick={onClose}
+            >
+              Done
+            </button>
+          </div>
+        ) : sent ? (
           <div className="text-center py-2">
             <div className="mb-3 flex justify-center">
               <div className="flex h-14 w-14 items-center justify-center rounded-full bg-[#E6F4EC]">
